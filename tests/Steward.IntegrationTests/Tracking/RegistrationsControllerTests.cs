@@ -15,30 +15,23 @@ public class RegistrationsControllerTests(DatabaseFixture fixture) : Integration
         var assetId = await CreateAssetAsync(householdId);
         var client = CreateAuthenticatedClient(userId);
 
-        var createResponse = await client.PostAsJsonAsync(
-            $"/api/households/{householdId}/assets/{assetId}/registrations",
-            NewRecord(new DateOnly(2027, 1, 15)),
-            TestJson.Options);
+        var createResponse = await client.PostAsJsonAsync($"/api/households/{householdId}/assets/{assetId}/registrations", NewRecord(new DateOnly(2027, 1, 15)), TestJson.Options, cancellationToken: TestContext.Current.CancellationToken);
         Assert.Equal(HttpStatusCode.Created, createResponse.StatusCode);
-        var created = await createResponse.Content.ReadFromJsonAsync<RegistrationResponse>(TestJson.Options);
+        var created = await createResponse.Content.ReadFromJsonAsync<RegistrationResponse>(TestJson.Options, cancellationToken: TestContext.Current.CancellationToken);
         Assert.NotNull(created);
         Assert.False(created!.HasDocument);
 
-        var listResponse = await client.GetAsync($"/api/households/{householdId}/assets/{assetId}/registrations");
+        var listResponse = await client.GetAsync($"/api/households/{householdId}/assets/{assetId}/registrations", TestContext.Current.CancellationToken);
         Assert.Equal(HttpStatusCode.OK, listResponse.StatusCode);
-        var list = await listResponse.Content.ReadFromJsonAsync<List<RegistrationResponse>>(TestJson.Options);
+        var list = await listResponse.Content.ReadFromJsonAsync<List<RegistrationResponse>>(TestJson.Options, cancellationToken: TestContext.Current.CancellationToken);
         Assert.Single(list!);
 
-        var updateResponse = await client.PutAsJsonAsync(
-            $"/api/households/{householdId}/assets/{assetId}/registrations/{created.Id}",
-            NewRecord(new DateOnly(2027, 1, 15)) with { Cost = 150.00m },
-            TestJson.Options);
+        var updateResponse = await client.PutAsJsonAsync($"/api/households/{householdId}/assets/{assetId}/registrations/{created.Id}", NewRecord(new DateOnly(2027, 1, 15)) with { Cost = 150.00m }, TestJson.Options, cancellationToken: TestContext.Current.CancellationToken);
         Assert.Equal(HttpStatusCode.OK, updateResponse.StatusCode);
-        var updated = await updateResponse.Content.ReadFromJsonAsync<RegistrationResponse>(TestJson.Options);
+        var updated = await updateResponse.Content.ReadFromJsonAsync<RegistrationResponse>(TestJson.Options, cancellationToken: TestContext.Current.CancellationToken);
         Assert.Equal(150.00m, updated!.Cost);
 
-        var deleteResponse = await client.DeleteAsync(
-            $"/api/households/{householdId}/assets/{assetId}/registrations/{created.Id}");
+        var deleteResponse = await client.DeleteAsync($"/api/households/{householdId}/assets/{assetId}/registrations/{created.Id}", TestContext.Current.CancellationToken);
         Assert.Equal(HttpStatusCode.NoContent, deleteResponse.StatusCode);
     }
 
@@ -49,10 +42,7 @@ public class RegistrationsControllerTests(DatabaseFixture fixture) : Integration
         var assetId = await CreateAssetAsync(householdId);
         var client = CreateAuthenticatedClient(userId);
 
-        var response = await client.PostAsJsonAsync(
-            $"/api/households/{householdId}/assets/{assetId}/registrations",
-            NewRecord(new DateOnly(2027, 1, 15)),
-            TestJson.Options);
+        var response = await client.PostAsJsonAsync($"/api/households/{householdId}/assets/{assetId}/registrations", NewRecord(new DateOnly(2027, 1, 15)), TestJson.Options, cancellationToken: TestContext.Current.CancellationToken);
 
         Assert.Equal(HttpStatusCode.Forbidden, response.StatusCode);
     }
@@ -64,14 +54,10 @@ public class RegistrationsControllerTests(DatabaseFixture fixture) : Integration
         var assetId = await CreateAssetAsync(householdId);
         var client = CreateAuthenticatedClient(userId);
 
-        var createResponse = await client.PostAsJsonAsync(
-            $"/api/households/{householdId}/assets/{assetId}/registrations",
-            NewRecord(new DateOnly(2027, 1, 15)),
-            TestJson.Options);
-        var created = await createResponse.Content.ReadFromJsonAsync<RegistrationResponse>(TestJson.Options);
+        var createResponse = await client.PostAsJsonAsync($"/api/households/{householdId}/assets/{assetId}/registrations", NewRecord(new DateOnly(2027, 1, 15)), TestJson.Options, cancellationToken: TestContext.Current.CancellationToken);
+        var created = await createResponse.Content.ReadFromJsonAsync<RegistrationResponse>(TestJson.Options, cancellationToken: TestContext.Current.CancellationToken);
 
-        var deleteResponse = await client.DeleteAsync(
-            $"/api/households/{householdId}/assets/{assetId}/registrations/{created!.Id}");
+        var deleteResponse = await client.DeleteAsync($"/api/households/{householdId}/assets/{assetId}/registrations/{created!.Id}", TestContext.Current.CancellationToken);
 
         Assert.Equal(HttpStatusCode.NoContent, deleteResponse.StatusCode);
     }
@@ -83,10 +69,7 @@ public class RegistrationsControllerTests(DatabaseFixture fixture) : Integration
         var assetId = await CreateAssetAsync(householdId);
         var client = CreateAuthenticatedClient(userId);
 
-        var response = await client.PostAsJsonAsync(
-            $"/api/households/{householdId}/assets/{assetId}/registrations",
-            NewRecord(new DateOnly(2027, 1, 15)) with { RegistrationNumber = "" },
-            TestJson.Options);
+        var response = await client.PostAsJsonAsync($"/api/households/{householdId}/assets/{assetId}/registrations", NewRecord(new DateOnly(2027, 1, 15)) with { RegistrationNumber = "" }, TestJson.Options, cancellationToken: TestContext.Current.CancellationToken);
 
         Assert.Equal(HttpStatusCode.BadRequest, response.StatusCode);
     }
@@ -98,34 +81,24 @@ public class RegistrationsControllerTests(DatabaseFixture fixture) : Integration
         var assetId = await CreateAssetAsync(householdId);
         var client = CreateAuthenticatedClient(userId);
 
-        await client.PostAsJsonAsync(
-            $"/api/households/{householdId}/assets/{assetId}/registrations",
-            NewRecord(new DateOnly(2026, 1, 15)),
-            TestJson.Options);
-        await client.PostAsJsonAsync(
-            $"/api/households/{householdId}/assets/{assetId}/registrations",
-            NewRecord(new DateOnly(2028, 1, 15)),
-            TestJson.Options);
-        var thirdResponse = await client.PostAsJsonAsync(
-            $"/api/households/{householdId}/assets/{assetId}/registrations",
-            NewRecord(new DateOnly(2027, 1, 15)),
-            TestJson.Options);
-        var third = await thirdResponse.Content.ReadFromJsonAsync<RegistrationResponse>(TestJson.Options);
+        await client.PostAsJsonAsync($"/api/households/{householdId}/assets/{assetId}/registrations", NewRecord(new DateOnly(2026, 1, 15)), TestJson.Options, cancellationToken: TestContext.Current.CancellationToken);
+        await client.PostAsJsonAsync($"/api/households/{householdId}/assets/{assetId}/registrations", NewRecord(new DateOnly(2028, 1, 15)), TestJson.Options, cancellationToken: TestContext.Current.CancellationToken);
+        var thirdResponse = await client.PostAsJsonAsync($"/api/households/{householdId}/assets/{assetId}/registrations", NewRecord(new DateOnly(2027, 1, 15)), TestJson.Options, cancellationToken: TestContext.Current.CancellationToken);
+        var third = await thirdResponse.Content.ReadFromJsonAsync<RegistrationResponse>(TestJson.Options, cancellationToken: TestContext.Current.CancellationToken);
 
-        var listResponse = await client.GetAsync($"/api/households/{householdId}/assets/{assetId}/registrations");
-        var list = await listResponse.Content.ReadFromJsonAsync<List<RegistrationResponse>>(TestJson.Options);
+        var listResponse = await client.GetAsync($"/api/households/{householdId}/assets/{assetId}/registrations", TestContext.Current.CancellationToken);
+        var list = await listResponse.Content.ReadFromJsonAsync<List<RegistrationResponse>>(TestJson.Options, cancellationToken: TestContext.Current.CancellationToken);
 
         Assert.Equal(3, list!.Count);
         Assert.Equal(new DateOnly(2028, 1, 15), list[0].ExpiresOn);
         Assert.Equal(new DateOnly(2027, 1, 15), list[1].ExpiresOn);
         Assert.Equal(new DateOnly(2026, 1, 15), list[2].ExpiresOn);
 
-        var deleteResponse = await client.DeleteAsync(
-            $"/api/households/{householdId}/assets/{assetId}/registrations/{third!.Id}");
+        var deleteResponse = await client.DeleteAsync($"/api/households/{householdId}/assets/{assetId}/registrations/{third!.Id}", TestContext.Current.CancellationToken);
         Assert.Equal(HttpStatusCode.NoContent, deleteResponse.StatusCode);
 
-        var afterDeleteResponse = await client.GetAsync($"/api/households/{householdId}/assets/{assetId}/registrations");
-        var afterDelete = await afterDeleteResponse.Content.ReadFromJsonAsync<List<RegistrationResponse>>(TestJson.Options);
+        var afterDeleteResponse = await client.GetAsync($"/api/households/{householdId}/assets/{assetId}/registrations", TestContext.Current.CancellationToken);
+        var afterDelete = await afterDeleteResponse.Content.ReadFromJsonAsync<List<RegistrationResponse>>(TestJson.Options, cancellationToken: TestContext.Current.CancellationToken);
         Assert.Equal(2, afterDelete!.Count);
         Assert.DoesNotContain(afterDelete, r => r.Id == third.Id);
     }
@@ -139,7 +112,7 @@ public class RegistrationsControllerTests(DatabaseFixture fixture) : Integration
         var (householdB, userB) = await CreateHouseholdWithMemberAsync(HouseholdMemberRole.Owner);
         var client = CreateAuthenticatedClient(userB);
 
-        var response = await client.GetAsync($"/api/households/{householdB}/assets/{assetId}/registrations");
+        var response = await client.GetAsync($"/api/households/{householdB}/assets/{assetId}/registrations", TestContext.Current.CancellationToken);
 
         Assert.Equal(HttpStatusCode.NotFound, response.StatusCode);
     }

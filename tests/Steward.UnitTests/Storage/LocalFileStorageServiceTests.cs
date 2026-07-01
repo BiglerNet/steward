@@ -24,7 +24,7 @@ public class LocalFileStorageServiceTests : IDisposable
         var entityId = Guid.NewGuid();
         using var content = new MemoryStream("hello"u8.ToArray());
 
-        var storageKey = await _service.SaveAsync(content, "application/pdf", "registrations", entityId);
+        var storageKey = await _service.SaveAsync(content, "application/pdf", "registrations", entityId, TestContext.Current.CancellationToken);
 
         Assert.StartsWith($"registrations/{entityId}/", storageKey);
         Assert.EndsWith(".pdf", storageKey);
@@ -36,7 +36,7 @@ public class LocalFileStorageServiceTests : IDisposable
         var entityId = Guid.NewGuid();
         using var content = new MemoryStream("hello"u8.ToArray());
 
-        await _service.SaveAsync(content, "image/png", "warranties", entityId);
+        await _service.SaveAsync(content, "image/png", "warranties", entityId, TestContext.Current.CancellationToken);
 
         var entityDir = Path.Combine(_rootPath, "warranties", entityId.ToString());
         Assert.True(Directory.Exists(entityDir));
@@ -49,26 +49,26 @@ public class LocalFileStorageServiceTests : IDisposable
         var bytes = "round trip content"u8.ToArray();
         using var content = new MemoryStream(bytes);
 
-        var storageKey = await _service.SaveAsync(content, "application/pdf", "registrations", entityId);
+        var storageKey = await _service.SaveAsync(content, "application/pdf", "registrations", entityId, TestContext.Current.CancellationToken);
 
-        var (readStream, contentType) = await _service.OpenReadAsync(storageKey);
+        var (readStream, contentType) = await _service.OpenReadAsync(storageKey, TestContext.Current.CancellationToken);
         using var memoryStream = new MemoryStream();
-        await readStream.CopyToAsync(memoryStream);
+        await readStream.CopyToAsync(memoryStream, TestContext.Current.CancellationToken);
         readStream.Dispose();
 
         Assert.Equal("application/pdf", contentType);
         Assert.Equal(bytes, memoryStream.ToArray());
 
-        await _service.DeleteAsync(storageKey);
+        await _service.DeleteAsync(storageKey, TestContext.Current.CancellationToken);
 
-        await Assert.ThrowsAsync<NotFoundException>(() => _service.OpenReadAsync(storageKey));
+        await Assert.ThrowsAsync<NotFoundException>(() => _service.OpenReadAsync(storageKey, TestContext.Current.CancellationToken));
     }
 
     [Fact]
     public async Task OpenReadAsync_Throws_NotFoundException_When_Missing()
     {
         await Assert.ThrowsAsync<NotFoundException>(
-            () => _service.OpenReadAsync("registrations/missing/missing.pdf"));
+            () => _service.OpenReadAsync("registrations/missing/missing.pdf", TestContext.Current.CancellationToken));
     }
 
     public void Dispose()

@@ -15,11 +15,10 @@ public class EnginesControllerTests(DatabaseFixture fixture) : IntegrationTestBa
         var assetId = await CreateAssetAsync(householdId);
         var client = CreateAuthenticatedClient(userId);
 
-        var response = await client.PostAsJsonAsync(
-            $"/api/households/{householdId}/assets/{assetId}/engines", NewEngine("Port"), TestJson.Options);
+        var response = await client.PostAsJsonAsync($"/api/households/{householdId}/assets/{assetId}/engines", NewEngine("Port"), TestJson.Options, cancellationToken: TestContext.Current.CancellationToken);
 
         Assert.Equal(HttpStatusCode.Created, response.StatusCode);
-        var engine = await response.Content.ReadFromJsonAsync<EngineResponse>(TestJson.Options);
+        var engine = await response.Content.ReadFromJsonAsync<EngineResponse>(TestJson.Options, cancellationToken: TestContext.Current.CancellationToken);
         Assert.NotNull(engine);
         Assert.Equal("Port", engine.Label);
         Assert.Equal(EngineStatus.Active, engine.Status);
@@ -32,8 +31,7 @@ public class EnginesControllerTests(DatabaseFixture fixture) : IntegrationTestBa
         var assetId = await CreateAssetAsync(householdId);
         var client = CreateAuthenticatedClient(userId);
 
-        var response = await client.PostAsJsonAsync(
-            $"/api/households/{householdId}/assets/{assetId}/engines", NewEngine("Port"), TestJson.Options);
+        var response = await client.PostAsJsonAsync($"/api/households/{householdId}/assets/{assetId}/engines", NewEngine("Port"), TestJson.Options, cancellationToken: TestContext.Current.CancellationToken);
 
         Assert.Equal(HttpStatusCode.Forbidden, response.StatusCode);
     }
@@ -45,8 +43,7 @@ public class EnginesControllerTests(DatabaseFixture fixture) : IntegrationTestBa
         var assetId = await CreateAssetAsync(householdId);
         var client = CreateAuthenticatedClient(userId);
 
-        var response = await client.PostAsJsonAsync(
-            $"/api/households/{householdId}/assets/{assetId}/engines", NewEngine(""), TestJson.Options);
+        var response = await client.PostAsJsonAsync($"/api/households/{householdId}/assets/{assetId}/engines", NewEngine(""), TestJson.Options, cancellationToken: TestContext.Current.CancellationToken);
 
         Assert.Equal(HttpStatusCode.BadRequest, response.StatusCode);
     }
@@ -60,8 +57,7 @@ public class EnginesControllerTests(DatabaseFixture fixture) : IntegrationTestBa
         var (householdB, userB) = await CreateHouseholdWithMemberAsync(HouseholdMemberRole.Owner);
         var client = CreateAuthenticatedClient(userB);
 
-        var response = await client.PostAsJsonAsync(
-            $"/api/households/{householdB}/assets/{assetId}/engines", NewEngine("Port"), TestJson.Options);
+        var response = await client.PostAsJsonAsync($"/api/households/{householdB}/assets/{assetId}/engines", NewEngine("Port"), TestJson.Options, cancellationToken: TestContext.Current.CancellationToken);
 
         Assert.Equal(HttpStatusCode.NotFound, response.StatusCode);
     }
@@ -75,13 +71,12 @@ public class EnginesControllerTests(DatabaseFixture fixture) : IntegrationTestBa
 
         var active = await CreateEngineAsync(client, householdId, assetId, NewEngine("Port"));
         var retired = await CreateEngineAsync(client, householdId, assetId, NewEngine("Starboard"));
-        await client.PostAsync(
-            $"/api/households/{householdId}/assets/{assetId}/engines/{retired.Id}/retire", null);
+        await client.PostAsync($"/api/households/{householdId}/assets/{assetId}/engines/{retired.Id}/retire", null, TestContext.Current.CancellationToken);
 
-        var response = await client.GetAsync($"/api/households/{householdId}/assets/{assetId}/engines");
+        var response = await client.GetAsync($"/api/households/{householdId}/assets/{assetId}/engines", TestContext.Current.CancellationToken);
 
         Assert.Equal(HttpStatusCode.OK, response.StatusCode);
-        var engines = await response.Content.ReadFromJsonAsync<List<EngineResponse>>(TestJson.Options);
+        var engines = await response.Content.ReadFromJsonAsync<List<EngineResponse>>(TestJson.Options, cancellationToken: TestContext.Current.CancellationToken);
         Assert.Equal(2, engines!.Count);
         Assert.Contains(engines, e => e.Id == active.Id && e.Status == EngineStatus.Active);
         Assert.Contains(engines, e => e.Id == retired.Id && e.Status == EngineStatus.Retired);
@@ -96,11 +91,10 @@ public class EnginesControllerTests(DatabaseFixture fixture) : IntegrationTestBa
         var engine = await CreateEngineAsync(client, householdId, assetId, NewEngine("Port"));
 
         var updateRequest = NewEngineUpdate("Port") with { SerialNumber = "SN-1234" };
-        var response = await client.PutAsJsonAsync(
-            $"/api/households/{householdId}/assets/{assetId}/engines/{engine.Id}", updateRequest, TestJson.Options);
+        var response = await client.PutAsJsonAsync($"/api/households/{householdId}/assets/{assetId}/engines/{engine.Id}", updateRequest, TestJson.Options, cancellationToken: TestContext.Current.CancellationToken);
 
         Assert.Equal(HttpStatusCode.OK, response.StatusCode);
-        var updated = await response.Content.ReadFromJsonAsync<EngineResponse>(TestJson.Options);
+        var updated = await response.Content.ReadFromJsonAsync<EngineResponse>(TestJson.Options, cancellationToken: TestContext.Current.CancellationToken);
         Assert.Equal("SN-1234", updated!.SerialNumber);
     }
 
@@ -116,10 +110,7 @@ public class EnginesControllerTests(DatabaseFixture fixture) : IntegrationTestBa
         await AddMemberAsync(householdId, viewerId, HouseholdMemberRole.Viewer);
         var viewerClient = CreateAuthenticatedClient(viewerId);
 
-        var response = await viewerClient.PutAsJsonAsync(
-            $"/api/households/{householdId}/assets/{assetId}/engines/{engine.Id}",
-            NewEngineUpdate("Port") with { SerialNumber = "SN-1234" },
-            TestJson.Options);
+        var response = await viewerClient.PutAsJsonAsync($"/api/households/{householdId}/assets/{assetId}/engines/{engine.Id}", NewEngineUpdate("Port") with { SerialNumber = "SN-1234" }, TestJson.Options, cancellationToken: TestContext.Current.CancellationToken);
 
         Assert.Equal(HttpStatusCode.Forbidden, response.StatusCode);
     }
@@ -132,11 +123,10 @@ public class EnginesControllerTests(DatabaseFixture fixture) : IntegrationTestBa
         var client = CreateAuthenticatedClient(userId);
         var engine = await CreateEngineAsync(client, householdId, assetId, NewEngine("Port"));
 
-        var response = await client.PostAsync(
-            $"/api/households/{householdId}/assets/{assetId}/engines/{engine.Id}/retire", null);
+        var response = await client.PostAsync($"/api/households/{householdId}/assets/{assetId}/engines/{engine.Id}/retire", null, TestContext.Current.CancellationToken);
 
         Assert.Equal(HttpStatusCode.OK, response.StatusCode);
-        var updated = await response.Content.ReadFromJsonAsync<EngineResponse>(TestJson.Options);
+        var updated = await response.Content.ReadFromJsonAsync<EngineResponse>(TestJson.Options, cancellationToken: TestContext.Current.CancellationToken);
         Assert.Equal(EngineStatus.Retired, updated!.Status);
     }
 
@@ -147,10 +137,9 @@ public class EnginesControllerTests(DatabaseFixture fixture) : IntegrationTestBa
         var assetId = await CreateAssetAsync(householdId);
         var client = CreateAuthenticatedClient(userId);
         var engine = await CreateEngineAsync(client, householdId, assetId, NewEngine("Port"));
-        await client.PostAsync($"/api/households/{householdId}/assets/{assetId}/engines/{engine.Id}/retire", null);
+        await client.PostAsync($"/api/households/{householdId}/assets/{assetId}/engines/{engine.Id}/retire", null, TestContext.Current.CancellationToken);
 
-        var response = await client.PostAsync(
-            $"/api/households/{householdId}/assets/{assetId}/engines/{engine.Id}/retire", null);
+        var response = await client.PostAsync($"/api/households/{householdId}/assets/{assetId}/engines/{engine.Id}/retire", null, TestContext.Current.CancellationToken);
 
         Assert.Equal(HttpStatusCode.BadRequest, response.StatusCode);
     }
@@ -162,13 +151,12 @@ public class EnginesControllerTests(DatabaseFixture fixture) : IntegrationTestBa
         var assetId = await CreateAssetAsync(householdId);
         var client = CreateAuthenticatedClient(userId);
         var engine = await CreateEngineAsync(client, householdId, assetId, NewEngine("Port"));
-        await client.PostAsync($"/api/households/{householdId}/assets/{assetId}/engines/{engine.Id}/retire", null);
+        await client.PostAsync($"/api/households/{householdId}/assets/{assetId}/engines/{engine.Id}/retire", null, TestContext.Current.CancellationToken);
 
-        var response = await client.PostAsync(
-            $"/api/households/{householdId}/assets/{assetId}/engines/{engine.Id}/reactivate", null);
+        var response = await client.PostAsync($"/api/households/{householdId}/assets/{assetId}/engines/{engine.Id}/reactivate", null, TestContext.Current.CancellationToken);
 
         Assert.Equal(HttpStatusCode.OK, response.StatusCode);
-        var updated = await response.Content.ReadFromJsonAsync<EngineResponse>(TestJson.Options);
+        var updated = await response.Content.ReadFromJsonAsync<EngineResponse>(TestJson.Options, cancellationToken: TestContext.Current.CancellationToken);
         Assert.Equal(EngineStatus.Active, updated!.Status);
     }
 
@@ -180,8 +168,7 @@ public class EnginesControllerTests(DatabaseFixture fixture) : IntegrationTestBa
         var client = CreateAuthenticatedClient(userId);
         var engine = await CreateEngineAsync(client, householdId, assetId, NewEngine("Port"));
 
-        var response = await client.PostAsync(
-            $"/api/households/{householdId}/assets/{assetId}/engines/{engine.Id}/reactivate", null);
+        var response = await client.PostAsync($"/api/households/{householdId}/assets/{assetId}/engines/{engine.Id}/reactivate", null, TestContext.Current.CancellationToken);
 
         Assert.Equal(HttpStatusCode.BadRequest, response.StatusCode);
     }
@@ -194,8 +181,7 @@ public class EnginesControllerTests(DatabaseFixture fixture) : IntegrationTestBa
         var client = CreateAuthenticatedClient(userId);
         var engine = await CreateEngineAsync(client, householdId, assetId, NewEngine("Port"));
 
-        var response = await client.DeleteAsync(
-            $"/api/households/{householdId}/assets/{assetId}/engines/{engine.Id}");
+        var response = await client.DeleteAsync($"/api/households/{householdId}/assets/{assetId}/engines/{engine.Id}", TestContext.Current.CancellationToken);
 
         Assert.Equal(HttpStatusCode.NoContent, response.StatusCode);
     }
@@ -212,8 +198,7 @@ public class EnginesControllerTests(DatabaseFixture fixture) : IntegrationTestBa
         await AddMemberAsync(householdId, contributorId, HouseholdMemberRole.Contributor);
         var contributorClient = CreateAuthenticatedClient(contributorId);
 
-        var response = await contributorClient.DeleteAsync(
-            $"/api/households/{householdId}/assets/{assetId}/engines/{engine.Id}");
+        var response = await contributorClient.DeleteAsync($"/api/households/{householdId}/assets/{assetId}/engines/{engine.Id}", TestContext.Current.CancellationToken);
 
         Assert.Equal(HttpStatusCode.Forbidden, response.StatusCode);
     }
@@ -234,11 +219,10 @@ public class EnginesControllerTests(DatabaseFixture fixture) : IntegrationTestBa
             RecommendedOctane = 91,
         };
 
-        var response = await client.PostAsJsonAsync(
-            $"/api/households/{householdId}/assets/{assetId}/engines", request, TestJson.Options);
+        var response = await client.PostAsJsonAsync($"/api/households/{householdId}/assets/{assetId}/engines", request, TestJson.Options, cancellationToken: TestContext.Current.CancellationToken);
 
         Assert.Equal(HttpStatusCode.Created, response.StatusCode);
-        var engine = await response.Content.ReadFromJsonAsync<EngineResponse>(TestJson.Options);
+        var engine = await response.Content.ReadFromJsonAsync<EngineResponse>(TestJson.Options, cancellationToken: TestContext.Current.CancellationToken);
         Assert.NotNull(engine);
         Assert.Equal(355m, engine.HorsepowerHp);
         Assert.Equal(475m, engine.TorqueNm);
@@ -254,10 +238,9 @@ public class EnginesControllerTests(DatabaseFixture fixture) : IntegrationTestBa
         var assetId = await CreateAssetAsync(householdId);
         var client = CreateAuthenticatedClient(userId);
 
-        var response = await client.PostAsJsonAsync(
-            $"/api/households/{householdId}/assets/{assetId}/engines", NewEngine("Port"), TestJson.Options);
+        var response = await client.PostAsJsonAsync($"/api/households/{householdId}/assets/{assetId}/engines", NewEngine("Port"), TestJson.Options, cancellationToken: TestContext.Current.CancellationToken);
 
-        var engine = await response.Content.ReadFromJsonAsync<EngineResponse>(TestJson.Options);
+        var engine = await response.Content.ReadFromJsonAsync<EngineResponse>(TestJson.Options, cancellationToken: TestContext.Current.CancellationToken);
         Assert.Null(engine!.HorsepowerHp);
         Assert.Null(engine.TorqueNm);
         Assert.Null(engine.OilCapacityL);
@@ -274,11 +257,10 @@ public class EnginesControllerTests(DatabaseFixture fixture) : IntegrationTestBa
         var client = CreateAuthenticatedClient(userId);
         var engine = await CreateEngineAsync(client, householdId, assetId, NewEngine("Port"));
 
-        var response = await client.PostAsync(
-            $"/api/households/{householdId}/assets/{assetId}/engines/{engine.Id}/mark-broken", null);
+        var response = await client.PostAsync($"/api/households/{householdId}/assets/{assetId}/engines/{engine.Id}/mark-broken", null, TestContext.Current.CancellationToken);
 
         Assert.Equal(HttpStatusCode.OK, response.StatusCode);
-        var updated = await response.Content.ReadFromJsonAsync<EngineResponse>(TestJson.Options);
+        var updated = await response.Content.ReadFromJsonAsync<EngineResponse>(TestJson.Options, cancellationToken: TestContext.Current.CancellationToken);
         Assert.Equal(EngineStatus.Broken, updated!.Status);
     }
 
@@ -289,13 +271,12 @@ public class EnginesControllerTests(DatabaseFixture fixture) : IntegrationTestBa
         var assetId = await CreateAssetAsync(householdId);
         var client = CreateAuthenticatedClient(userId);
         var engine = await CreateEngineAsync(client, householdId, assetId, NewEngine("Port"));
-        await client.PostAsync($"/api/households/{householdId}/assets/{assetId}/engines/{engine.Id}/mark-broken", null);
+        await client.PostAsync($"/api/households/{householdId}/assets/{assetId}/engines/{engine.Id}/mark-broken", null, TestContext.Current.CancellationToken);
 
-        var response = await client.PostAsync(
-            $"/api/households/{householdId}/assets/{assetId}/engines/{engine.Id}/reactivate", null);
+        var response = await client.PostAsync($"/api/households/{householdId}/assets/{assetId}/engines/{engine.Id}/reactivate", null, TestContext.Current.CancellationToken);
 
         Assert.Equal(HttpStatusCode.OK, response.StatusCode);
-        var updated = await response.Content.ReadFromJsonAsync<EngineResponse>(TestJson.Options);
+        var updated = await response.Content.ReadFromJsonAsync<EngineResponse>(TestJson.Options, cancellationToken: TestContext.Current.CancellationToken);
         Assert.Equal(EngineStatus.Active, updated!.Status);
     }
 
@@ -306,13 +287,12 @@ public class EnginesControllerTests(DatabaseFixture fixture) : IntegrationTestBa
         var assetId = await CreateAssetAsync(householdId);
         var client = CreateAuthenticatedClient(userId);
         var engine = await CreateEngineAsync(client, householdId, assetId, NewEngine("Port"));
-        await client.PostAsync($"/api/households/{householdId}/assets/{assetId}/engines/{engine.Id}/mark-broken", null);
+        await client.PostAsync($"/api/households/{householdId}/assets/{assetId}/engines/{engine.Id}/mark-broken", null, TestContext.Current.CancellationToken);
 
-        var response = await client.PostAsync(
-            $"/api/households/{householdId}/assets/{assetId}/engines/{engine.Id}/retire", null);
+        var response = await client.PostAsync($"/api/households/{householdId}/assets/{assetId}/engines/{engine.Id}/retire", null, TestContext.Current.CancellationToken);
 
         Assert.Equal(HttpStatusCode.OK, response.StatusCode);
-        var updated = await response.Content.ReadFromJsonAsync<EngineResponse>(TestJson.Options);
+        var updated = await response.Content.ReadFromJsonAsync<EngineResponse>(TestJson.Options, cancellationToken: TestContext.Current.CancellationToken);
         Assert.Equal(EngineStatus.Retired, updated!.Status);
     }
 
@@ -323,10 +303,9 @@ public class EnginesControllerTests(DatabaseFixture fixture) : IntegrationTestBa
         var assetId = await CreateAssetAsync(householdId);
         var client = CreateAuthenticatedClient(userId);
         var engine = await CreateEngineAsync(client, householdId, assetId, NewEngine("Port"));
-        await client.PostAsync($"/api/households/{householdId}/assets/{assetId}/engines/{engine.Id}/mark-broken", null);
+        await client.PostAsync($"/api/households/{householdId}/assets/{assetId}/engines/{engine.Id}/mark-broken", null, TestContext.Current.CancellationToken);
 
-        var response = await client.PostAsync(
-            $"/api/households/{householdId}/assets/{assetId}/engines/{engine.Id}/mark-broken", null);
+        var response = await client.PostAsync($"/api/households/{householdId}/assets/{assetId}/engines/{engine.Id}/mark-broken", null, TestContext.Current.CancellationToken);
 
         Assert.Equal(HttpStatusCode.BadRequest, response.StatusCode);
     }
@@ -338,10 +317,9 @@ public class EnginesControllerTests(DatabaseFixture fixture) : IntegrationTestBa
         var assetId = await CreateAssetAsync(householdId);
         var client = CreateAuthenticatedClient(userId);
         var engine = await CreateEngineAsync(client, householdId, assetId, NewEngine("Port"));
-        await client.PostAsync($"/api/households/{householdId}/assets/{assetId}/engines/{engine.Id}/retire", null);
+        await client.PostAsync($"/api/households/{householdId}/assets/{assetId}/engines/{engine.Id}/retire", null, TestContext.Current.CancellationToken);
 
-        var response = await client.PostAsync(
-            $"/api/households/{householdId}/assets/{assetId}/engines/{engine.Id}/mark-broken", null);
+        var response = await client.PostAsync($"/api/households/{householdId}/assets/{assetId}/engines/{engine.Id}/mark-broken", null, TestContext.Current.CancellationToken);
 
         Assert.Equal(HttpStatusCode.BadRequest, response.StatusCode);
     }
@@ -354,8 +332,7 @@ public class EnginesControllerTests(DatabaseFixture fixture) : IntegrationTestBa
         var client = CreateAuthenticatedClient(userId);
 
         var request = NewEngine("Port") with { RecommendedOctane = 94 };
-        var response = await client.PostAsJsonAsync(
-            $"/api/households/{householdId}/assets/{assetId}/engines", request, TestJson.Options);
+        var response = await client.PostAsJsonAsync($"/api/households/{householdId}/assets/{assetId}/engines", request, TestJson.Options, cancellationToken: TestContext.Current.CancellationToken);
 
         Assert.Equal(HttpStatusCode.BadRequest, response.StatusCode);
     }

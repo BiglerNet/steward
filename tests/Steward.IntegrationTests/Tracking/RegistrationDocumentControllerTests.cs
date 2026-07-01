@@ -19,23 +19,20 @@ public class RegistrationDocumentControllerTests(DatabaseFixture fixture) : Inte
         var pdfBytes = "%PDF-1.4 fake content"u8.ToArray();
         var uploadResponse = await UploadAsync(client, householdId, assetId, registrationId, pdfBytes, "application/pdf");
         Assert.Equal(HttpStatusCode.OK, uploadResponse.StatusCode);
-        var uploaded = await uploadResponse.Content.ReadFromJsonAsync<RegistrationResponse>(TestJson.Options);
+        var uploaded = await uploadResponse.Content.ReadFromJsonAsync<RegistrationResponse>(TestJson.Options, cancellationToken: TestContext.Current.CancellationToken);
         Assert.True(uploaded!.HasDocument);
         Assert.NotNull(uploaded.DocumentUrl);
 
-        var downloadResponse = await client.GetAsync(
-            $"/api/households/{householdId}/assets/{assetId}/registrations/{registrationId}/document");
+        var downloadResponse = await client.GetAsync($"/api/households/{householdId}/assets/{assetId}/registrations/{registrationId}/document", TestContext.Current.CancellationToken);
         Assert.Equal(HttpStatusCode.OK, downloadResponse.StatusCode);
         Assert.Equal("application/pdf", downloadResponse.Content.Headers.ContentType?.MediaType);
-        var downloadedBytes = await downloadResponse.Content.ReadAsByteArrayAsync();
+        var downloadedBytes = await downloadResponse.Content.ReadAsByteArrayAsync(TestContext.Current.CancellationToken);
         Assert.Equal(pdfBytes, downloadedBytes);
 
-        var deleteResponse = await client.DeleteAsync(
-            $"/api/households/{householdId}/assets/{assetId}/registrations/{registrationId}/document");
+        var deleteResponse = await client.DeleteAsync($"/api/households/{householdId}/assets/{assetId}/registrations/{registrationId}/document", TestContext.Current.CancellationToken);
         Assert.Equal(HttpStatusCode.NoContent, deleteResponse.StatusCode);
 
-        var afterDeleteResponse = await client.GetAsync(
-            $"/api/households/{householdId}/assets/{assetId}/registrations/{registrationId}/document");
+        var afterDeleteResponse = await client.GetAsync($"/api/households/{householdId}/assets/{assetId}/registrations/{registrationId}/document", TestContext.Current.CancellationToken);
         Assert.Equal(HttpStatusCode.NotFound, afterDeleteResponse.StatusCode);
     }
 
@@ -107,9 +104,8 @@ public class RegistrationDocumentControllerTests(DatabaseFixture fixture) : Inte
 
         Assert.Single(Directory.GetFiles(entityDir));
 
-        var downloadResponse = await client.GetAsync(
-            $"/api/households/{householdId}/assets/{assetId}/registrations/{registrationId}/document");
-        var downloadedBytes = await downloadResponse.Content.ReadAsByteArrayAsync();
+        var downloadResponse = await client.GetAsync($"/api/households/{householdId}/assets/{assetId}/registrations/{registrationId}/document", TestContext.Current.CancellationToken);
+        var downloadedBytes = await downloadResponse.Content.ReadAsByteArrayAsync(TestContext.Current.CancellationToken);
         Assert.Equal(secondBytes, downloadedBytes);
     }
 

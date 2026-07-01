@@ -69,7 +69,7 @@ public class AuthServiceTests
     {
         var service = CreateService(adminEmail: "admin@example.com");
 
-        await service.RegisterAsync(new RegisterRequest("admin@example.com", "Password123!", "Admin"));
+        await service.RegisterAsync(new RegisterRequest("admin@example.com", "Password123!", "Admin"), TestContext.Current.CancellationToken);
 
         await _userManager.Received(1).AddToRoleAsync(
             Arg.Any<ApplicationUser>(),
@@ -81,7 +81,7 @@ public class AuthServiceTests
     {
         var service = CreateService(adminEmail: "Admin@Example.com");
 
-        await service.RegisterAsync(new RegisterRequest("admin@example.com", "Password123!", "Admin"));
+        await service.RegisterAsync(new RegisterRequest("admin@example.com", "Password123!", "Admin"), TestContext.Current.CancellationToken);
 
         await _userManager.Received(1).AddToRoleAsync(
             Arg.Any<ApplicationUser>(),
@@ -93,7 +93,7 @@ public class AuthServiceTests
     {
         var service = CreateService(adminEmail: "admin@example.com");
 
-        await service.RegisterAsync(new RegisterRequest("other@example.com", "Password123!", "Other"));
+        await service.RegisterAsync(new RegisterRequest("other@example.com", "Password123!", "Other"), TestContext.Current.CancellationToken);
 
         await _userManager.DidNotReceive().AddToRoleAsync(
             Arg.Any<ApplicationUser>(),
@@ -105,7 +105,7 @@ public class AuthServiceTests
     {
         var service = CreateService(adminEmail: "");
 
-        await service.RegisterAsync(new RegisterRequest("admin@example.com", "Password123!", "Admin"));
+        await service.RegisterAsync(new RegisterRequest("admin@example.com", "Password123!", "Admin"), TestContext.Current.CancellationToken);
 
         await _userManager.DidNotReceive().AddToRoleAsync(
             Arg.Any<ApplicationUser>(),
@@ -119,7 +119,7 @@ public class AuthServiceTests
     {
         var service = CreateService(adminEmail: "admin@example.com");
 
-        await service.HandleOAuthCallbackAsync("Google", "google-key-123", "admin@example.com", "Admin");
+        await service.HandleOAuthCallbackAsync("Google", "google-key-123", "admin@example.com", "Admin", TestContext.Current.CancellationToken);
 
         await _userManager.Received(1).AddToRoleAsync(
             Arg.Any<ApplicationUser>(),
@@ -140,7 +140,7 @@ public class AuthServiceTests
 
         var service = CreateService(adminEmail: "admin@example.com");
 
-        await service.HandleOAuthCallbackAsync("Google", "google-key-123", "admin@example.com", "Admin");
+        await service.HandleOAuthCallbackAsync("Google", "google-key-123", "admin@example.com", "Admin", TestContext.Current.CancellationToken);
 
         await _userManager.DidNotReceive().AddToRoleAsync(
             Arg.Any<ApplicationUser>(),

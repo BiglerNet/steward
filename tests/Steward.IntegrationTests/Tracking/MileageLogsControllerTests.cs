@@ -15,29 +15,22 @@ public class MileageLogsControllerTests(DatabaseFixture fixture) : IntegrationTe
         var assetId = await CreateAssetAsync(householdId);
         var client = CreateAuthenticatedClient(userId);
 
-        var createResponse = await client.PostAsJsonAsync(
-            $"/api/households/{householdId}/assets/{assetId}/mileage-logs",
-            NewLog(new DateOnly(2026, 6, 1)),
-            TestJson.Options);
+        var createResponse = await client.PostAsJsonAsync($"/api/households/{householdId}/assets/{assetId}/mileage-logs", NewLog(new DateOnly(2026, 6, 1)), TestJson.Options, cancellationToken: TestContext.Current.CancellationToken);
         Assert.Equal(HttpStatusCode.Created, createResponse.StatusCode);
-        var created = await createResponse.Content.ReadFromJsonAsync<MileageLogResponse>(TestJson.Options);
+        var created = await createResponse.Content.ReadFromJsonAsync<MileageLogResponse>(TestJson.Options, cancellationToken: TestContext.Current.CancellationToken);
         Assert.NotNull(created);
 
-        var listResponse = await client.GetAsync($"/api/households/{householdId}/assets/{assetId}/mileage-logs");
+        var listResponse = await client.GetAsync($"/api/households/{householdId}/assets/{assetId}/mileage-logs", TestContext.Current.CancellationToken);
         Assert.Equal(HttpStatusCode.OK, listResponse.StatusCode);
-        var list = await listResponse.Content.ReadFromJsonAsync<List<MileageLogResponse>>(TestJson.Options);
+        var list = await listResponse.Content.ReadFromJsonAsync<List<MileageLogResponse>>(TestJson.Options, cancellationToken: TestContext.Current.CancellationToken);
         Assert.Single(list!);
 
-        var updateResponse = await client.PutAsJsonAsync(
-            $"/api/households/{householdId}/assets/{assetId}/mileage-logs/{created!.Id}",
-            NewLog(new DateOnly(2026, 6, 1)) with { OdometerReading = 13000m },
-            TestJson.Options);
+        var updateResponse = await client.PutAsJsonAsync($"/api/households/{householdId}/assets/{assetId}/mileage-logs/{created!.Id}", NewLog(new DateOnly(2026, 6, 1)) with { OdometerReading = 13000m }, TestJson.Options, cancellationToken: TestContext.Current.CancellationToken);
         Assert.Equal(HttpStatusCode.OK, updateResponse.StatusCode);
-        var updated = await updateResponse.Content.ReadFromJsonAsync<MileageLogResponse>(TestJson.Options);
+        var updated = await updateResponse.Content.ReadFromJsonAsync<MileageLogResponse>(TestJson.Options, cancellationToken: TestContext.Current.CancellationToken);
         Assert.Equal(13000m, updated!.OdometerReading);
 
-        var deleteResponse = await client.DeleteAsync(
-            $"/api/households/{householdId}/assets/{assetId}/mileage-logs/{created.Id}");
+        var deleteResponse = await client.DeleteAsync($"/api/households/{householdId}/assets/{assetId}/mileage-logs/{created.Id}", TestContext.Current.CancellationToken);
         Assert.Equal(HttpStatusCode.NoContent, deleteResponse.StatusCode);
     }
 
@@ -48,10 +41,7 @@ public class MileageLogsControllerTests(DatabaseFixture fixture) : IntegrationTe
         var assetId = await CreateAssetAsync(householdId);
         var client = CreateAuthenticatedClient(userId);
 
-        var response = await client.PostAsJsonAsync(
-            $"/api/households/{householdId}/assets/{assetId}/mileage-logs",
-            NewLog(new DateOnly(2026, 6, 1)),
-            TestJson.Options);
+        var response = await client.PostAsJsonAsync($"/api/households/{householdId}/assets/{assetId}/mileage-logs", NewLog(new DateOnly(2026, 6, 1)), TestJson.Options, cancellationToken: TestContext.Current.CancellationToken);
 
         Assert.Equal(HttpStatusCode.Forbidden, response.StatusCode);
     }
@@ -63,10 +53,7 @@ public class MileageLogsControllerTests(DatabaseFixture fixture) : IntegrationTe
         var assetId = await CreateAssetAsync(householdId);
         var client = CreateAuthenticatedClient(userId);
 
-        var response = await client.PostAsJsonAsync(
-            $"/api/households/{householdId}/assets/{assetId}/mileage-logs",
-            NewLog(new DateOnly(2026, 6, 1)) with { OdometerReading = null, TripMiles = null },
-            TestJson.Options);
+        var response = await client.PostAsJsonAsync($"/api/households/{householdId}/assets/{assetId}/mileage-logs", NewLog(new DateOnly(2026, 6, 1)) with { OdometerReading = null, TripMiles = null }, TestJson.Options, cancellationToken: TestContext.Current.CancellationToken);
 
         Assert.Equal(HttpStatusCode.BadRequest, response.StatusCode);
     }
@@ -80,7 +67,7 @@ public class MileageLogsControllerTests(DatabaseFixture fixture) : IntegrationTe
         var (householdB, userB) = await CreateHouseholdWithMemberAsync(HouseholdMemberRole.Owner);
         var client = CreateAuthenticatedClient(userB);
 
-        var response = await client.GetAsync($"/api/households/{householdB}/assets/{assetId}/mileage-logs");
+        var response = await client.GetAsync($"/api/households/{householdB}/assets/{assetId}/mileage-logs", TestContext.Current.CancellationToken);
 
         Assert.Equal(HttpStatusCode.NotFound, response.StatusCode);
     }
@@ -92,20 +79,13 @@ public class MileageLogsControllerTests(DatabaseFixture fixture) : IntegrationTe
         var assetId = await CreateAssetAsync(householdId);
         var client = CreateAuthenticatedClient(userId);
 
-        await client.PostAsJsonAsync(
-            $"/api/households/{householdId}/assets/{assetId}/mileage-logs",
-            NewLog(new DateOnly(2026, 1, 15)),
-            TestJson.Options);
-        await client.PostAsJsonAsync(
-            $"/api/households/{householdId}/assets/{assetId}/mileage-logs",
-            NewLog(new DateOnly(2026, 6, 15)),
-            TestJson.Options);
+        await client.PostAsJsonAsync($"/api/households/{householdId}/assets/{assetId}/mileage-logs", NewLog(new DateOnly(2026, 1, 15)), TestJson.Options, cancellationToken: TestContext.Current.CancellationToken);
+        await client.PostAsJsonAsync($"/api/households/{householdId}/assets/{assetId}/mileage-logs", NewLog(new DateOnly(2026, 6, 15)), TestJson.Options, cancellationToken: TestContext.Current.CancellationToken);
 
-        var response = await client.GetAsync(
-            $"/api/households/{householdId}/assets/{assetId}/mileage-logs?from=2026-01-01&to=2026-03-31");
+        var response = await client.GetAsync($"/api/households/{householdId}/assets/{assetId}/mileage-logs?from=2026-01-01&to=2026-03-31", TestContext.Current.CancellationToken);
 
         Assert.Equal(HttpStatusCode.OK, response.StatusCode);
-        var logs = await response.Content.ReadFromJsonAsync<List<MileageLogResponse>>(TestJson.Options);
+        var logs = await response.Content.ReadFromJsonAsync<List<MileageLogResponse>>(TestJson.Options, cancellationToken: TestContext.Current.CancellationToken);
         Assert.Single(logs!);
         Assert.Equal(new DateOnly(2026, 1, 15), logs![0].Date);
     }

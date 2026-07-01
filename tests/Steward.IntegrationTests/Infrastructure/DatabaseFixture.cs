@@ -8,7 +8,7 @@ public class DatabaseFixture : IAsyncLifetime
 {
     public IntegrationTestFactory Factory { get; private set; } = null!;
 
-    public async Task InitializeAsync()
+    public async ValueTask InitializeAsync()
     {
         // Migrate via a standalone DbContext before the web host starts so that
         // hosted services (PlatformAdminRoleSeeder, InvitationExpiryService) don't
@@ -24,10 +24,10 @@ public class DatabaseFixture : IAsyncLifetime
         Factory = new IntegrationTestFactory();
     }
 
-    public Task DisposeAsync()
+    public ValueTask DisposeAsync()
     {
         Factory.Dispose();
-        return Task.CompletedTask;
+        return ValueTask.CompletedTask;
     }
 }
 

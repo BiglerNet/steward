@@ -14,9 +14,7 @@ public class AssetHouseholdIsolationTests(DatabaseFixture fixture) : Integration
         var (householdA, ownerA) = await CreateHouseholdWithMemberAsync(HouseholdMemberRole.Owner);
         var clientA = CreateAuthenticatedClient(ownerA);
 
-        var createResponse = await clientA.PostAsJsonAsync(
-            $"/api/households/{householdA}/assets",
-            new CreateAssetRequest(
+        var createResponse = await clientA.PostAsJsonAsync($"/api/households/{householdA}/assets", new CreateAssetRequest(
                 AssetType: AssetType.Snowmobile,
                 Name: "Ski-Doo",
                 Description: null,
@@ -39,15 +37,14 @@ public class AssetHouseholdIsolationTests(DatabaseFixture fixture) : Integration
                 CuttingWidthIn: null,
                 MaxPsi: null,
                 MaxGpm: null,
-                EquipmentDescription: null),
-            TestJson.Options);
+                EquipmentDescription: null), TestJson.Options, cancellationToken: TestContext.Current.CancellationToken);
         createResponse.EnsureSuccessStatusCode();
-        var asset = (await createResponse.Content.ReadFromJsonAsync<AssetResponse>(TestJson.Options))!;
+        var asset = (await createResponse.Content.ReadFromJsonAsync<AssetResponse>(TestJson.Options, cancellationToken: TestContext.Current.CancellationToken))!;
 
         var (householdB, ownerB) = await CreateHouseholdWithMemberAsync(HouseholdMemberRole.Owner);
         var clientB = CreateAuthenticatedClient(ownerB);
 
-        var response = await clientB.GetAsync($"/api/households/{householdB}/assets/{asset.Id}");
+        var response = await clientB.GetAsync($"/api/households/{householdB}/assets/{asset.Id}", TestContext.Current.CancellationToken);
 
         Assert.Equal(HttpStatusCode.NotFound, response.StatusCode);
     }

@@ -20,10 +20,10 @@ public class DashboardsControllerTests(DatabaseFixture fixture) : IntegrationTes
         var (householdId, userId) = await CreateHouseholdWithMemberAsync(HouseholdMemberRole.Owner);
         var client = CreateAuthenticatedClient(userId);
 
-        var response = await client.GetAsync($"/api/households/{householdId}/dashboards");
+        var response = await client.GetAsync($"/api/households/{householdId}/dashboards", TestContext.Current.CancellationToken);
 
         Assert.Equal(HttpStatusCode.OK, response.StatusCode);
-        var dashboards = await response.Content.ReadFromJsonAsync<List<DashboardSummaryResponse>>(TestJson.Options);
+        var dashboards = await response.Content.ReadFromJsonAsync<List<DashboardSummaryResponse>>(TestJson.Options, cancellationToken: TestContext.Current.CancellationToken);
         Assert.NotNull(dashboards);
         Assert.Single(dashboards);
         Assert.Equal("Overview", dashboards[0].Name);
@@ -38,7 +38,7 @@ public class DashboardsControllerTests(DatabaseFixture fixture) : IntegrationTes
         await AddMemberAsync(householdId, viewerId, HouseholdMemberRole.Viewer);
         var client = CreateAuthenticatedClient(viewerId);
 
-        var response = await client.GetAsync($"/api/households/{householdId}/dashboards");
+        var response = await client.GetAsync($"/api/households/{householdId}/dashboards", TestContext.Current.CancellationToken);
 
         Assert.Equal(HttpStatusCode.OK, response.StatusCode);
     }
@@ -51,7 +51,7 @@ public class DashboardsControllerTests(DatabaseFixture fixture) : IntegrationTes
         await CreateUserAsync(nonMemberId);
         var client = CreateAuthenticatedClient(nonMemberId);
 
-        var response = await client.GetAsync($"/api/households/{householdId}/dashboards");
+        var response = await client.GetAsync($"/api/households/{householdId}/dashboards", TestContext.Current.CancellationToken);
 
         Assert.Equal(HttpStatusCode.Forbidden, response.StatusCode);
     }
@@ -64,13 +64,10 @@ public class DashboardsControllerTests(DatabaseFixture fixture) : IntegrationTes
         var (householdId, userId) = await CreateHouseholdWithMemberAsync(HouseholdMemberRole.Contributor);
         var client = CreateAuthenticatedClient(userId);
 
-        var response = await client.PostAsJsonAsync(
-            $"/api/households/{householdId}/dashboards",
-            new CreateDashboardRequest("Fuel & Mileage", null),
-            TestJson.Options);
+        var response = await client.PostAsJsonAsync($"/api/households/{householdId}/dashboards", new CreateDashboardRequest("Fuel & Mileage", null), TestJson.Options, cancellationToken: TestContext.Current.CancellationToken);
 
         Assert.Equal(HttpStatusCode.Created, response.StatusCode);
-        var dashboard = await response.Content.ReadFromJsonAsync<DashboardSummaryResponse>(TestJson.Options);
+        var dashboard = await response.Content.ReadFromJsonAsync<DashboardSummaryResponse>(TestJson.Options, cancellationToken: TestContext.Current.CancellationToken);
         Assert.NotNull(dashboard);
         Assert.Equal("Fuel & Mileage", dashboard.Name);
         Assert.False(dashboard.IsDefault);
@@ -83,19 +80,16 @@ public class DashboardsControllerTests(DatabaseFixture fixture) : IntegrationTes
         var client = CreateAuthenticatedClient(userId);
 
         // Seed default
-        await client.GetAsync($"/api/households/{householdId}/dashboards");
+        await client.GetAsync($"/api/households/{householdId}/dashboards", TestContext.Current.CancellationToken);
 
-        var response = await client.PostAsJsonAsync(
-            $"/api/households/{householdId}/dashboards",
-            new CreateDashboardRequest("New Default", true),
-            TestJson.Options);
+        var response = await client.PostAsJsonAsync($"/api/households/{householdId}/dashboards", new CreateDashboardRequest("New Default", true), TestJson.Options, cancellationToken: TestContext.Current.CancellationToken);
 
         Assert.Equal(HttpStatusCode.Created, response.StatusCode);
-        var newDefault = await response.Content.ReadFromJsonAsync<DashboardSummaryResponse>(TestJson.Options);
+        var newDefault = await response.Content.ReadFromJsonAsync<DashboardSummaryResponse>(TestJson.Options, cancellationToken: TestContext.Current.CancellationToken);
         Assert.True(newDefault!.IsDefault);
 
-        var listResponse = await client.GetAsync($"/api/households/{householdId}/dashboards");
-        var dashboards = await listResponse.Content.ReadFromJsonAsync<List<DashboardSummaryResponse>>(TestJson.Options);
+        var listResponse = await client.GetAsync($"/api/households/{householdId}/dashboards", TestContext.Current.CancellationToken);
+        var dashboards = await listResponse.Content.ReadFromJsonAsync<List<DashboardSummaryResponse>>(TestJson.Options, cancellationToken: TestContext.Current.CancellationToken);
         Assert.NotNull(dashboards);
         Assert.Single(dashboards, d => d.IsDefault);
         Assert.True(dashboards.First(d => d.Name == "New Default").IsDefault);
@@ -107,11 +101,9 @@ public class DashboardsControllerTests(DatabaseFixture fixture) : IntegrationTes
     {
         var (householdId, userId) = await CreateHouseholdWithMemberAsync(HouseholdMemberRole.Owner);
         var client = CreateAuthenticatedClient(userId);
-        await client.PostAsJsonAsync($"/api/households/{householdId}/dashboards",
-            new CreateDashboardRequest("MyDash", null), TestJson.Options);
+        await client.PostAsJsonAsync($"/api/households/{householdId}/dashboards", new CreateDashboardRequest("MyDash", null), TestJson.Options, cancellationToken: TestContext.Current.CancellationToken);
 
-        var response = await client.PostAsJsonAsync($"/api/households/{householdId}/dashboards",
-            new CreateDashboardRequest("MyDash", null), TestJson.Options);
+        var response = await client.PostAsJsonAsync($"/api/households/{householdId}/dashboards", new CreateDashboardRequest("MyDash", null), TestJson.Options, cancellationToken: TestContext.Current.CancellationToken);
 
         Assert.Equal(HttpStatusCode.BadRequest, response.StatusCode);
     }
@@ -124,8 +116,7 @@ public class DashboardsControllerTests(DatabaseFixture fixture) : IntegrationTes
         await AddMemberAsync(householdId, viewerId, HouseholdMemberRole.Viewer);
         var client = CreateAuthenticatedClient(viewerId);
 
-        var response = await client.PostAsJsonAsync($"/api/households/{householdId}/dashboards",
-            new CreateDashboardRequest("Test", null), TestJson.Options);
+        var response = await client.PostAsJsonAsync($"/api/households/{householdId}/dashboards", new CreateDashboardRequest("Test", null), TestJson.Options, cancellationToken: TestContext.Current.CancellationToken);
 
         Assert.Equal(HttpStatusCode.Forbidden, response.StatusCode);
     }
@@ -135,18 +126,15 @@ public class DashboardsControllerTests(DatabaseFixture fixture) : IntegrationTes
     {
         var (householdId, userId) = await CreateHouseholdWithMemberAsync(HouseholdMemberRole.Owner);
         var client = CreateAuthenticatedClient(userId);
-        await client.GetAsync($"/api/households/{householdId}/dashboards");
-        var dashboards = await (await client.GetAsync($"/api/households/{householdId}/dashboards"))
-            .Content.ReadFromJsonAsync<List<DashboardSummaryResponse>>(TestJson.Options);
+        await client.GetAsync($"/api/households/{householdId}/dashboards", TestContext.Current.CancellationToken);
+        var dashboards = await (await client.GetAsync($"/api/households/{householdId}/dashboards", TestContext.Current.CancellationToken))
+            .Content.ReadFromJsonAsync<List<DashboardSummaryResponse>>(TestJson.Options, cancellationToken: TestContext.Current.CancellationToken);
         var d = dashboards![0];
 
-        var response = await client.PutAsJsonAsync(
-            $"/api/households/{householdId}/dashboards/{d.Id}",
-            new UpdateDashboardRequest("My Overview", true, 0),
-            TestJson.Options);
+        var response = await client.PutAsJsonAsync($"/api/households/{householdId}/dashboards/{d.Id}", new UpdateDashboardRequest("My Overview", true, 0), TestJson.Options, cancellationToken: TestContext.Current.CancellationToken);
 
         Assert.Equal(HttpStatusCode.OK, response.StatusCode);
-        var updated = await response.Content.ReadFromJsonAsync<DashboardSummaryResponse>(TestJson.Options);
+        var updated = await response.Content.ReadFromJsonAsync<DashboardSummaryResponse>(TestJson.Options, cancellationToken: TestContext.Current.CancellationToken);
         Assert.Equal("My Overview", updated!.Name);
     }
 
@@ -156,14 +144,12 @@ public class DashboardsControllerTests(DatabaseFixture fixture) : IntegrationTes
         var (householdId, userId) = await CreateHouseholdWithMemberAsync(HouseholdMemberRole.Owner);
         var client = CreateAuthenticatedClient(userId);
         // Seed Overview
-        await client.GetAsync($"/api/households/{householdId}/dashboards");
+        await client.GetAsync($"/api/households/{householdId}/dashboards", TestContext.Current.CancellationToken);
         // Create second
-        var second = await (await client.PostAsJsonAsync($"/api/households/{householdId}/dashboards",
-            new CreateDashboardRequest("Second", null), TestJson.Options))
-            .Content.ReadFromJsonAsync<DashboardSummaryResponse>(TestJson.Options);
+        var second = await (await client.PostAsJsonAsync($"/api/households/{householdId}/dashboards", new CreateDashboardRequest("Second", null), TestJson.Options, cancellationToken: TestContext.Current.CancellationToken))
+            .Content.ReadFromJsonAsync<DashboardSummaryResponse>(TestJson.Options, cancellationToken: TestContext.Current.CancellationToken);
 
-        var response = await client.DeleteAsync(
-            $"/api/households/{householdId}/dashboards/{second!.Id}");
+        var response = await client.DeleteAsync($"/api/households/{householdId}/dashboards/{second!.Id}", TestContext.Current.CancellationToken);
 
         Assert.Equal(HttpStatusCode.NoContent, response.StatusCode);
     }
@@ -173,11 +159,10 @@ public class DashboardsControllerTests(DatabaseFixture fixture) : IntegrationTes
     {
         var (householdId, userId) = await CreateHouseholdWithMemberAsync(HouseholdMemberRole.Owner);
         var client = CreateAuthenticatedClient(userId);
-        var dashboards = await (await client.GetAsync($"/api/households/{householdId}/dashboards"))
-            .Content.ReadFromJsonAsync<List<DashboardSummaryResponse>>(TestJson.Options);
+        var dashboards = await (await client.GetAsync($"/api/households/{householdId}/dashboards", TestContext.Current.CancellationToken))
+            .Content.ReadFromJsonAsync<List<DashboardSummaryResponse>>(TestJson.Options, cancellationToken: TestContext.Current.CancellationToken);
 
-        var response = await client.DeleteAsync(
-            $"/api/households/{householdId}/dashboards/{dashboards![0].Id}");
+        var response = await client.DeleteAsync($"/api/households/{householdId}/dashboards/{dashboards![0].Id}", TestContext.Current.CancellationToken);
 
         Assert.Equal(HttpStatusCode.BadRequest, response.StatusCode);
     }
@@ -187,19 +172,17 @@ public class DashboardsControllerTests(DatabaseFixture fixture) : IntegrationTes
     {
         var (householdId, ownerId) = await CreateHouseholdWithMemberAsync(HouseholdMemberRole.Owner);
         var ownerClient = CreateAuthenticatedClient(ownerId);
-        await ownerClient.GetAsync($"/api/households/{householdId}/dashboards");
-        await ownerClient.PostAsJsonAsync($"/api/households/{householdId}/dashboards",
-            new CreateDashboardRequest("Second", null), TestJson.Options);
+        await ownerClient.GetAsync($"/api/households/{householdId}/dashboards", TestContext.Current.CancellationToken);
+        await ownerClient.PostAsJsonAsync($"/api/households/{householdId}/dashboards", new CreateDashboardRequest("Second", null), TestJson.Options, cancellationToken: TestContext.Current.CancellationToken);
 
-        var dashboards = await (await ownerClient.GetAsync($"/api/households/{householdId}/dashboards"))
-            .Content.ReadFromJsonAsync<List<DashboardSummaryResponse>>(TestJson.Options);
+        var dashboards = await (await ownerClient.GetAsync($"/api/households/{householdId}/dashboards", TestContext.Current.CancellationToken))
+            .Content.ReadFromJsonAsync<List<DashboardSummaryResponse>>(TestJson.Options, cancellationToken: TestContext.Current.CancellationToken);
 
         var contributorId = Guid.NewGuid();
         await AddMemberAsync(householdId, contributorId, HouseholdMemberRole.Contributor);
         var contributorClient = CreateAuthenticatedClient(contributorId);
 
-        var response = await contributorClient.DeleteAsync(
-            $"/api/households/{householdId}/dashboards/{dashboards![0].Id}");
+        var response = await contributorClient.DeleteAsync($"/api/households/{householdId}/dashboards/{dashboards![0].Id}", TestContext.Current.CancellationToken);
 
         Assert.Equal(HttpStatusCode.Forbidden, response.StatusCode);
     }
@@ -211,8 +194,8 @@ public class DashboardsControllerTests(DatabaseFixture fixture) : IntegrationTes
     {
         var (householdId, userId) = await CreateHouseholdWithMemberAsync(HouseholdMemberRole.Contributor);
         var client = CreateAuthenticatedClient(userId);
-        var dashboards = await (await client.GetAsync($"/api/households/{householdId}/dashboards"))
-            .Content.ReadFromJsonAsync<List<DashboardSummaryResponse>>(TestJson.Options);
+        var dashboards = await (await client.GetAsync($"/api/households/{householdId}/dashboards", TestContext.Current.CancellationToken))
+            .Content.ReadFromJsonAsync<List<DashboardSummaryResponse>>(TestJson.Options, cancellationToken: TestContext.Current.CancellationToken);
         var dashboardId = dashboards![0].Id;
 
         var layout = new ReplaceWidgetLayoutRequest([
@@ -221,12 +204,10 @@ public class DashboardsControllerTests(DatabaseFixture fixture) : IntegrationTes
             new WidgetDefinition(WidgetType.DueSoon, WidgetSize.Full, "{\"daysAhead\":14}"),
         ]);
 
-        var response = await client.PutAsJsonAsync(
-            $"/api/households/{householdId}/dashboards/{dashboardId}/widgets",
-            layout, TestJson.Options);
+        var response = await client.PutAsJsonAsync($"/api/households/{householdId}/dashboards/{dashboardId}/widgets", layout, TestJson.Options, cancellationToken: TestContext.Current.CancellationToken);
 
         Assert.Equal(HttpStatusCode.OK, response.StatusCode);
-        var detail = await response.Content.ReadFromJsonAsync<DashboardDetailResponse>(TestJson.Options);
+        var detail = await response.Content.ReadFromJsonAsync<DashboardDetailResponse>(TestJson.Options, cancellationToken: TestContext.Current.CancellationToken);
         Assert.Equal(3, detail!.Widgets.Count);
     }
 
@@ -235,17 +216,14 @@ public class DashboardsControllerTests(DatabaseFixture fixture) : IntegrationTes
     {
         var (householdId, userId) = await CreateHouseholdWithMemberAsync(HouseholdMemberRole.Contributor);
         var client = CreateAuthenticatedClient(userId);
-        var dashboards = await (await client.GetAsync($"/api/households/{householdId}/dashboards"))
-            .Content.ReadFromJsonAsync<List<DashboardSummaryResponse>>(TestJson.Options);
+        var dashboards = await (await client.GetAsync($"/api/households/{householdId}/dashboards", TestContext.Current.CancellationToken))
+            .Content.ReadFromJsonAsync<List<DashboardSummaryResponse>>(TestJson.Options, cancellationToken: TestContext.Current.CancellationToken);
         var dashboardId = dashboards![0].Id;
 
-        var response = await client.PutAsJsonAsync(
-            $"/api/households/{householdId}/dashboards/{dashboardId}/widgets",
-            new ReplaceWidgetLayoutRequest([]),
-            TestJson.Options);
+        var response = await client.PutAsJsonAsync($"/api/households/{householdId}/dashboards/{dashboardId}/widgets", new ReplaceWidgetLayoutRequest([]), TestJson.Options, cancellationToken: TestContext.Current.CancellationToken);
 
         Assert.Equal(HttpStatusCode.OK, response.StatusCode);
-        var detail = await response.Content.ReadFromJsonAsync<DashboardDetailResponse>(TestJson.Options);
+        var detail = await response.Content.ReadFromJsonAsync<DashboardDetailResponse>(TestJson.Options, cancellationToken: TestContext.Current.CancellationToken);
         Assert.Empty(detail!.Widgets);
     }
 
@@ -254,8 +232,8 @@ public class DashboardsControllerTests(DatabaseFixture fixture) : IntegrationTes
     {
         var (householdId, userId) = await CreateHouseholdWithMemberAsync(HouseholdMemberRole.Contributor);
         var client = CreateAuthenticatedClient(userId);
-        var dashboards = await (await client.GetAsync($"/api/households/{householdId}/dashboards"))
-            .Content.ReadFromJsonAsync<List<DashboardSummaryResponse>>(TestJson.Options);
+        var dashboards = await (await client.GetAsync($"/api/households/{householdId}/dashboards", TestContext.Current.CancellationToken))
+            .Content.ReadFromJsonAsync<List<DashboardSummaryResponse>>(TestJson.Options, cancellationToken: TestContext.Current.CancellationToken);
         var dashboardId = dashboards![0].Id;
 
         var content = new StringContent(
@@ -263,8 +241,7 @@ public class DashboardsControllerTests(DatabaseFixture fixture) : IntegrationTes
             System.Text.Encoding.UTF8,
             "application/json");
 
-        var response = await client.PutAsync(
-            $"/api/households/{householdId}/dashboards/{dashboardId}/widgets", content);
+        var response = await client.PutAsync($"/api/households/{householdId}/dashboards/{dashboardId}/widgets", content, TestContext.Current.CancellationToken);
 
         Assert.Equal(HttpStatusCode.BadRequest, response.StatusCode);
     }
@@ -274,17 +251,14 @@ public class DashboardsControllerTests(DatabaseFixture fixture) : IntegrationTes
     {
         var (householdId, ownerId) = await CreateHouseholdWithMemberAsync(HouseholdMemberRole.Owner);
         var ownerClient = CreateAuthenticatedClient(ownerId);
-        var dashboards = await (await ownerClient.GetAsync($"/api/households/{householdId}/dashboards"))
-            .Content.ReadFromJsonAsync<List<DashboardSummaryResponse>>(TestJson.Options);
+        var dashboards = await (await ownerClient.GetAsync($"/api/households/{householdId}/dashboards", TestContext.Current.CancellationToken))
+            .Content.ReadFromJsonAsync<List<DashboardSummaryResponse>>(TestJson.Options, cancellationToken: TestContext.Current.CancellationToken);
 
         var viewerId = Guid.NewGuid();
         await AddMemberAsync(householdId, viewerId, HouseholdMemberRole.Viewer);
         var viewerClient = CreateAuthenticatedClient(viewerId);
 
-        var response = await viewerClient.PutAsJsonAsync(
-            $"/api/households/{householdId}/dashboards/{dashboards![0].Id}/widgets",
-            new ReplaceWidgetLayoutRequest([]),
-            TestJson.Options);
+        var response = await viewerClient.PutAsJsonAsync($"/api/households/{householdId}/dashboards/{dashboards![0].Id}/widgets", new ReplaceWidgetLayoutRequest([]), TestJson.Options, cancellationToken: TestContext.Current.CancellationToken);
 
         Assert.Equal(HttpStatusCode.Forbidden, response.StatusCode);
     }
@@ -296,21 +270,17 @@ public class DashboardsControllerTests(DatabaseFixture fixture) : IntegrationTes
     {
         var (householdId, userId) = await CreateHouseholdWithMemberAsync(HouseholdMemberRole.Contributor);
         var client = CreateAuthenticatedClient(userId);
-        var dashboards = await (await client.GetAsync($"/api/households/{householdId}/dashboards"))
-            .Content.ReadFromJsonAsync<List<DashboardSummaryResponse>>(TestJson.Options);
+        var dashboards = await (await client.GetAsync($"/api/households/{householdId}/dashboards", TestContext.Current.CancellationToken))
+            .Content.ReadFromJsonAsync<List<DashboardSummaryResponse>>(TestJson.Options, cancellationToken: TestContext.Current.CancellationToken);
         var dashboardId = dashboards![0].Id;
 
         // Clear widgets
-        await client.PutAsJsonAsync(
-            $"/api/households/{householdId}/dashboards/{dashboardId}/widgets",
-            new ReplaceWidgetLayoutRequest([]),
-            TestJson.Options);
+        await client.PutAsJsonAsync($"/api/households/{householdId}/dashboards/{dashboardId}/widgets", new ReplaceWidgetLayoutRequest([]), TestJson.Options, cancellationToken: TestContext.Current.CancellationToken);
 
-        var response = await client.GetAsync(
-            $"/api/households/{householdId}/dashboards/{dashboardId}/snapshot");
+        var response = await client.GetAsync($"/api/households/{householdId}/dashboards/{dashboardId}/snapshot", TestContext.Current.CancellationToken);
 
         Assert.Equal(HttpStatusCode.OK, response.StatusCode);
-        var json = await response.Content.ReadAsStringAsync();
+        var json = await response.Content.ReadAsStringAsync(TestContext.Current.CancellationToken);
         using var doc = JsonDocument.Parse(json);
         Assert.Equal(JsonValueKind.Object, doc.RootElement.ValueKind);
         Assert.Empty(doc.RootElement.EnumerateObject());
@@ -324,20 +294,16 @@ public class DashboardsControllerTests(DatabaseFixture fixture) : IntegrationTes
         await CreateAssetAsync(householdId);
         await CreateAssetAsync(householdId);
 
-        var dashboards = await (await client.GetAsync($"/api/households/{householdId}/dashboards"))
-            .Content.ReadFromJsonAsync<List<DashboardSummaryResponse>>(TestJson.Options);
+        var dashboards = await (await client.GetAsync($"/api/households/{householdId}/dashboards", TestContext.Current.CancellationToken))
+            .Content.ReadFromJsonAsync<List<DashboardSummaryResponse>>(TestJson.Options, cancellationToken: TestContext.Current.CancellationToken);
         var dashboardId = dashboards![0].Id;
 
-        await client.PutAsJsonAsync(
-            $"/api/households/{householdId}/dashboards/{dashboardId}/widgets",
-            new ReplaceWidgetLayoutRequest([new WidgetDefinition(WidgetType.AssetCount, WidgetSize.Small, null)]),
-            TestJson.Options);
+        await client.PutAsJsonAsync($"/api/households/{householdId}/dashboards/{dashboardId}/widgets", new ReplaceWidgetLayoutRequest([new WidgetDefinition(WidgetType.AssetCount, WidgetSize.Small, null)]), TestJson.Options, cancellationToken: TestContext.Current.CancellationToken);
 
-        var response = await client.GetAsync(
-            $"/api/households/{householdId}/dashboards/{dashboardId}/snapshot");
+        var response = await client.GetAsync($"/api/households/{householdId}/dashboards/{dashboardId}/snapshot", TestContext.Current.CancellationToken);
 
         Assert.Equal(HttpStatusCode.OK, response.StatusCode);
-        var snapshot = await response.Content.ReadFromJsonAsync<Dictionary<string, JsonElement>>(TestJson.Options);
+        var snapshot = await response.Content.ReadFromJsonAsync<Dictionary<string, JsonElement>>(TestJson.Options, cancellationToken: TestContext.Current.CancellationToken);
         Assert.NotNull(snapshot);
         Assert.True(snapshot.ContainsKey("AssetCount"));
         Assert.Equal(2, snapshot["AssetCount"].GetProperty("count").GetInt32());
@@ -357,19 +323,15 @@ public class DashboardsControllerTests(DatabaseFixture fixture) : IntegrationTes
         // Retired ICE engine (should be excluded)
         await CreateEngineWithSpecsAsync(assetId, 8, EngineStatus.Retired, EngineType.Ice);
 
-        var dashboards = await (await client.GetAsync($"/api/households/{householdId}/dashboards"))
-            .Content.ReadFromJsonAsync<List<DashboardSummaryResponse>>(TestJson.Options);
+        var dashboards = await (await client.GetAsync($"/api/households/{householdId}/dashboards", TestContext.Current.CancellationToken))
+            .Content.ReadFromJsonAsync<List<DashboardSummaryResponse>>(TestJson.Options, cancellationToken: TestContext.Current.CancellationToken);
         var dashboardId = dashboards![0].Id;
 
-        await client.PutAsJsonAsync(
-            $"/api/households/{householdId}/dashboards/{dashboardId}/widgets",
-            new ReplaceWidgetLayoutRequest([new WidgetDefinition(WidgetType.CylinderIndex, WidgetSize.Small, null)]),
-            TestJson.Options);
+        await client.PutAsJsonAsync($"/api/households/{householdId}/dashboards/{dashboardId}/widgets", new ReplaceWidgetLayoutRequest([new WidgetDefinition(WidgetType.CylinderIndex, WidgetSize.Small, null)]), TestJson.Options, cancellationToken: TestContext.Current.CancellationToken);
 
-        var response = await client.GetAsync(
-            $"/api/households/{householdId}/dashboards/{dashboardId}/snapshot");
+        var response = await client.GetAsync($"/api/households/{householdId}/dashboards/{dashboardId}/snapshot", TestContext.Current.CancellationToken);
 
-        var snapshot = await response.Content.ReadFromJsonAsync<Dictionary<string, JsonElement>>(TestJson.Options);
+        var snapshot = await response.Content.ReadFromJsonAsync<Dictionary<string, JsonElement>>(TestJson.Options, cancellationToken: TestContext.Current.CancellationToken);
         Assert.Equal(4, snapshot!["CylinderIndex"].GetProperty("totalCylinders").GetInt32());
     }
 
@@ -379,22 +341,18 @@ public class DashboardsControllerTests(DatabaseFixture fixture) : IntegrationTes
         var (householdId, userId) = await CreateHouseholdWithMemberAsync(HouseholdMemberRole.Owner);
         var client = CreateAuthenticatedClient(userId);
 
-        var dashboards = await (await client.GetAsync($"/api/households/{householdId}/dashboards"))
-            .Content.ReadFromJsonAsync<List<DashboardSummaryResponse>>(TestJson.Options);
+        var dashboards = await (await client.GetAsync($"/api/households/{householdId}/dashboards", TestContext.Current.CancellationToken))
+            .Content.ReadFromJsonAsync<List<DashboardSummaryResponse>>(TestJson.Options, cancellationToken: TestContext.Current.CancellationToken);
         var dashboardId = dashboards![0].Id;
 
-        await client.PutAsJsonAsync(
-            $"/api/households/{householdId}/dashboards/{dashboardId}/widgets",
-            new ReplaceWidgetLayoutRequest([
+        await client.PutAsJsonAsync($"/api/households/{householdId}/dashboards/{dashboardId}/widgets", new ReplaceWidgetLayoutRequest([
                 new WidgetDefinition(WidgetType.AssetCount, WidgetSize.Small, null),
                 new WidgetDefinition(WidgetType.DueSoon, WidgetSize.Full, null),
-            ]),
-            TestJson.Options);
+            ]), TestJson.Options, cancellationToken: TestContext.Current.CancellationToken);
 
-        var response = await client.GetAsync(
-            $"/api/households/{householdId}/dashboards/{dashboardId}/snapshot");
+        var response = await client.GetAsync($"/api/households/{householdId}/dashboards/{dashboardId}/snapshot", TestContext.Current.CancellationToken);
 
-        var snapshot = await response.Content.ReadFromJsonAsync<Dictionary<string, JsonElement>>(TestJson.Options);
+        var snapshot = await response.Content.ReadFromJsonAsync<Dictionary<string, JsonElement>>(TestJson.Options, cancellationToken: TestContext.Current.CancellationToken);
         Assert.NotNull(snapshot);
         Assert.True(snapshot.ContainsKey("AssetCount"));
         Assert.True(snapshot.ContainsKey("DueSoon"));
@@ -414,19 +372,15 @@ public class DashboardsControllerTests(DatabaseFixture fixture) : IntegrationTes
         await CreateRegistrationAsync(assetId, today.AddDays(3));   // DueSoon (within 7 days)
         await CreateRegistrationAsync(assetId, today.AddDays(20));  // Upcoming (within 30 days)
 
-        var dashboards = await (await client.GetAsync($"/api/households/{householdId}/dashboards"))
-            .Content.ReadFromJsonAsync<List<DashboardSummaryResponse>>(TestJson.Options);
+        var dashboards = await (await client.GetAsync($"/api/households/{householdId}/dashboards", TestContext.Current.CancellationToken))
+            .Content.ReadFromJsonAsync<List<DashboardSummaryResponse>>(TestJson.Options, cancellationToken: TestContext.Current.CancellationToken);
         var dashboardId = dashboards![0].Id;
 
-        await client.PutAsJsonAsync(
-            $"/api/households/{householdId}/dashboards/{dashboardId}/widgets",
-            new ReplaceWidgetLayoutRequest([new WidgetDefinition(WidgetType.DueSoon, WidgetSize.Full, "{\"daysAhead\":30}")]),
-            TestJson.Options);
+        await client.PutAsJsonAsync($"/api/households/{householdId}/dashboards/{dashboardId}/widgets", new ReplaceWidgetLayoutRequest([new WidgetDefinition(WidgetType.DueSoon, WidgetSize.Full, "{\"daysAhead\":30}")]), TestJson.Options, cancellationToken: TestContext.Current.CancellationToken);
 
-        var response = await client.GetAsync(
-            $"/api/households/{householdId}/dashboards/{dashboardId}/snapshot");
+        var response = await client.GetAsync($"/api/households/{householdId}/dashboards/{dashboardId}/snapshot", TestContext.Current.CancellationToken);
 
-        var snapshot = await response.Content.ReadFromJsonAsync<Dictionary<string, JsonElement>>(TestJson.Options);
+        var snapshot = await response.Content.ReadFromJsonAsync<Dictionary<string, JsonElement>>(TestJson.Options, cancellationToken: TestContext.Current.CancellationToken);
         var items = snapshot!["DueSoon"].GetProperty("items").EnumerateArray().ToList();
         Assert.Equal(3, items.Count);
         Assert.Contains(items, i => i.GetProperty("urgency").GetString() == "Overdue");
@@ -444,19 +398,15 @@ public class DashboardsControllerTests(DatabaseFixture fixture) : IntegrationTes
         for (var i = 0; i < 5; i++)
             await CreateServiceRecordAsync(assetId, DateOnly.FromDateTime(DateTime.UtcNow).AddDays(-i));
 
-        var dashboards = await (await client.GetAsync($"/api/households/{householdId}/dashboards"))
-            .Content.ReadFromJsonAsync<List<DashboardSummaryResponse>>(TestJson.Options);
+        var dashboards = await (await client.GetAsync($"/api/households/{householdId}/dashboards", TestContext.Current.CancellationToken))
+            .Content.ReadFromJsonAsync<List<DashboardSummaryResponse>>(TestJson.Options, cancellationToken: TestContext.Current.CancellationToken);
         var dashboardId = dashboards![0].Id;
 
-        await client.PutAsJsonAsync(
-            $"/api/households/{householdId}/dashboards/{dashboardId}/widgets",
-            new ReplaceWidgetLayoutRequest([new WidgetDefinition(WidgetType.RecentActivity, WidgetSize.Full, "{\"limit\":3}")]),
-            TestJson.Options);
+        await client.PutAsJsonAsync($"/api/households/{householdId}/dashboards/{dashboardId}/widgets", new ReplaceWidgetLayoutRequest([new WidgetDefinition(WidgetType.RecentActivity, WidgetSize.Full, "{\"limit\":3}")]), TestJson.Options, cancellationToken: TestContext.Current.CancellationToken);
 
-        var response = await client.GetAsync(
-            $"/api/households/{householdId}/dashboards/{dashboardId}/snapshot");
+        var response = await client.GetAsync($"/api/households/{householdId}/dashboards/{dashboardId}/snapshot", TestContext.Current.CancellationToken);
 
-        var snapshot = await response.Content.ReadFromJsonAsync<Dictionary<string, JsonElement>>(TestJson.Options);
+        var snapshot = await response.Content.ReadFromJsonAsync<Dictionary<string, JsonElement>>(TestJson.Options, cancellationToken: TestContext.Current.CancellationToken);
         var items = snapshot!["RecentActivity"].GetProperty("items").EnumerateArray().ToList();
         Assert.Equal(3, items.Count);
     }
@@ -473,19 +423,15 @@ public class DashboardsControllerTests(DatabaseFixture fixture) : IntegrationTes
         await CreateFuelLogAsync(assetId, thisYear, 100m);
         await CreateFuelLogAsync(assetId, lastYear, 200m);
 
-        var dashboards = await (await client.GetAsync($"/api/households/{householdId}/dashboards"))
-            .Content.ReadFromJsonAsync<List<DashboardSummaryResponse>>(TestJson.Options);
+        var dashboards = await (await client.GetAsync($"/api/households/{householdId}/dashboards", TestContext.Current.CancellationToken))
+            .Content.ReadFromJsonAsync<List<DashboardSummaryResponse>>(TestJson.Options, cancellationToken: TestContext.Current.CancellationToken);
         var dashboardId = dashboards![0].Id;
 
-        await client.PutAsJsonAsync(
-            $"/api/households/{householdId}/dashboards/{dashboardId}/widgets",
-            new ReplaceWidgetLayoutRequest([new WidgetDefinition(WidgetType.FuelCostYtd, WidgetSize.Small, null)]),
-            TestJson.Options);
+        await client.PutAsJsonAsync($"/api/households/{householdId}/dashboards/{dashboardId}/widgets", new ReplaceWidgetLayoutRequest([new WidgetDefinition(WidgetType.FuelCostYtd, WidgetSize.Small, null)]), TestJson.Options, cancellationToken: TestContext.Current.CancellationToken);
 
-        var response = await client.GetAsync(
-            $"/api/households/{householdId}/dashboards/{dashboardId}/snapshot");
+        var response = await client.GetAsync($"/api/households/{householdId}/dashboards/{dashboardId}/snapshot", TestContext.Current.CancellationToken);
 
-        var snapshot = await response.Content.ReadFromJsonAsync<Dictionary<string, JsonElement>>(TestJson.Options);
+        var snapshot = await response.Content.ReadFromJsonAsync<Dictionary<string, JsonElement>>(TestJson.Options, cancellationToken: TestContext.Current.CancellationToken);
         Assert.Equal(100m, snapshot!["FuelCostYtd"].GetProperty("totalCost").GetDecimal());
     }
 
@@ -502,19 +448,15 @@ public class DashboardsControllerTests(DatabaseFixture fixture) : IntegrationTes
         await CreateMileageLogAsync(assetId, thisMonth, 150m);
         await CreateMileageLogAsync(assetId, lastMonth, 300m);
 
-        var dashboards = await (await client.GetAsync($"/api/households/{householdId}/dashboards"))
-            .Content.ReadFromJsonAsync<List<DashboardSummaryResponse>>(TestJson.Options);
+        var dashboards = await (await client.GetAsync($"/api/households/{householdId}/dashboards", TestContext.Current.CancellationToken))
+            .Content.ReadFromJsonAsync<List<DashboardSummaryResponse>>(TestJson.Options, cancellationToken: TestContext.Current.CancellationToken);
         var dashboardId = dashboards![0].Id;
 
-        await client.PutAsJsonAsync(
-            $"/api/households/{householdId}/dashboards/{dashboardId}/widgets",
-            new ReplaceWidgetLayoutRequest([new WidgetDefinition(WidgetType.MileageMtd, WidgetSize.Small, null)]),
-            TestJson.Options);
+        await client.PutAsJsonAsync($"/api/households/{householdId}/dashboards/{dashboardId}/widgets", new ReplaceWidgetLayoutRequest([new WidgetDefinition(WidgetType.MileageMtd, WidgetSize.Small, null)]), TestJson.Options, cancellationToken: TestContext.Current.CancellationToken);
 
-        var response = await client.GetAsync(
-            $"/api/households/{householdId}/dashboards/{dashboardId}/snapshot");
+        var response = await client.GetAsync($"/api/households/{householdId}/dashboards/{dashboardId}/snapshot", TestContext.Current.CancellationToken);
 
-        var snapshot = await response.Content.ReadFromJsonAsync<Dictionary<string, JsonElement>>(TestJson.Options);
+        var snapshot = await response.Content.ReadFromJsonAsync<Dictionary<string, JsonElement>>(TestJson.Options, cancellationToken: TestContext.Current.CancellationToken);
         Assert.Equal(150m, snapshot!["MileageMtd"].GetProperty("totalMiles").GetDecimal());
     }
 

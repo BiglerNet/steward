@@ -15,30 +15,23 @@ public class WarrantiesControllerTests(DatabaseFixture fixture) : IntegrationTes
         var assetId = await CreateAssetAsync(householdId);
         var client = CreateAuthenticatedClient(userId);
 
-        var createResponse = await client.PostAsJsonAsync(
-            $"/api/households/{householdId}/assets/{assetId}/warranties",
-            NewRecord(),
-            TestJson.Options);
+        var createResponse = await client.PostAsJsonAsync($"/api/households/{householdId}/assets/{assetId}/warranties", NewRecord(), TestJson.Options, cancellationToken: TestContext.Current.CancellationToken);
         Assert.Equal(HttpStatusCode.Created, createResponse.StatusCode);
-        var created = await createResponse.Content.ReadFromJsonAsync<WarrantyResponse>(TestJson.Options);
+        var created = await createResponse.Content.ReadFromJsonAsync<WarrantyResponse>(TestJson.Options, cancellationToken: TestContext.Current.CancellationToken);
         Assert.NotNull(created);
         Assert.False(created!.HasDocument);
 
-        var listResponse = await client.GetAsync($"/api/households/{householdId}/assets/{assetId}/warranties");
+        var listResponse = await client.GetAsync($"/api/households/{householdId}/assets/{assetId}/warranties", TestContext.Current.CancellationToken);
         Assert.Equal(HttpStatusCode.OK, listResponse.StatusCode);
-        var list = await listResponse.Content.ReadFromJsonAsync<List<WarrantyResponse>>(TestJson.Options);
+        var list = await listResponse.Content.ReadFromJsonAsync<List<WarrantyResponse>>(TestJson.Options, cancellationToken: TestContext.Current.CancellationToken);
         Assert.Single(list!);
 
-        var updateResponse = await client.PutAsJsonAsync(
-            $"/api/households/{householdId}/assets/{assetId}/warranties/{created.Id}",
-            NewRecord() with { Description = "Updated description" },
-            TestJson.Options);
+        var updateResponse = await client.PutAsJsonAsync($"/api/households/{householdId}/assets/{assetId}/warranties/{created.Id}", NewRecord() with { Description = "Updated description" }, TestJson.Options, cancellationToken: TestContext.Current.CancellationToken);
         Assert.Equal(HttpStatusCode.OK, updateResponse.StatusCode);
-        var updated = await updateResponse.Content.ReadFromJsonAsync<WarrantyResponse>(TestJson.Options);
+        var updated = await updateResponse.Content.ReadFromJsonAsync<WarrantyResponse>(TestJson.Options, cancellationToken: TestContext.Current.CancellationToken);
         Assert.Equal("Updated description", updated!.Description);
 
-        var deleteResponse = await client.DeleteAsync(
-            $"/api/households/{householdId}/assets/{assetId}/warranties/{created.Id}");
+        var deleteResponse = await client.DeleteAsync($"/api/households/{householdId}/assets/{assetId}/warranties/{created.Id}", TestContext.Current.CancellationToken);
         Assert.Equal(HttpStatusCode.NoContent, deleteResponse.StatusCode);
     }
 
@@ -49,10 +42,7 @@ public class WarrantiesControllerTests(DatabaseFixture fixture) : IntegrationTes
         var assetId = await CreateAssetAsync(householdId);
         var client = CreateAuthenticatedClient(userId);
 
-        var response = await client.PostAsJsonAsync(
-            $"/api/households/{householdId}/assets/{assetId}/warranties",
-            NewRecord(),
-            TestJson.Options);
+        var response = await client.PostAsJsonAsync($"/api/households/{householdId}/assets/{assetId}/warranties", NewRecord(), TestJson.Options, cancellationToken: TestContext.Current.CancellationToken);
 
         Assert.Equal(HttpStatusCode.Forbidden, response.StatusCode);
     }
@@ -64,14 +54,10 @@ public class WarrantiesControllerTests(DatabaseFixture fixture) : IntegrationTes
         var assetId = await CreateAssetAsync(householdId);
         var client = CreateAuthenticatedClient(userId);
 
-        var createResponse = await client.PostAsJsonAsync(
-            $"/api/households/{householdId}/assets/{assetId}/warranties",
-            NewRecord(),
-            TestJson.Options);
-        var created = await createResponse.Content.ReadFromJsonAsync<WarrantyResponse>(TestJson.Options);
+        var createResponse = await client.PostAsJsonAsync($"/api/households/{householdId}/assets/{assetId}/warranties", NewRecord(), TestJson.Options, cancellationToken: TestContext.Current.CancellationToken);
+        var created = await createResponse.Content.ReadFromJsonAsync<WarrantyResponse>(TestJson.Options, cancellationToken: TestContext.Current.CancellationToken);
 
-        var deleteResponse = await client.DeleteAsync(
-            $"/api/households/{householdId}/assets/{assetId}/warranties/{created!.Id}");
+        var deleteResponse = await client.DeleteAsync($"/api/households/{householdId}/assets/{assetId}/warranties/{created!.Id}", TestContext.Current.CancellationToken);
 
         Assert.Equal(HttpStatusCode.NoContent, deleteResponse.StatusCode);
     }
@@ -83,10 +69,7 @@ public class WarrantiesControllerTests(DatabaseFixture fixture) : IntegrationTes
         var assetId = await CreateAssetAsync(householdId);
         var client = CreateAuthenticatedClient(userId);
 
-        var response = await client.PostAsJsonAsync(
-            $"/api/households/{householdId}/assets/{assetId}/warranties",
-            NewRecord() with { Provider = "" },
-            TestJson.Options);
+        var response = await client.PostAsJsonAsync($"/api/households/{householdId}/assets/{assetId}/warranties", NewRecord() with { Provider = "" }, TestJson.Options, cancellationToken: TestContext.Current.CancellationToken);
 
         Assert.Equal(HttpStatusCode.BadRequest, response.StatusCode);
     }
@@ -100,7 +83,7 @@ public class WarrantiesControllerTests(DatabaseFixture fixture) : IntegrationTes
         var (householdB, userB) = await CreateHouseholdWithMemberAsync(HouseholdMemberRole.Owner);
         var client = CreateAuthenticatedClient(userB);
 
-        var response = await client.GetAsync($"/api/households/{householdB}/assets/{assetId}/warranties");
+        var response = await client.GetAsync($"/api/households/{householdB}/assets/{assetId}/warranties", TestContext.Current.CancellationToken);
 
         Assert.Equal(HttpStatusCode.NotFound, response.StatusCode);
     }

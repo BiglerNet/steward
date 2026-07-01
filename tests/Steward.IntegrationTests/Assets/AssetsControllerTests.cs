@@ -20,11 +20,10 @@ public class AssetsControllerTests(DatabaseFixture fixture) : IntegrationTestBas
             BeamFt = 8.5m,
         };
 
-        var response = await client.PostAsJsonAsync(
-            $"/api/households/{householdId}/assets", request, TestJson.Options);
+        var response = await client.PostAsJsonAsync($"/api/households/{householdId}/assets", request, TestJson.Options, cancellationToken: TestContext.Current.CancellationToken);
 
         Assert.Equal(HttpStatusCode.Created, response.StatusCode);
-        var asset = await response.Content.ReadFromJsonAsync<AssetResponse>(TestJson.Options);
+        var asset = await response.Content.ReadFromJsonAsync<AssetResponse>(TestJson.Options, cancellationToken: TestContext.Current.CancellationToken);
         Assert.NotNull(asset);
         Assert.Equal(AssetType.Boat, asset.AssetType);
         Assert.Equal("ABC12345D404", asset.Hin);
@@ -41,11 +40,10 @@ public class AssetsControllerTests(DatabaseFixture fixture) : IntegrationTestBas
             InteriorLengthFt = 16.0m,
         };
 
-        var response = await client.PostAsJsonAsync(
-            $"/api/households/{householdId}/assets", request, TestJson.Options);
+        var response = await client.PostAsJsonAsync($"/api/households/{householdId}/assets", request, TestJson.Options, cancellationToken: TestContext.Current.CancellationToken);
 
         Assert.Equal(HttpStatusCode.Created, response.StatusCode);
-        var asset = await response.Content.ReadFromJsonAsync<AssetResponse>(TestJson.Options);
+        var asset = await response.Content.ReadFromJsonAsync<AssetResponse>(TestJson.Options, cancellationToken: TestContext.Current.CancellationToken);
         Assert.NotNull(asset);
         Assert.Equal(AssetType.EnclosedTrailer, asset.AssetType);
     }
@@ -62,11 +60,10 @@ public class AssetsControllerTests(DatabaseFixture fixture) : IntegrationTestBas
             CuttingWidthIn = 48.0m,
         };
 
-        var response = await client.PostAsJsonAsync(
-            $"/api/households/{householdId}/assets", request, TestJson.Options);
+        var response = await client.PostAsJsonAsync($"/api/households/{householdId}/assets", request, TestJson.Options, cancellationToken: TestContext.Current.CancellationToken);
 
         Assert.Equal(HttpStatusCode.Created, response.StatusCode);
-        var asset = await response.Content.ReadFromJsonAsync<AssetResponse>(TestJson.Options);
+        var asset = await response.Content.ReadFromJsonAsync<AssetResponse>(TestJson.Options, cancellationToken: TestContext.Current.CancellationToken);
         Assert.NotNull(asset);
         Assert.Equal(AssetType.RidingMower, asset.AssetType);
     }
@@ -78,8 +75,7 @@ public class AssetsControllerTests(DatabaseFixture fixture) : IntegrationTestBas
         var client = CreateAuthenticatedClient(userId);
         var request = NewAsset(AssetType.Snowmobile, "Ski-Doo");
 
-        var response = await client.PostAsJsonAsync(
-            $"/api/households/{householdId}/assets", request, TestJson.Options);
+        var response = await client.PostAsJsonAsync($"/api/households/{householdId}/assets", request, TestJson.Options, cancellationToken: TestContext.Current.CancellationToken);
 
         Assert.Equal(HttpStatusCode.Forbidden, response.StatusCode);
     }
@@ -91,8 +87,7 @@ public class AssetsControllerTests(DatabaseFixture fixture) : IntegrationTestBas
         var client = CreateAuthenticatedClient(Guid.NewGuid());
         var request = NewAsset(AssetType.Snowmobile, "Ski-Doo");
 
-        var response = await client.PostAsJsonAsync(
-            $"/api/households/{householdId}/assets", request, TestJson.Options);
+        var response = await client.PostAsJsonAsync($"/api/households/{householdId}/assets", request, TestJson.Options, cancellationToken: TestContext.Current.CancellationToken);
 
         Assert.Equal(HttpStatusCode.Forbidden, response.StatusCode);
     }
@@ -103,9 +98,7 @@ public class AssetsControllerTests(DatabaseFixture fixture) : IntegrationTestBas
         var (householdId, userId) = await CreateHouseholdWithMemberAsync(HouseholdMemberRole.Owner);
         var client = CreateAuthenticatedClient(userId);
 
-        var response = await client.PostAsJsonAsync(
-            $"/api/households/{householdId}/assets",
-            new { assetType = "Spaceship", name = "Rocket" });
+        var response = await client.PostAsJsonAsync($"/api/households/{householdId}/assets", new { assetType = "Spaceship", name = "Rocket" }, cancellationToken: TestContext.Current.CancellationToken);
 
         Assert.Equal(HttpStatusCode.BadRequest, response.StatusCode);
     }
@@ -119,13 +112,13 @@ public class AssetsControllerTests(DatabaseFixture fixture) : IntegrationTestBas
         await CreateAssetAsync(client, householdId, NewAsset(AssetType.Snowmobile, "Ski-Doo"));
         await CreateAssetAsync(client, householdId, NewAsset(AssetType.Boat, "Sea Ray") with { Hin = "ABC12345D404" });
 
-        var listResponse = await client.GetAsync($"/api/households/{householdId}/assets");
+        var listResponse = await client.GetAsync($"/api/households/{householdId}/assets", TestContext.Current.CancellationToken);
         Assert.Equal(HttpStatusCode.OK, listResponse.StatusCode);
-        var all = await listResponse.Content.ReadFromJsonAsync<List<AssetResponse>>(TestJson.Options);
+        var all = await listResponse.Content.ReadFromJsonAsync<List<AssetResponse>>(TestJson.Options, cancellationToken: TestContext.Current.CancellationToken);
         Assert.Equal(2, all!.Count);
 
-        var filteredResponse = await client.GetAsync($"/api/households/{householdId}/assets?assetType=Boat");
-        var filtered = await filteredResponse.Content.ReadFromJsonAsync<List<AssetResponse>>(TestJson.Options);
+        var filteredResponse = await client.GetAsync($"/api/households/{householdId}/assets?assetType=Boat", TestContext.Current.CancellationToken);
+        var filtered = await filteredResponse.Content.ReadFromJsonAsync<List<AssetResponse>>(TestJson.Options, cancellationToken: TestContext.Current.CancellationToken);
         Assert.Single(filtered!);
         Assert.Equal(AssetType.Boat, filtered![0].AssetType);
     }
@@ -136,7 +129,7 @@ public class AssetsControllerTests(DatabaseFixture fixture) : IntegrationTestBas
         var householdId = await CreateHouseholdAsync();
         var client = CreateAuthenticatedClient(Guid.NewGuid());
 
-        var response = await client.GetAsync($"/api/households/{householdId}/assets");
+        var response = await client.GetAsync($"/api/households/{householdId}/assets", TestContext.Current.CancellationToken);
 
         Assert.Equal(HttpStatusCode.Forbidden, response.StatusCode);
     }
@@ -150,11 +143,10 @@ public class AssetsControllerTests(DatabaseFixture fixture) : IntegrationTestBas
 
         var updateRequest = NewUpdate("Ski-Doo Renamed");
 
-        var response = await client.PutAsJsonAsync(
-            $"/api/households/{householdId}/assets/{created.Id}", updateRequest, TestJson.Options);
+        var response = await client.PutAsJsonAsync($"/api/households/{householdId}/assets/{created.Id}", updateRequest, TestJson.Options, cancellationToken: TestContext.Current.CancellationToken);
 
         Assert.Equal(HttpStatusCode.OK, response.StatusCode);
-        var updated = await response.Content.ReadFromJsonAsync<AssetResponse>(TestJson.Options);
+        var updated = await response.Content.ReadFromJsonAsync<AssetResponse>(TestJson.Options, cancellationToken: TestContext.Current.CancellationToken);
         Assert.Equal("Ski-Doo Renamed", updated!.Name);
     }
 
@@ -167,8 +159,7 @@ public class AssetsControllerTests(DatabaseFixture fixture) : IntegrationTestBas
 
         var updateRequest = NewUpdate("Ski-Doo") with { AssetType = AssetType.Boat };
 
-        var response = await client.PutAsJsonAsync(
-            $"/api/households/{householdId}/assets/{created.Id}", updateRequest, TestJson.Options);
+        var response = await client.PutAsJsonAsync($"/api/households/{householdId}/assets/{created.Id}", updateRequest, TestJson.Options, cancellationToken: TestContext.Current.CancellationToken);
 
         Assert.Equal(HttpStatusCode.BadRequest, response.StatusCode);
     }
@@ -184,8 +175,7 @@ public class AssetsControllerTests(DatabaseFixture fixture) : IntegrationTestBas
         await AddMemberAsync(householdId, viewerId, HouseholdMemberRole.Viewer);
         var viewerClient = CreateAuthenticatedClient(viewerId);
 
-        var response = await viewerClient.PutAsJsonAsync(
-            $"/api/households/{householdId}/assets/{created.Id}", NewUpdate("Renamed"), TestJson.Options);
+        var response = await viewerClient.PutAsJsonAsync($"/api/households/{householdId}/assets/{created.Id}", NewUpdate("Renamed"), TestJson.Options, cancellationToken: TestContext.Current.CancellationToken);
 
         Assert.Equal(HttpStatusCode.Forbidden, response.StatusCode);
     }
@@ -197,10 +187,10 @@ public class AssetsControllerTests(DatabaseFixture fixture) : IntegrationTestBas
         var client = CreateAuthenticatedClient(ownerId);
         var created = await CreateAssetAsync(client, householdId, NewAsset(AssetType.Snowmobile, "Ski-Doo"));
 
-        var response = await client.DeleteAsync($"/api/households/{householdId}/assets/{created.Id}");
+        var response = await client.DeleteAsync($"/api/households/{householdId}/assets/{created.Id}", TestContext.Current.CancellationToken);
 
         Assert.Equal(HttpStatusCode.NoContent, response.StatusCode);
-        var getResponse = await client.GetAsync($"/api/households/{householdId}/assets/{created.Id}");
+        var getResponse = await client.GetAsync($"/api/households/{householdId}/assets/{created.Id}", TestContext.Current.CancellationToken);
         Assert.Equal(HttpStatusCode.NotFound, getResponse.StatusCode);
     }
 
@@ -215,7 +205,7 @@ public class AssetsControllerTests(DatabaseFixture fixture) : IntegrationTestBas
         await AddMemberAsync(householdId, contributorId, HouseholdMemberRole.Contributor);
         var contributorClient = CreateAuthenticatedClient(contributorId);
 
-        var response = await contributorClient.DeleteAsync($"/api/households/{householdId}/assets/{created.Id}");
+        var response = await contributorClient.DeleteAsync($"/api/households/{householdId}/assets/{created.Id}", TestContext.Current.CancellationToken);
 
         Assert.Equal(HttpStatusCode.Forbidden, response.StatusCode);
     }
