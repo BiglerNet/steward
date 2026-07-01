@@ -1,0 +1,258 @@
+<!doctype html>
+<html lang="en">
+<head>
+  <meta charset="utf-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1" />
+  <title>My Household — MaintenanceTracker</title>
+  <style>
+    :root {
+      --bg: #f7f7f5;
+      --surface: #ffffff;
+      --fg: #1c1b19;
+      --fg-soft: #5b5a57;
+      --border: #e7e5e4;
+      --accent: #2f9e44;
+      --accent-hover: #2b8a3e;
+      --radius: 12px;
+      --font-sans: -apple-system, BlinkMacSystemFont, 'Segoe UI', system-ui, sans-serif;
+    }
+    * { box-sizing: border-box; margin: 0; padding: 0; }
+    body { font-family: var(--font-sans); background: var(--bg); color: var(--fg); line-height: 1.5; min-height: 100vh; }
+
+    .shell {
+      max-width: 680px;
+      margin: 0 auto;
+      padding: 48px 24px;
+    }
+
+    /* Empty State */
+    .empty-state {
+      text-align: center;
+      padding: 40px 0;
+    }
+
+    .empty-state-icon {
+      width: 72px;
+      height: 72px;
+      margin: 0 auto 24px;
+      border-radius: 18px;
+      background: var(--surface);
+      border: 2px solid var(--border);
+      display: grid;
+      place-items: center;
+    }
+
+    .empty-state-icon svg {
+      width: 36px;
+      height: 36px;
+      color: var(--fg-soft);
+    }
+
+    .empty-state h2 {
+      font-size: 28px;
+      font-weight: 700;
+      letter-spacing: -0.02em;
+      color: var(--fg);
+      margin-bottom: 8px;
+    }
+
+    .empty-state p {
+      font-size: 16px;
+      color: var(--fg-soft);
+      max-width: 400px;
+      margin: 0 auto 32px;
+    }
+
+    /* Create Household Card */
+    .create-card {
+      background: var(--surface);
+      border: 1px solid var(--border);
+      border-radius: 16px;
+      padding: 32px;
+      max-width: 480px;
+      margin: 0 auto;
+      box-shadow: 0 4px 24px rgba(0,0,0,0.04);
+    }
+
+    .create-card h3 {
+      font-size: 18px;
+      font-weight: 700;
+      color: var(--fg);
+      margin-bottom: 20px;
+    }
+
+    .form-group {
+      margin-bottom: 16px;
+    }
+
+    .form-label {
+      display: block;
+      font-size: 13px;
+      font-weight: 600;
+      color: var(--fg);
+      margin-bottom: 6px;
+    }
+
+    .form-input {
+      width: 100%;
+      padding: 10px 14px;
+      border: 1px solid var(--border);
+      border-radius: 8px;
+      font-size: 15px;
+      font-family: var(--font-sans);
+      color: var(--fg);
+      background: var(--bg);
+      outline: none;
+      transition: border-color 0.15s, box-shadow 0.15s;
+    }
+
+    .form-input:focus {
+      border-color: var(--accent);
+      box-shadow: 0 0 0 3px rgba(47,158,68,0.12);
+    }
+
+    .form-input::placeholder {
+      color: #b8b6b2;
+    }
+
+    .form-check {
+      display: flex;
+      align-items: center;
+      gap: 8px;
+      margin-top: 12px;
+    }
+
+    .form-check input[type="checkbox"] {
+      width: 18px;
+      height: 18px;
+      accent-color: var(--accent);
+    }
+
+    .form-check label {
+      font-size: 13px;
+      color: var(--fg-soft);
+      cursor: pointer;
+    }
+
+    .btn-primary {
+      width: 100%;
+      padding: 11px 20px;
+      background: var(--accent);
+      color: white;
+      border: none;
+      border-radius: 8px;
+      font-size: 15px;
+      font-weight: 600;
+      cursor: pointer;
+      font-family: var(--font-sans);
+      transition: background 0.15s;
+      margin-top: 8px;
+    }
+
+    .btn-primary:hover { background: var(--accent-hover); }
+
+    .btn-primary:disabled {
+      opacity: 0.5;
+      cursor: not-allowed;
+    }
+
+    .form-hint {
+      font-size: 12px;
+      color: var(--fg-soft);
+      margin-top: 4px;
+    }
+
+    /* Join via Invite */
+    .invite-section {
+      margin-top: 32px;
+      padding-top: 24px;
+      border-top: 1px solid var(--border);
+      text-align: center;
+      max-width: 480px;
+      margin-left: auto;
+      margin-right: auto;
+    }
+
+    .invite-section h4 {
+      font-size: 14px;
+      font-weight: 600;
+      color: var(--fg);
+      margin-bottom: 12px;
+    }
+
+    .invite-input-row {
+      display: flex;
+      gap: 8px;
+      max-width: 360px;
+      margin: 0 auto;
+    }
+
+    .invite-input-row .form-input {
+      flex: 1;
+    }
+
+    .btn-secondary {
+      padding: 10px 16px;
+      background: var(--surface);
+      border: 1px solid var(--border);
+      border-radius: 8px;
+      font-size: 14px;
+      font-weight: 600;
+      color: var(--fg-soft);
+      cursor: pointer;
+      font-family: var(--font-sans);
+      white-space: nowrap;
+      transition: background 0.15s;
+    }
+
+    .btn-secondary:hover { background: var(--bg); color: var(--fg); }
+
+    @media (max-width: 480px) {
+      .create-card { padding: 24px 20px; }
+      .invite-input-row { flex-direction: column; }
+    }
+  </style>
+</head>
+<body>
+  <div class="shell">
+    <div class="empty-state">
+      <div class="empty-state-icon">
+        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round">
+          <path d="M3 9l9-7 9 7v11a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2z"/>
+          <polyline points="9 22 9 12 15 12 15 22"/>
+        </svg>
+      </div>
+      <h2>Create your first household</h2>
+      <p>A household is where you and others can share assets, maintenance records, and upcoming reminders.</p>
+    </div>
+
+    <div class="create-card">
+      <h3>Household Details</h3>
+      <form>
+        <div class="form-group">
+          <label class="form-label" for="hh-name">Name</label>
+          <input class="form-input" type="text" id="hh-name" placeholder="The Daves" />
+        </div>
+        <div class="form-group">
+          <label class="form-label" for="hh-slug">Slug</label>
+          <input class="form-input" type="text" id="hh-slug" placeholder="the-daves" />
+          <div class="form-hint">A URL-safe name for your household. You can change this later.</div>
+        </div>
+        <div class="form-check">
+          <input type="checkbox" id="hh-public" />
+          <label for="hh-public">Make my gear publicly visible</label>
+        </div>
+        <button type="submit" class="btn-primary">Create Household</button>
+      </form>
+    </div>
+
+    <div class="invite-section">
+      <h4>Already have an invite code?</h4>
+      <div class="invite-input-row">
+        <input class="form-input" type="text" placeholder="Paste invite code here" />
+        <button class="btn-secondary">Join</button>
+      </div>
+    </div>
+  </div>
+</body>
+</html>

@@ -1,0 +1,44 @@
+{{- if .Values.database.enabled }}
+apiVersion: postgres-operator.crunchydata.com/v1beta1
+kind: PostgresCluster
+metadata:
+  name: {{ include "steward.database.name" . }}
+  labels:
+    {{- include "steward.labels" . | nindent 4 }}
+    app.kubernetes.io/component: database
+spec:
+  postgresVersion: {{ .Values.database.postgresVersion }}
+  instances:
+    - name: instance1
+      replicas: 1
+      dataVolumeClaimSpec:
+        accessModes:
+          - ReadWriteOnce
+        storageClassName: {{ .Values.database.storageClassName }}
+        resources:
+          requests:
+            storage: {{ .Values.database.storage }}
+  users:
+    - name: {{ .Values.database.username }}
+      databases:
+        - {{ .Values.database.username }}
+  backups:
+    pgbackrest:
+      {{- if .Values.database.backups.enabled }}
+      repos:
+        - name: repo1
+          schedules:
+            full: "0 1 * * 0"
+            differential: "0 1 * * 1-6"
+          volume:
+            volumeClaimSpec:
+              accessModes:
+                - ReadWriteOnce
+              storageClassName: {{ .Values.database.storageClassName }}
+              resources:
+                requests:
+                  storage: {{ .Values.database.backups.backupStorage }}
+      {{- else }}
+      repos: []
+      {{- end }}
+{{- end }}

@@ -1,0 +1,76 @@
+schema: spec-driven
+
+context: |
+  Project: Garage/vehicle maintenance tracker — self-hosted, multi-tenant, SaaS-ready.
+  Tracks registration, warranties, service history, usage, and fuel across diverse asset types.
+
+  Tech stack:
+    Backend:    ASP.NET Core (.NET 10) Web API
+    ORM:        EF Core + Npgsql (PostgreSQL)
+    Auth:       ASP.NET Core Identity + JWT Bearer + OAuth (Google, Facebook, Apple)
+    Database:   PostgreSQL
+    Frontend:   React 19 + TypeScript + Vite 8
+    UI:         Tailwind CSS 4 + shadcn/ui
+    Forms:      react-hook-form + Zod 4
+    API client: axios + OpenAPI-generated schema.d.ts
+    State:      TanStack Query + React Router
+    Validation: FluentValidation (backend)
+    DI:         Scrutor (assembly scanning)
+    API docs:   Microsoft.AspNetCore.OpenApi + Scalar (NOT Swashbuckle)
+
+  Project layout (monorepo):
+    src/Steward.Api/             ASP.NET Core Web API entrypoint
+    src/Steward.Application/     Application services, FluentValidation
+    src/Steward.Domain/          Domain entities, pure C# (no framework deps)
+    src/Steward.Infrastructure/  EF Core, Identity, Npgsql, external services
+    src/Steward.Web/             React 19 frontend (Vite)
+    tests/Steward.IntegrationTests/
+    tests/Steward.UnitTests/
+
+  Architecture: Clean Architecture — Domain → Application → Infrastructure → Api
+  Conventions: conventional commits, nullable reference types enabled, implicit usings enabled, C# 13+
+
+  Domain model (settled in design):
+    Asset (abstract, TPH discriminator)
+      └─ Vehicle (abstract)     — has VIN, registration, usage tracking
+          ├─ Snowmobile
+          ├─ Utv
+          ├─ Boat               — HIN instead of VIN
+          ├─ Car
+          └─ Truck
+      └─ Trailer (abstract)     — has plate/registration, no engine hours
+          ├─ SnowmobileTrailer
+          └─ EnclosedTrailer
+      └─ Equipment (abstract)   — no registration
+          ├─ RidingMower
+          ├─ PowerWasher
+          └─ SmallEngine
+
+    Engine (0..N per Asset)
+      — Make, Model, SerialNumber, Year, Label, Type (ICE|Electric|Hybrid)
+      — FuelType, Cylinders, Displacement
+      — Status (Active|Retired), InstalledDate, InstalledAtAssetMiles, InstalledAtAssetHours
+
+    Household              — multi-tenant grouping, PublicSlug, IsPublicVisible
+    HouseholdMembership    — Role: Owner | Contributor | Viewer, Status: Pending|Active|Revoked
+    ApplicationUser        — extends IdentityUser, DisplayName, AvatarUrl
+
+    Cross-cutting (attach to any Asset):
+      Registration          — number, expiry, issuing authority, document attachment
+      Warranty              — provider, terms, expiry, document attachment
+      ServiceRecord         — date, description, cost, provider, AssetId + optional EngineId
+      MileageLog            — OdometerReading or TripMiles, Date (→ Asset)
+      EngineHoursLog        — HoursReading or TripHours, Date (→ Engine)
+      FuelLog               — LogType (Fillup|Consumption), Volume, VolumeUnit, FuelGrade,
+                              PricePerUnit, TotalCost, MilesAtLog, HoursAtLog (→ Asset + optional Engine)
+
+  Auth model:
+    Resource-based authorization for household-scoped access (NOT dynamic roles per household)
+    PlatformAdmin ASP.NET Core Identity role for system-wide administration
+    JWT Bearer tokens (stateless API)
+
+rules:
+  tasks:
+    - Break tasks into chunks of 1-2 hours each
+    - Each task should be independently completable and testable
+    - Specify which project (Api/Application/Domain/Infrastructure/Web) each task targets

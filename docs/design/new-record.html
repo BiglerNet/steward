@@ -1,0 +1,405 @@
+<!doctype html>
+<html lang="en">
+<head>
+  <meta charset="utf-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1" />
+  <title>New Entry — MaintenanceTracker</title>
+  <style>
+    :root {
+      --bg: #f7f7f5;
+      --surface: #ffffff;
+      --fg: #1c1b19;
+      --fg-soft: #5b5a57;
+      --border: #e7e5e4;
+      --accent: #2f9e44;
+      --accent-hover: #2b8a3e;
+      --radius: 12px;
+      --font-sans: -apple-system, BlinkMacSystemFont, 'Segoe UI', system-ui, sans-serif;
+    }
+    * { box-sizing: border-box; margin: 0; padding: 0; }
+    body { font-family: var(--font-sans); background: var(--bg); color: var(--fg); line-height: 1.5; min-height: 100vh; }
+    .shell { max-width: 640px; margin: 0 auto; padding: 48px 24px; }
+
+    .page-title { font-size: 28px; font-weight: 700; letter-spacing: -0.02em; color: var(--fg); margin-bottom: 8px; }
+    .page-subtitle { font-size: 15px; color: var(--fg-soft); margin-bottom: 32px; }
+
+    /* Type Selection */
+    .type-grid { display: grid; grid-template-columns: 1fr 1fr; gap: 12px; margin-bottom: 32px; }
+    .type-card {
+      background: var(--surface); border: 2px solid var(--border); border-radius: var(--radius); padding: 20px;
+      cursor: pointer; transition: all 0.15s; display: flex; flex-direction: column; gap: 8px;
+    }
+    .type-card:hover { border-color: var(--accent); background: #f0fdf4; }
+    .type-card.selected { border-color: var(--accent); background: #f0fdf4; box-shadow: 0 0 0 3px rgba(47,158,68,0.12); }
+    .type-card-icon { width: 36px; height: 36px; border-radius: 8px; background: var(--bg); display: grid; place-items: center; font-size: 18px; }
+    .type-card-name { font-size: 14px; font-weight: 600; color: var(--fg); }
+    .type-card-desc { font-size: 12px; color: var(--fg-soft); line-height: 1.4; }
+
+    /* Form Card */
+    .form-card { background: var(--surface); border: 1px solid var(--border); border-radius: var(--radius); padding: 28px 32px; box-shadow: 0 2px 16px rgba(0,0,0,0.04); }
+    .form-card-title { font-size: 18px; font-weight: 700; color: var(--fg); margin-bottom: 24px; }
+
+    .form-row { display: grid; grid-template-columns: 1fr 1fr; gap: 16px; margin-bottom: 16px; }
+    .form-group { margin-bottom: 16px; }
+    .form-label { display: block; font-size: 13px; font-weight: 600; color: var(--fg); margin-bottom: 6px; }
+    .form-label .required { color: #dc2626; margin-left: 2px; }
+    .form-input, .form-select, .form-textarea {
+      width: 100%; padding: 10px 14px; border: 1px solid var(--border); border-radius: 8px;
+      font-size: 15px; font-family: var(--font-sans); color: var(--fg); background: var(--bg);
+      outline: none; transition: border-color 0.15s, box-shadow 0.15s;
+    }
+    .form-input:focus, .form-select:focus, .form-textarea:focus {
+      border-color: var(--accent); box-shadow: 0 0 0 3px rgba(47,158,68,0.12);
+    }
+    .form-input::placeholder, .form-textarea::placeholder { color: #b8b6b2; }
+    .form-textarea { resize: vertical; min-height: 80px; }
+    .form-select { cursor: pointer; appearance: none; background-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='16' height='16' viewBox='0 0 24 24' fill='none' stroke='%235b5a57' stroke-width='2'%3E%3Cpolyline points='6 9 12 15 18 9'/%3E%3C/svg%3E"); background-repeat: no-repeat; background-position: right 12px center; padding-right: 40px; }
+
+    .form-hint { font-size: 12px; color: var(--fg-soft); margin-top: 4px; }
+    .form-error { font-size: 12px; color: #dc2626; margin-top: 4px; display: none; }
+    .form-input.error { border-color: #dc2626; }
+    .form-input.error + .form-error { display: block; }
+
+    /* Toggle for optional fields */
+    .optional-toggle {
+      display: flex; align-items: center; gap: 6px; font-size: 13px; color: var(--accent);
+      cursor: pointer; user-select: none; margin-bottom: 12px;
+    }
+    .optional-toggle svg { width: 14px; height: 14px; transition: transform 0.15s; }
+    .optional-toggle.open svg { transform: rotate(90deg); }
+    .optional-fields { display: none; }
+    .optional-fields.show { display: block; }
+
+    .form-actions { display: flex; gap: 8px; margin-top: 24px; padding-top: 20px; border-top: 1px solid var(--border); }
+    .btn-primary { padding: 10px 20px; background: var(--accent); color: white; border: none; border-radius: 8px; font-size: 15px; font-weight: 600; cursor: pointer; font-family: var(--font-sans); transition: background 0.15s; }
+    .btn-primary:hover { background: var(--accent-hover); }
+    .btn-secondary { padding: 10px 20px; background: var(--surface); color: var(--fg-soft); border: 1px solid var(--border); border-radius: 8px; font-size: 14px; font-weight: 500; cursor: pointer; font-family: var(--font-sans); }
+    .btn-secondary:hover { background: var(--bg); color: var(--fg); }
+
+    @media (max-width: 640px) {
+      .shell { padding: 32px 16px; }
+      .type-grid { grid-template-columns: 1fr 1fr; }
+      .form-row { grid-template-columns: 1fr; }
+      .form-card { padding: 24px 20px; }
+    }
+  </style>
+</head>
+<body>
+  <div class="shell">
+    <h1 class="page-title">Log a New Entry</h1>
+    <p class="page-subtitle">What are you tracking today? Choose the type below and fill in the details.</p>
+
+    <!-- Type Selection -->
+    <div class="type-grid">
+      <div class="type-card selected" onclick="selectType(this, 'service')">
+        <div class="type-card-icon">&#128295;</div>
+        <div class="type-card-name">Service Record</div>
+        <div class="type-card-desc">Oil changes, engine repairs, winterization, and general maintenance.</div>
+      </div>
+      <div class="type-card" onclick="selectType(this, 'fuel')">
+        <div class="type-card-icon">&#9749;</div>
+        <div class="type-card-name">Fuel Log</div>
+        <div class="type-card-desc">Track fuel fillups and consumption. Cost per liter or total cost.</div>
+      </div>
+      <div class="type-card" onclick="selectType(this, 'mileage')">
+        <div class="type-card-icon">&#128666;</div>
+        <div class="type-card-name">Mileage / Trip Log</div>
+        <div class="type-card-desc">Odometer readings or trip miles for tax or mileage tracking.</div>
+      </div>
+      <div class="type-card" onclick="selectType(this, 'hours')">
+        <div class="type-card-icon">&#9201;</div>
+        <div class="type-card-name">Engine Hours</div>
+        <div class="type-card-desc">Track total accumulated hours or trip-specific hours on an engine.</div>
+      </div>
+    </div>
+
+    <!-- Service Form -->
+    <div class="form-card" id="form-service">
+      <div class="form-card-title">Service Record <span style="font-size:13px;font-weight:400;color:var(--fg-soft);">for Sea Ray 250</span></div>
+
+      <div class="form-row">
+        <div class="form-group">
+          <label class="form-label">Date <span class="required">*</span></label>
+          <input class="form-input" type="date" value="2026-07-15" />
+        </div>
+        <div class="form-group">
+          <label class="form-label">Cost <span class="required">*</span></label>
+          <input class="form-input" type="number" placeholder="0.00" step="0.01" />
+        </div>
+      </div>
+
+      <div class="form-group">
+        <label class="form-label">Service Type <span class="required">*</span></label>
+        <select class="form-select">
+          <option value="">Choose a service type...</option>
+          <option value="oil-change">Oil Change</option>
+          <option value="engine-repair">Engine Repair</option>
+          <option value="winterization">Winterization</option>
+          <option value="spring-repair">Spring Start-up</option>
+          <option value="hull-work">Hull Work</option>
+          <option value="prop-repair">Propeller Work</option>
+          <option value="other">Other</option>
+        </select>
+      </div>
+
+      <div class="form-group">
+        <label class="form-label">Description <span class="required">*</span></label>
+        <input class="form-input" placeholder="e.g., Oil change with synthetic blend, replaced oil filter" />
+      </div>
+
+      <div class="form-group">
+        <label class="form-label">Provider Name</label>
+        <input class="form-input" placeholder="e.g., Marina Service Center" />
+      </div>
+
+      <div class="optional-toggle" onclick="toggleOptional()">
+        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><polyline points="9 18 15 12 9 6"/></svg>
+        Add optional fields
+      </div>
+      <div class="optional-fields" id="optional-fields">
+        <div class="form-row">
+          <div class="form-group">
+            <label class="form-label">Odometer / Hours Reading</label>
+            <input class="form-input" type="number" placeholder="e.g., 340.5" />
+            <div class="form-hint">Current odometer or hours reading</div>
+          </div>
+          <div class="form-group">
+            <label class="form-label">Engine</label>
+            <select class="form-select">
+              <option value="">Any engine</option>
+              <option value="port">Port Motor — Yamaha F250</option>
+              <option value="starboard">Starboard Motor — Yamaha F250</option>
+            </select>
+          </div>
+        </div>
+        <div class="form-group">
+          <label class="form-label">Notes</label>
+          <textarea class="form-textarea" placeholder="Additional notes (warranty info, parts replaced, etc.)"></textarea>
+        </div>
+      </div>
+
+      <div class="form-actions">
+        <button class="btn-primary">Save Service Record</button>
+        <button class="btn-secondary">Cancel</button>
+      </div>
+    </div>
+
+    <!-- Fuel Form (hidden) -->
+    <div class="form-card" id="form-fuel" style="display:none;">
+      <div class="form-card-title">Fuel Log <span style="font-size:13px;font-weight:400;color:var(--fg-soft);">for Sea Ray 250</span></div>
+
+      <div class="form-row">
+        <div class="form-group">
+          <label class="form-label">Date <span class="required">*</span></label>
+          <input class="form-input" type="date" value="2026-07-15" />
+        </div>
+        <div class="form-group">
+          <label class="form-label">Log Type <span class="required">*</span></label>
+          <select class="form-select">
+            <option value="fillup">Fillup</option>
+            <option value="consumption">Consumption</option>
+          </select>
+        </div>
+      </div>
+
+      <div class="form-row">
+        <div class="form-group">
+          <label class="form-label">Volume <span class="required">*</span></label>
+          <input class="form-input" type="number" placeholder="12.5" step="0.01" />
+        </div>
+        <div class="form-group">
+          <label class="form-label">Volume Unit <span class="required">*</span></label>
+          <select class="form-select">
+            <option value="gallons">Gallons</option>
+            <option value="liters">Liters</option>
+          </select>
+        </div>
+      </div>
+
+      <div class="form-row">
+        <div class="form-group">
+          <label class="form-label">Price Per Unit</label>
+          <input class="form-input" type="number" placeholder="4.85" step="0.01" />
+        </div>
+        <div class="form-group">
+          <label class="form-label">Total Cost</label>
+          <input class="form-input" type="number" placeholder="60.63" step="0.01" />
+          <div class="form-hint">Automatically calculated from price × volume</div>
+        </div>
+      </div>
+
+      <div class="form-group">
+        <label class="form-label">Fuel Grade</label>
+        <select class="form-select">
+          <option value="">Select grade...</option>
+          <option value="regular">Regular (87)</option>
+          <option value="midgrade">Mid-Grade (89)</option>
+          <option value="premium">Premium (91+)</option>
+          <option value="diesel">Diesel</option>
+          <option value="two-stroke">Two-Stroke Mix</option>
+        </select>
+      </div>
+
+      <div class="optional-toggle" onclick="toggleOptional()">
+        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><polyline points="9 18 15 12 9 6"/></svg>
+        Add optional fields
+      </div>
+      <div class="optional-fields" id="optional-fields-fuel">
+        <div class="form-row">
+          <div class="form-group">
+            <label class="form-label">Miles at Log</label>
+            <input class="form-input" type="number" placeholder="e.g., 12450" />
+          </div>
+          <div class="form-group">
+            <label class="form-label">Hours at Log</label>
+            <input class="form-input" type="number" placeholder="e.g., 24.5" />
+          </div>
+        </div>
+        <div class="form-group">
+          <label class="form-label">Engine</label>
+          <select class="form-select">
+            <option value="">Any engine</option>
+            <option value="port">Port Motor</option>
+            <option value="starboard">Starboard Motor</option>
+          </select>
+        </div>
+      </div>
+
+      <div class="form-group">
+        <label class="form-label">Notes</label>
+        <textarea class="form-textarea" placeholder="e.g., Filled up at Marina Gas Station on slip 42"></textarea>
+      </div>
+
+      <div class="form-actions">
+        <button class="btn-primary">Save Fuel Log</button>
+        <button class="btn-secondary">Cancel</button>
+      </div>
+    </div>
+
+    <!-- Mileage Form (hidden) -->
+    <div class="form-card" id="form-mileage" style="display:none;">
+      <div class="form-card-title">Mileage Log <span style="font-size:13px;font-weight:400;color:var(--fg-soft);">for Sea Ray 250</span></div>
+
+      <div class="form-row">
+        <div class="form-group">
+          <label class="form-label">Date <span class="required">*</span></label>
+          <input class="form-input" type="date" value="2026-07-15" />
+        </div>
+        <div class="form-group">
+          <label class="form-label">One of the following <span class="required">*</span></label>
+          <select class="form-select" id="mileage-type" onchange="toggleMileageFields()">
+            <option value="odometer">Odometer Reading</option>
+            <option value="trip-miles">Trip Miles</option>
+          </select>
+        </div>
+      </div>
+
+      <div class="form-group" id="mileage-value-group">
+        <label class="form-label" id="mileage-label">Odometer Reading <span class="required">*</span></label>
+        <input class="form-input" type="number" placeholder="e.g., 12450.3" step="0.1" />
+        <div class="form-hint">Last known odometer from the engine hours log (1224.5)</div>
+      </div>
+
+      <div class="form-group">
+        <label class="form-label">Purpose</label>
+        <select class="form-select">
+          <option value="">Select purpose...</option>
+          <option value="personal">Personal Use</option>
+          <option value="business">Business Use</option>
+          <option value="charity">Charity</option>
+          <option value="commute">Commute</option>
+        </select>
+      </div>
+
+      <div class="form-group">
+        <label class="form-label">Notes</label>
+        <input class="form-input" placeholder="e.g., Lake Winnipesaukee day trip" />
+      </div>
+
+      <div class="form-actions">
+        <button class="btn-primary">Save Mileage</button>
+        <button class="btn-secondary">Cancel</button>
+      </div>
+    </div>
+
+    <!-- Hours Form (hidden) -->
+    <div class="form-card" id="form-hours" style="display:none;">
+      <div class="form-card-title">Engine Hours Log <span style="font-size:13px;font-weight:400;color:var(--fg-soft);">for Sea Ray 250</span></div>
+
+      <div class="form-row">
+        <div class="form-group">
+          <label class="form-label">Date <span class="required">*</span></label>
+          <input class="form-input" type="date" value="2026-07-15" />
+        </div>
+        <div class="form-group">
+          <label class="form-label">Readings <span class="required">*</span></label>
+          <div style="display:flex;gap:12px;">
+            <label style="display:flex;align-items:center;gap:6px;font-size:13px;cursor:pointer;">
+              <input type="radio" name="hours-readings" value="total" checked style="accent-color:var(--accent);" /> Total Hours
+            </label>
+            <label style="display:flex;align-items:center;gap:6px;font-size:13px;cursor:pointer;">
+              <input type="radio" name="hours-readings" value="trip" style="accent-color:var(--accent);" /> Trip Hours
+            </label>
+          </div>
+        </div>
+      </div>
+
+      <div class="form-group">
+        <label class="form-label">Hours Reading <span class="required">*</span></label>
+        <input class="form-input" type="number" placeholder="e.g., 340.5" step="0.1" />
+      </div>
+
+      <div class="form-group">
+        <label class="form-label">Engine <span class="required">*</span></label>
+        <select class="form-select">
+          <option value="">Select engine...</option>
+          <option value="port">Port Motor — Yamaha F250 (Active)</option>
+          <option value="starboard">Starboard Motor — Yamaha F250 (Active)</option>
+        </select>
+      </div>
+
+      <div class="form-group">
+        <label class="form-label">Notes</label>
+        <input class="form-input" placeholder="e.g., Total after a full day on the lake" />
+      </div>
+
+      <div class="form-actions">
+        <button class="btn-primary">Save Hours</button>
+        <button class="btn-secondary">Cancel</button>
+      </div>
+    </div>
+  </div>
+
+  <script>
+    function selectType(card, type) {
+      document.querySelectorAll('.type-card').forEach(c => c.classList.remove('selected'));
+      card.classList.add('selected');
+      ['service','fuel','mileage','hours'].forEach(t => {
+        document.getElementById('form-' + t).style.display = t === type ? 'block' : 'none';
+      });
+    }
+
+    function toggleOptional() {
+      const fields = document.querySelectorAll('.optional-fields');
+      fields.forEach(f => {
+        f.classList.toggle('show');
+      });
+      const toggle = event.currentTarget;
+      toggle.classList.toggle('open');
+    }
+
+    function toggleMileageFields() {
+      const type = document.getElementById('mileage-type').value;
+      const label = document.getElementById('mileage-label');
+      const input = document.querySelector('#form-mileage .form-input');
+      if (type === 'trip-miles') {
+        label.textContent = 'Trip Miles ';
+        input.placeholder = 'e.g., 15.5';
+      } else {
+        label.textContent = 'Odometer Reading ';
+        input.placeholder = 'e.g., 12450.3';
+      }
+    }
+  </script>
+</body>
+</html>

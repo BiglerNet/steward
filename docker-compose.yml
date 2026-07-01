@@ -1,0 +1,45 @@
+services:
+  postgres:
+    image: postgres:16-alpine
+    environment:
+      POSTGRES_DB: ${POSTGRES_DB:-steward}
+      POSTGRES_USER: ${POSTGRES_USER:-steward}
+      POSTGRES_PASSWORD: ${POSTGRES_PASSWORD:-steward}
+    ports:
+      - "5432:5432"
+    volumes:
+      - postgres_data:/var/lib/postgresql/data
+    healthcheck:
+      test: ["CMD-SHELL", "pg_isready -U ${POSTGRES_USER:-steward}"]
+      interval: 5s
+      timeout: 5s
+      retries: 5
+
+  api:
+    build:
+      context: .
+      dockerfile: src/Steward.Api/Dockerfile
+    depends_on:
+      postgres:
+        condition: service_healthy
+    env_file: .env
+    ports:
+      - "5000:8080"
+    volumes:
+      - storage_data:/app/storage
+      # Host-visible alternative for inspecting uploaded files directly:
+      # - ./.storage:/app/storage
+
+  web:
+    build:
+      context: src/Steward.Web
+      dockerfile: Dockerfile
+    depends_on:
+      - api
+    env_file: .env
+    ports:
+      - "8081:80"
+
+volumes:
+  postgres_data:
+  storage_data:

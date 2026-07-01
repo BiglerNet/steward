@@ -1,0 +1,263 @@
+<!doctype html>
+<html lang="en">
+<head>
+  <meta charset="utf-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1" />
+  <title>My Gear — MaintenanceTracker</title>
+  <style>
+    :root {
+      --bg: #f7f7f5;
+      --surface: #ffffff;
+      --fg: #1c1b19;
+      --fg-soft: #5b5a57;
+      --border: #e7e5e4;
+      --accent: #2f9e44;
+      --accent-hover: #2b8a3e;
+      --radius: 12px;
+      --font-sans: -apple-system, BlinkMacSystemFont, 'Segoe UI', system-ui, sans-serif;
+    }
+    * { box-sizing: border-box; margin: 0; padding: 0; }
+    body { font-family: var(--font-sans); background: var(--bg); color: var(--fg); line-height: 1.5; min-height: 100vh; }
+    .shell { max-width: 1100px; margin: 0 auto; padding: 32px 24px; }
+
+    /* Top bar */
+    .top-bar { display: flex; align-items: center; justify-content: space-between; margin-bottom: 24px; flex-wrap: wrap; gap: 12px; }
+    .top-bar h1 { font-size: 28px; font-weight: 700; letter-spacing: -0.02em; }
+    .type-filters { display: flex; gap: 6px; flex-wrap: wrap; }
+    .type-chip {
+      padding: 6px 14px; border-radius: 99px; font-size: 13px; font-weight: 500;
+      border: 1px solid var(--border); background: var(--surface); color: var(--fg-soft);
+      cursor: pointer; transition: all 0.15s; font-family: var(--font-sans); white-space: nowrap;
+    }
+    .type-chip:hover { border-color: var(--accent); color: var(--accent); }
+    .type-chip.active { background: var(--accent); color: white; border-color: var(--accent); }
+
+    /* Add asset button */
+    .btn-outline {
+      display: inline-flex; align-items: center; gap: 6px; padding: 8px 16px;
+      border: 1px solid var(--accent); border-radius: 8px; font-size: 14px; font-weight: 600;
+      color: var(--accent); cursor: pointer; font-family: var(--font-sans); transition: all 0.15s;
+      text-decoration: none; background: transparent;
+    }
+    .btn-outline:hover { background: var(--accent); color: white; }
+    .btn-outline svg { width: 16px; height: 16px; }
+
+    /* Asset grid */
+    .asset-grid { display: grid; grid-template-columns: repeat(auto-fill, minmax(260px, 1fr)); gap: 16px; }
+    .asset-card {
+      background: var(--surface); border: 1px solid var(--border); border-radius: var(--radius); padding: 20px;
+      text-decoration: none; color: inherit; transition: box-shadow 0.2s, transform 0.15s; display: flex; flex-direction: column;
+      cursor: pointer;
+    }
+    .asset-card:hover { box-shadow: 0 4px 16px rgba(0,0,0,0.08); transform: translateY(-2px); }
+
+    .asset-card-header { display: flex; align-items: flex-start; gap: 12px; margin-bottom: 14px; }
+    .asset-card-icon {
+      width: 44px; height: 44px; border-radius: 10px; display: grid; place-items: center; font-size: 22px; flex-shrink: 0;
+    }
+    .asset-card-icon.boat { background: #dbeafe; color: #2563eb; }
+    .asset-card-icon.car { background: #fef3c7; color: #d97706; }
+    .asset-card-icon.truck { background: #d1fae5; color: #059669; }
+    .asset-card-icon.snowmobile { background: #e0e7ff; color: #4f46e5; }
+    .asset-card-icon.utv { background: #fce7f3; color: #db2777; }
+    .asset-card-icon.trailer { background: #ede9fe; color: #7c3aed; }
+    .asset-card-icon.mower { background: #d1fae5; color: #059669; }
+    .asset-card-icon.powerscraper { background: #fef3c7; color: #d97706; }
+    .asset-card-icon.small-engine { background: #f5f5dc; color: #92400e; }
+
+    .asset-card-name { font-size: 16px; font-weight: 600; color: var(--fg); }
+    .asset-card-type { font-size: 13px; color: var(--fg-soft); margin-top: 2px; }
+
+    .asset-card-body { flex: 1; }
+    .asset-detail-row { display: flex; align-items: center; gap: 6px; margin-bottom: 6px; font-size: 13px; color: var(--fg-soft); }
+    .asset-detail-row svg { width: 14px; height: 14px; flex-shrink: 0; }
+
+    .asset-card-footer {
+      margin-top: auto; padding-top: 14px; border-top: 1px solid var(--border);
+      display: flex; align-items: center; justify-content: space-between; font-size: 12px;
+    }
+    .status-badge {
+      display: inline-flex; align-items: center; gap: 4px; padding: 2px 8px; border-radius: 99px;
+      font-size: 11px; font-weight: 600; letter-spacing: 0.04em; text-transform: uppercase;
+    }
+    .status-badge.active { background: #d1fae5; color: #059669; }
+    .status-badge.maintenance { background: #fef3c7; color: #d97706; }
+    .status-badge.inactive { background: #e5e7eb; color: #6b7280; }
+
+    .add-card {
+      border: 2px dashed var(--border); background: transparent; justify-content: center; align-items: center;
+      min-height: 200px; color: var(--fg-soft); cursor: pointer; transition: all 0.15s;
+    }
+    .add-card:hover { border-color: var(--accent); color: var(--accent); background: transparent; }
+    .add-card-inner { text-align: center; }
+    .add-card-icon { width: 48px; height: 48px; border-radius: 12px; background: var(--muted); border: none; margin: 0 auto 12px; display: grid; place-items: center; }
+    .add-card-icon svg { width: 24px; height: 24px; color: currentColor; }
+    .add-card-text { font-size: 14px; font-weight: 600; }
+
+    /* Responsive */
+    @media (max-width: 768px) {
+      .shell { padding: 24px 16px; }
+      .top-bar h1 { font-size: 24px; }
+      .asset-grid { grid-template-columns: 1fr; }
+    }
+  </style>
+</head>
+<body>
+  <div class="shell">
+    <div class="top-bar">
+      <h1>My Gear</h1>
+      <div style="display:flex;align-items:center;gap:12px;">
+        <button class="btn-outline" onclick="document.getElementById('add-modal').style.display='block'">
+          <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><line x1="12" y1="5" x2="12" y2="19"/><line x1="5" y1="12" x2="19" y2="12"/></svg>
+          Add Asset
+        </button>
+      </div>
+    </div>
+
+    <div class="type-filters">
+      <button class="type-chip active" onclick="filterAssets('all')">All (5)</button>
+      <button class="type-chip" onclick="filterAssets('boat')">Boat</button>
+      <button class="type-chip" onclick="filterAssets('car')">Car</button>
+      <button class="type-chip" onclick="filterAssets('truck')">Truck</button>
+      <button class="type-chip" onclick="filterAssets('snowmobile')">Snowmobile</button>
+      <button class="type-chip" onclick="filterAssets('mower')">Mower</button>
+      <button class="type-chip" onclick="filterAssets('utv')">UTV</button>
+    </div>
+
+    <div class="asset-grid" style="margin-top:20px;">
+      <a class="asset-card" href="asset-detail.html">
+        <div class="asset-card-header">
+          <div class="asset-card-icon boat">&#9872;</div>
+          <div><div class="asset-card-name">Sea Ray 250</div><div class="asset-card-type">Boat  ·  2019</div></div>
+        </div>
+        <div class="asset-card-body">
+          <div class="asset-detail-row"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M20 21v-2a4 4 0 0 0-4-4H8a4 4 0 0 0-4 4v2"/><circle cx="12" cy="7" r="4"/></svg>HIN: ABC1234D404</div>
+          <div class="asset-detail-row"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M12 2L2 7l10 5 10-5-10-5z"/><path d="M2 17l10 5 10-5"/><path d="M2 12l10 5 10-5"/></svg>2 engines · 2 registrations</div>
+        </div>
+        <div class="asset-card-footer">
+          <span class="status-badge active">Active</span>
+          <span>Service 30 days ago</span>
+        </div>
+      </a>
+
+      <a class="asset-card" href="asset-detail.html">
+        <div class="asset-card-header">
+          <div class="asset-card-icon car">&#128663;</div>
+          <div><div class="asset-card-name">Mazda 3</div><div class="asset-card-type">Car  ·  2021</div></div>
+        </div>
+        <div class="asset-card-body">
+          <div class="asset-detail-row"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M20 21v-2a4 4 0 0 0-4-4H8a4 4 0 0 0-4 4v2"/><circle cx="12" cy="7" r="4"/></svg>VIN: 1HGCM82633A004506</div>
+          <div class="asset-detail-row"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M12 2L2 7l10 5 10-5-10-5z"/><path d="M2 17l10 5 10-5"/><path d="M2 12l10 5 10-5"/></svg>3 registrations</div>
+        </div>
+        <div class="asset-card-footer">
+          <span class="status-badge maintenance">Maintenance due</span>
+          <span class="status-badge maintenance" style="pointer-events:none;">Overdue reg</span>
+        </div>
+      </a>
+
+      <a class="asset-card" href="asset-detail.html">
+        <div class="asset-card-header">
+          <div class="asset-card-icon truck">&#128679;</div>
+          <div><div class="asset-card-name">Silverado 1500</div><div class="asset-card-type">Truck  ·  2020</div></div>
+        </div>
+        <div class="asset-card-body">
+          <div class="asset-detail-row"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M20 21v-2a4 4 0 0 0-4-4H8a4 4 0 0 0-4 4v2"/><circle cx="12" cy="7" r="4"/></svg>VIN: 3GCUYDET5LG123456</div>
+          <div class="asset-detail-row"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M12 2L2 7l10 5 10-5-10-5z"/><path d="M2 17l10 5 10-5"/><path d="M2 12l10 5 10-5"/></svg>2 registrations · 1 warranty</div>
+        </div>
+        <div class="asset-card-footer">
+          <span class="status-badge active">Active</span>
+          <span>Service 7 days ago</span>
+        </div>
+      </a>
+
+      <a class="asset-card" href="asset-detail.html">
+        <div class="asset-card-header">
+          <div class="asset-card-icon snowmobile">&#10052;</div>
+          <div><div class="asset-card-name">Ski-Doo Summit 850</div><div class="asset-card-type">Snowmobile  ·  2022</div></div>
+        </div>
+        <div class="asset-card-body">
+          <div class="asset-detail-row"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M20 21v-2a4 4 0 0 0-4-4H8a4 4 0 0 0-4 4v2"/><circle cx="12" cy="7" r="4"/></svg>VIN: 3PBCM7814NB000123</div>
+          <div class="asset-detail-row"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M12 2L2 7l10 5 10-5-10-5z"/><path d="M2 17l10 5 10-5"/><path d="M2 12l10 5 10-5"/></svg>2 registrations</div>
+        </div>
+        <div class="asset-card-footer">
+          <span class="status-badge active">Active</span>
+          <span>Winter storage due</span>
+        </div>
+      </a>
+
+      <a class="asset-card" href="asset-detail.html">
+        <div class="asset-card-header">
+          <div class="asset-card-icon mower">&#127886;</div>
+          <div><div class="asset-card-name">Husqvarna LC 140</div><div class="asset-card-type">Riding Mower  ·  2018</div></div>
+        </div>
+        <div class="asset-card-body">
+          <div class="asset-detail-row"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M20 21v-2a4 4 0 0 0-4-4H8a4 4 0 0 0-4 4v2"/><circle cx="12" cy="7" r="4"/></svg>SN: 9A9765178</div>
+          <div class="asset-detail-row"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M12 2L2 7l10 5 10-5-10-5z"/><path d="M2 17l10 5 10-5"/><path d="M2 12l10 5 10-5"/></svg>4 service records</div>
+        </div>
+        <div class="asset-card-footer">
+          <span class="status-badge active">Active</span>
+          <span>Oil change due</span>
+        </div>
+      </a>
+
+      <div class="asset-card add-card" style="display:flex;justify-content:center;align-items:center;">
+        <div class="add-card-inner">
+          <div class="add-card-icon" style="background:transparent;border:none;box-shadow:none;"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round"><line x1="12" y1="5" x2="12" y2="19"/><line x1="5" y1="12" x2="19" y2="12"/></svg></div>
+          <div class="add-card-text">Add Asset</div>
+        </div>
+      </div>
+    </div>
+
+    <!-- Add Asset Modal -->
+    <div id="add-modal" style="display:none;position:fixed;inset:0;background:rgba(0,0,0,0.4);z-index:900;display:none;align-items:center;justify-content:center;">
+      <div style="background:white;border-radius:16px;padding:32px;max-width:500px;width:90%;max-height:80vh;overflow-y:auto;">
+        <h3 style="font-size:20px;font-weight:700;margin-bottom:20px;">Add a New Asset</h3>
+        <div class="form-group" style="margin-bottom:16px;">
+          <label class="form-label" for="asset-type">Asset Type</label>
+          <select class="form-input" id="asset-type" style="width:100%;padding:10px 14px;border:1px solid var(--border);border-radius:8px;font-size:15px;font-family:var(--font-sans);background:var(--bg);color:var(--fg);">
+            <option value="">Choose a type...</option>
+            <option value="Boat">Boat</option>
+            <option value="Car">Car</option>
+            <option value="Truck">Truck</option>
+            <option value="Snowmobile">Snowmobile</option>
+            <option value="Utv">UTV</option>
+            <option value="SnowmobileTrailer">Snowmobile Trailer</option>
+            <option value="EnclosedTrailer">Enclosed Trailer</option>
+            <option value="RidingMower">Riding Mower</option>
+            <option value="PowerWasher">Power Washer</option>
+            <option value="SmallEngine">Small Engine</option>
+          </select>
+        </div>
+        <div class="form-group" style="margin-bottom:16px;">
+          <label class="form-label" for="asset-name">Name</label>
+          <input class="form-input" id="asset-name" placeholder="Sea Ray 250" style="width:100%;padding:10px 14px;border:1px solid var(--border);border-radius:8px;font-size:15px;font-family:var(--font-sans);background:var(--bg);color:var(--fg);outline:none;"/>
+        </div>
+        <div style="display:flex;gap:8px;margin-top:16px;">
+          <button class="btn-primary" style="flex:1;" onclick="document.getElementById('add-modal').style.display='none'">Add Asset</button>
+          <button class="btn-secondary" style="padding:10px 16px;background:transparent;border:1px solid var(--border);border-radius:8px;font-size:14px;font-family:var(--font-sans);color:var(--fg-soft);" onclick="document.getElementById('add-modal').style.display='none'">Cancel</button>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <script>
+    function filterAssets(type) {
+      document.querySelectorAll('.type-chip').forEach(chip => chip.classList.remove('active'));
+      event.target.classList.add('active');
+      // In production: filter asset cards by data-type attribute
+      const cards = document.querySelectorAll('.asset-card');
+      cards.forEach(card => {
+        if (type === 'all') { card.style.display = ''; return; }
+        const isActive = card.querySelector('.add-card');
+        if (isActive) return;
+        card.style.display = ''; // Filter logic here
+      });
+    }
+
+    // Close modal on backdrop click
+    document.getElementById('add-modal')?.addEventListener('click', function(e) {
+      if (e.target === this) this.style.display = 'none';
+    });
+  </script>
+</body>
+</html>

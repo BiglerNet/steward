@@ -1,0 +1,66 @@
+using Steward.Domain.Enums;
+
+namespace Steward.Application.Assets.Engines;
+
+public record EngineResponse(
+    Guid Id,
+    Guid AssetId,
+    string Label,
+    string? Make,
+    string? Model,
+    string? SerialNumber,
+    int? Year,
+    EngineType EngineType,
+    FuelType FuelType,
+    int? Cylinders,
+    decimal? DisplacementCc,
+    EngineStatus Status,
+    DateOnly? InstalledDate,
+    decimal? InstalledAtAssetMiles,
+    decimal? InstalledAtAssetHours,
+    decimal? HorsepowerHp,
+    decimal? TorqueNm,
+    decimal? OilCapacityL,
+    string? RecommendedOilType,
+    decimal? CoolantCapacityL,
+    int? RecommendedOctane);
+
+public record CreateEngineRequest(
+    string Label,
+    string? Make,
+    string? Model,
+    string? SerialNumber,
+    int? Year,
+    EngineType EngineType,
+    FuelType FuelType,
+    int? Cylinders,
+    decimal? DisplacementCc,
+    DateOnly? InstalledDate,
+    decimal? InstalledAtAssetMiles,
+    decimal? InstalledAtAssetHours,
+    decimal? HorsepowerHp,
+    decimal? TorqueNm,
+    decimal? OilCapacityL,
+    string? RecommendedOilType,
+    decimal? CoolantCapacityL,
+    int? RecommendedOctane);
+
+public record UpdateEngineRequest(
+    string Label,
+    string? Make,
+    string? Model,
+    string? SerialNumber,
+    int? Year,
+    EngineType EngineType,
+    FuelType FuelType,
+    int? Cylinders,
+    decimal? DisplacementCc,
+    DateOnly? InstalledDate,
+    decimal? InstalledAtAssetMiles,
+    decimal? InstalledAtAssetHours,
+    decimal? HorsepowerHp,
+    decimal? TorqueNm,
+    decimal? OilCapacityL,
+    string? RecommendedOilType,
+    decimal? CoolantCapacityL,
+    int? RecommendedOctane);

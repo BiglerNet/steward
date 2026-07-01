@@ -1,0 +1,38 @@
+{{- if .Values.setupJob.enabled }}
+apiVersion: batch/v1
+kind: Job
+metadata:
+  name: {{ include "steward.fullname" . }}-setup
+  labels:
+    {{- include "steward.labels" . | nindent 4 }}
+    app.kubernetes.io/component: setup
+  annotations:
+    "helm.sh/hook": post-install,pre-upgrade
+    "helm.sh/hook-delete-policy": hook-succeeded,before-hook-creation
+spec:
+  backoffLimit: {{ .Values.setupJob.backoffLimit }}
+  template:
+    metadata:
+      labels:
+        {{- include "steward.selectorLabels" . | nindent 8 }}
+        app.kubernetes.io/component: setup
+    spec:
+      restartPolicy: Never
+      initContainers:
+        {{- include "steward.initContainers.waitForDatabase" . | nindent 8 }}
+      containers:
+        - name: setup
+          image: "{{ .Values.api.image.repository }}:{{ .Values.api.image.tag }}"
+          imagePullPolicy: {{ .Values.api.image.pullPolicy }}
+          args:
+            - "--setup"
+          env:
+            {{- include "steward.database.envVars" . | nindent 12 }}
+            {{- with .Values.api.env }}
+            {{- toYaml . | nindent 12 }}
+            {{- end }}
+            - name: PlatformAdmin__Email
+              value: {{ .Values.platformAdmin.email | quote }}
+          resources:
+            {{- toYaml .Values.api.resources | nindent 12 }}
+{{- end }}

@@ -1,0 +1,58 @@
+nameOverride: ""
+fullnameOverride: ""
+
+api:
+  image:
+    repository: ghcr.io/biglernet/steward/api
+    tag: latest
+    pullPolicy: IfNotPresent
+  port: 8080
+  resources:
+    requests:
+      cpu: 100m
+      memory: 128Mi
+    limits:
+      cpu: 500m
+      memory: 512Mi
+  nodeSelector: {}
+  env:
+    - name: ASPNETCORE_ENVIRONMENT
+      value: Production
+    - name: ASPNETCORE_URLS
+      value: http://+:8080
+
+web:
+  image:
+    repository: ghcr.io/biglernet/steward/web
+    tag: latest
+    pullPolicy: IfNotPresent
+  port: 80
+  resources:
+    requests:
+      cpu: 50m
+      memory: 64Mi
+    limits:
+      cpu: 200m
+      memory: 128Mi
+
+database:
+  enabled: true
+  postgresVersion: 17
+  username: steward
+  storage: 10Gi
+  storageClassName: nfs-csi-slow
+  backups:
+    enabled: false
+    backupStorage: 20Gi
+
+ingress:
+  className: traefik
+  host: ""
+  tlsSecretName: ""
+
+setupJob:
+  enabled: true
+  backoffLimit: 6
+
+platformAdmin:
+  email: ""

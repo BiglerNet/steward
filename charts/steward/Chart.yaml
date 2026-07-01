@@ -1,0 +1,6 @@
+apiVersion: v2
+name: steward
+description: Helm chart for the Steward application (API + Web UI + Postgres)
+type: application
+version: 0.1.0
+appVersion: "0.1.0"

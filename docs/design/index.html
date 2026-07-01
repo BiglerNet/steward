@@ -1,0 +1,667 @@
+<!doctype html>
+<html lang="en">
+<head>
+  <meta charset="utf-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1" />
+  <title>MaintenanceTracker — Garage Overview</title>
+  <style>
+    :root {
+      --bg: #f7f7f5;
+      --surface: #ffffff;
+      --fg: #1c1b19;
+      --fg-soft: #5b5a57;
+      --border: #e7e5e4;
+      --accent: #2f9e44;
+      --accent-hover: #2b8a3e;
+      --muted: #f5f5f4;
+      --radius: 12px;
+      --font-sans: -apple-system, BlinkMacSystemFont, 'Segoe UI', system-ui, sans-serif;
+    }
+
+    * { box-sizing: border-box; margin: 0; padding: 0; }
+
+    body {
+      font-family: var(--font-sans);
+      background: var(--bg);
+      color: var(--fg);
+      line-height: 1.5;
+      min-height: 100vh;
+    }
+
+    /* Top Navigation Bar */
+    .top-nav {
+      height: 56px;
+      background: var(--surface);
+      border-bottom: 1px solid var(--border);
+      display: flex;
+      align-items: center;
+      padding: 0 24px;
+      position: fixed;
+      top: 0;
+      left: 0;
+      right: 0;
+      z-index: 100;
+    }
+
+    .top-nav-brand {
+      display: flex;
+      align-items: center;
+      gap: 10px;
+      font-size: 15px;
+      font-weight: 600;
+      letter-spacing: -0.02em;
+      color: var(--fg);
+      text-decoration: none;
+    }
+
+    .top-nav-brand svg {
+      width: 24px;
+      height: 24px;
+      color: var(--accent);
+    }
+
+    .top-nav-links {
+      display: flex;
+      align-items: center;
+      gap: 2px;
+      margin-left: 40px;
+      height: 100%;
+      flex: 1;
+    }
+
+    .top-nav-link {
+      display: flex;
+      align-items: center;
+      gap: 6px;
+      height: 56px;
+      padding: 0 14px;
+      font-size: 13px;
+      font-weight: 500;
+      color: var(--fg-soft);
+      text-decoration: none;
+      border-bottom: 1.5px solid transparent;
+      transition: color 0.12s, border-color 0.12s;
+      white-space: nowrap;
+    }
+
+    .top-nav-link:hover {
+      color: var(--fg);
+    }
+
+    .top-nav-link.active {
+      color: var(--fg);
+      border-bottom-color: var(--accent);
+    }
+
+    .top-nav-link svg {
+      width: 16px;
+      height: 16px;
+      flex-shrink: 0;
+    }
+
+    .top-nav-spacer {
+      flex: 1;
+    }
+
+    .top-nav-avatar {
+      width: 28px;
+      height: 28px;
+      border-radius: 50%;
+      background: var(--accent);
+      color: white;
+      display: grid;
+      place-items: center;
+      font-size: 11px;
+      font-weight: 600;
+      cursor: pointer;
+    }
+
+    /* Main Content */
+    .main-content {
+      margin-top: 56px;
+      padding: 36px 48px 60px;
+      max-width: 1200px;
+    }
+
+    .page-header {
+      margin-bottom: 28px;
+    }
+
+    .page-title {
+      font-size: 32px;
+      font-weight: 700;
+      letter-spacing: -0.02em;
+      color: var(--fg);
+      line-height: 1.2;
+    }
+
+    .page-subtitle {
+      font-size: 16px;
+      color: var(--fg-soft);
+      margin-top: 4px;
+    }
+
+    /* Household Selector */
+    .household-bar {
+      display: flex;
+      align-items: center;
+      gap: 12px;
+      background: var(--surface);
+      border: 1px solid var(--border);
+      border-radius: var(--radius);
+      padding: 16px 20px;
+      margin-bottom: 32px;
+    }
+
+    .household-selector {
+      display: flex;
+      align-items: center;
+      gap: 10px;
+      flex: 1;
+    }
+
+    .household-selector-trigger {
+      display: flex;
+      align-items: center;
+      gap: 8px;
+      padding: 6px 12px;
+      border-radius: 8px;
+      border: 1px solid var(--border);
+      background: var(--surface);
+      font-size: 14px;
+      font-weight: 600;
+      color: var(--fg);
+      cursor: pointer;
+      transition: background 0.15s;
+      font-family: var(--font-sans);
+    }
+
+    .household-selector-trigger:hover {
+      background: var(--muted);
+    }
+
+    .household-selector-trigger svg {
+      width: 14px;
+      height: 14px;
+      color: var(--fg-soft);
+    }
+
+    .household-list {
+      display: flex;
+      flex-direction: column;
+      background: var(--surface);
+      border: 1px solid var(--border);
+      border-radius: 8px;
+      box-shadow: 0 4px 12px rgba(0,0,0,0.08);
+      padding: 4px;
+      min-width: 200px;
+      display: none;
+      position: absolute;
+      z-index: 200;
+    }
+
+    .household-list.show {
+      display: flex;
+    }
+
+    .household-list-item {
+      padding: 8px 12px;
+      font-size: 13px;
+      border-radius: 6px;
+      cursor: pointer;
+      transition: background 0.15s;
+    }
+
+    .household-list-item:hover {
+      background: var(--muted);
+    }
+
+    .household-list-item.active {
+      background: var(--accent);
+      color: white;
+    }
+
+    .btn-add-household {
+      display: inline-flex;
+      align-items: center;
+      gap: 6px;
+      padding: 7px 14px;
+      background: var(--accent);
+      color: white;
+      border: none;
+      border-radius: 8px;
+      font-size: 13px;
+      font-weight: 600;
+      cursor: pointer;
+      font-family: var(--font-sans);
+      transition: background 0.15s;
+    }
+
+    .btn-add-household:hover {
+      background: var(--accent-hover);
+    }
+
+    .household-name-text {
+      position: fixed;
+      top: 0;
+      left: -9999px;
+    }
+
+    /* Quick Stats */
+    .stats-row {
+      display: grid;
+      grid-template-columns: repeat(4, 1fr);
+      gap: 16px;
+      margin-bottom: 32px;
+    }
+
+    .stat-card {
+      background: var(--surface);
+      border: 1px solid var(--border);
+      border-radius: var(--radius);
+      padding: 20px;
+      text-align: center;
+    }
+
+    .stat-value {
+      font-size: 36px;
+      font-weight: 700;
+      letter-spacing: -0.02em;
+      color: var(--fg);
+      line-height: 1;
+    }
+
+    .stat-label {
+      font-size: 13px;
+      color: var(--fg-soft);
+      margin-top: 6px;
+    }
+
+    /* My Gear Section */
+    .section-header {
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      margin-bottom: 16px;
+    }
+
+    .section-title {
+      font-size: 20px;
+      font-weight: 700;
+      color: var(--fg);
+    }
+
+    .btn-primary {
+      display: inline-flex;
+      align-items: center;
+      gap: 6px;
+      padding: 8px 16px;
+      background: var(--accent);
+      color: white;
+      border: none;
+      border-radius: 8px;
+      font-size: 14px;
+      font-weight: 600;
+      cursor: pointer;
+      font-family: var(--font-sans);
+      transition: background 0.15s;
+      text-decoration: none;
+    }
+
+    .btn-primary:hover {
+      background: var(--accent-hover);
+    }
+
+    .btn-primary svg {
+      width: 16px;
+      height: 16px;
+    }
+
+    /* Asset Cards */
+    .assets-grid {
+      display: grid;
+      grid-template-columns: repeat(auto-fill, minmax(220px, 1fr));
+      gap: 16px;
+      margin-bottom: 40px;
+    }
+
+    .asset-card {
+      background: var(--surface);
+      border: 1px solid var(--border);
+      border-radius: var(--radius);
+      padding: 20px;
+      text-decoration: none;
+      color: inherit;
+      transition: box-shadow 0.2s, transform 0.15s;
+      display: flex;
+      flex-direction: column;
+      cursor: pointer;
+    }
+
+    .asset-card:hover {
+      box-shadow: 0 4px 16px rgba(0,0,0,0.1);
+      transform: translateY(-2px);
+    }
+
+    .asset-type-icon {
+      width: 44px;
+      height: 44px;
+      border-radius: 10px;
+      display: grid;
+      place-items: center;
+      margin-bottom: 14px;
+      font-size: 20px;
+    }
+
+    .asset-type-icon.boat { background: #dff6ff; }
+    .asset-type-icon.car { background: #fff3e0; }
+    .asset-type-icon.truck { background: #e8f5e9; }
+    .asset-type-icon.snowmobile { background: #e3f2fd; }
+    .asset-type-icon.utv { background: #fce4ec; }
+    .asset-type-icon.trailer { background: #f3e5f5; }
+    .asset-type-icon.mower { background: #e8f5e9; }
+    .asset-type-icon.powerscraper { background: #fff8e1; }
+    .asset-type-icon.small-engine { background: #f5f5dc; }
+
+    .asset-card-name {
+      font-size: 16px;
+      font-weight: 600;
+      color: var(--fg);
+      margin-bottom: 2px;
+    }
+
+    .asset-card-type {
+      font-size: 13px;
+      color: var(--fg-soft);
+    }
+
+    .asset-card-meta {
+      margin-top: auto;
+      padding-top: 12px;
+      border-top: 1px solid var(--border);
+      font-size: 12px;
+      color: var(--fg-soft);
+    }
+
+    .asset-card-meta-row {
+      display: flex;
+      align-items: center;
+      gap: 4px;
+      margin-bottom: 3px;
+    }
+
+    /* Add Asset Card */
+    .asset-card.add-asset {
+      border: 2px dashed var(--border);
+      background: transparent;
+      justify-content: center;
+      align-items: center;
+      min-height: 180px;
+      color: var(--fg-soft);
+    }
+
+    .asset-card.add-asset:hover {
+      border-color: var(--accent);
+      color: var(--accent);
+    }
+
+    .asset-card.add-asset svg {
+      width: 32px;
+      height: 32px;
+      margin-bottom: 8px;
+    }
+
+    /* Upcoming Due */
+    .due-list {
+      background: var(--surface);
+      border: 1px solid var(--border);
+      border-radius: var(--radius);
+      overflow: hidden;
+    }
+
+    .due-item {
+      display: flex;
+      align-items: center;
+      gap: 14px;
+      padding: 14px 20px;
+      border-bottom: 1px solid var(--border);
+    }
+
+    .due-item:last-child {
+      border-bottom: none;
+    }
+
+    .due-status {
+      width: 8px;
+      height: 8px;
+      border-radius: 50%;
+      flex-shrink: 0;
+    }
+
+    .due-status.due-soon { background: #f59e0b; }
+    .due-status.due-now { background: #dc2626; }
+    .due-status.due-near { background: var(--accent); }
+
+    .due-info { flex: 1; }
+
+    .due-name {
+      font-size: 14px;
+      font-weight: 600;
+      color: var(--fg);
+    }
+
+    .due-type {
+      font-size: 12px;
+      color: var(--fg-soft);
+    }
+
+    .due-date {
+      font-size: 13px;
+      font-weight: 500;
+      color: var(--fg-soft);
+      white-space: nowrap;
+    }
+
+    .due-badge {
+      font-size: 11px;
+      font-weight: 600;
+      padding: 3px 8px;
+      border-radius: 99px;
+      text-transform: uppercase;
+      letter-spacing: 0.06em;
+    }
+
+    .due-badge.overdue { background: #fef2f2; color: #dc2626; }
+    .due-badge.soon { background: #fffbeb; color: #d97706; }
+    .due-badge.upcoming { background: #f0fdf4; color: #16a34a; }
+
+    /* Responsive */
+    @media (max-width: 1024px) {
+      .main-content { padding: 28px 32px 48px; }
+      .stats-row { grid-template-columns: repeat(2, 1fr); }
+    }
+
+    @media (max-width: 768px) {
+      .top-nav { padding: 0 16px; }
+      .top-nav-links { margin-left: auto; margin-right: auto; gap: 0; }
+      .top-nav-link span { display: none; }
+      .top-nav-spacer { display: none; }
+      .main-content { padding: 24px 20px 40px; margin-left: auto; margin-right: auto; }
+      .greeting { font-size: 24px; }
+      .stats-row { grid-template-columns: 1fr 1fr; }
+      .assets-grid { grid-template-columns: 1fr; }
+    }
+  </style>
+</head>
+<body>
+  <!-- Top Navigation -->
+  <nav class="top-nav">
+    <a class="top-nav-brand" href="index.html">
+      <svg viewBox="0 0 32 32" fill="none" stroke="currentColor" stroke-width="2">
+        <rect x="3" y="6" width="26" height="20" rx="3" />
+        <path d="M3 12h26" />
+        <circle cx="10" cy="19" r="1.5" fill="currentColor" stroke="none" />
+        <circle cx="22" cy="19" r="1.5" fill="currentColor" stroke="none" />
+        <path d="M12 6V3h8v3" />
+      </svg>
+      <span>MaintenanceTracker</span>
+    </a>
+    <div class="top-nav-links">
+      <a class="top-nav-link active" href="index.html">
+        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M3 9l9-7 9 7v11a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2z"/><polyline points="9 22 9 12 15 12 15 22"/></svg>
+        <span>Dashboard</span>
+      </a>
+      <a class="top-nav-link" href="assets.html">
+        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M20 7h-9"/><path d="M14 17H3"/><path d="M17 3a4 4 0 0 0-4 4v11a4 4 0 0 1-4 4H3"/></svg>
+        <span>My Gear</span>
+      </a>
+      <a class="top-nav-link" href="new-record.html">
+        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="12" r="10"/><line x1="12" y1="8" x2="12" y2="16"/><line x1="8" y1="12" x2="16" y2="12"/></svg>
+        <span>New Entry</span>
+      </a>
+      <a class="top-nav-link" href="households.html">
+        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M17 21v-2a4 4 0 0 0-4-4H5a4 4 0 0 0-4 4v2"/><circle cx="9" cy="7" r="4"/></svg>
+        <span>My Household</span>
+      </a>
+      <a class="top-nav-link" href="household-settings.html">
+        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="12" r="3"/><path d="M19.4 15a1.65 1.65 0 0 0 .33 1.82l.06.06a2 2 0 0 1 0 2.83 2 2 0 0 1-2.83 0l-.06-.06a1.65 1.65 0 0 0-1.82-.33 1.65 1.65 0 0 0-1 1.51V21a2 2 0 0 1-2 2 2 2 0 0 1-2-2v-.09A1.65 1.65 0 0 0 9 19.4a1.65 1.65 0 0 0-1.82.33l-.06.06a2 2 0 0 1-2.83 0 2 2 0 0 1 0-2.83l.06-.06A1.65 1.65 0 0 0 4.68 15a1.65 1.65 0 0 0-1.51-1H3a2 2 0 0 1-2-2 2 2 0 0 1 2-2h.09A1.65 1.65 0 0 0 4.6 9a1.65 1.65 0 0 0-.33-1.82l-.06-.06a2 2 0 0 1 0-2.83 2 2 0 0 1 2.83 0l.06.06A1.65 1.65 0 0 0 9 4.68a1.65 1.65 0 0 0 1-1.51V3a2 2 0 0 1 2-2 2 2 0 0 1 2 2v.09a1.65 1.65 0 0 0 1 1.51 1.65 1.65 0 0 0 1.82-.33l.06-.06a2 2 0 0 1 2.83 0 2 2 0 0 1 0 2.83l-.06.06a1.65 1.65 0 0 0-.33 1.82V9a1.65 1.65 0 0 0 1.51 1H21a2 2 0 0 1 2 2 2 2 0 0 1-2 2h-.09a1.65 1.65 0 0 0-1.51 1z"/></svg>
+        <span>Settings</span>
+      </a>
+    </div>
+    <div class="top-nav-spacer"></div>
+    <div class="top-nav-avatar">JD</div>
+  </nav>
+
+  <!-- Main Content -->
+  <main class="main-content">
+      <div class="page-header">
+        <h1 class="page-title">Good morning, Jane</h1>
+        <p class="page-subtitle">Here's what's going on in your garage today.</p>
+      </div>
+
+      <!-- Household Selector -->
+      <div class="household-bar">
+        <div class="household-selector">
+          <button class="household-selector-trigger" id="hh-trigger">
+            <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M3 9l9-7 9 7v11a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2z"/><polyline points="9 22 9 12 15 12 15 22"/></svg>
+            <span>The Daves</span>
+            <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><polyline points="6 9 12 15 18 9"/></svg>
+          </button>
+          <div class="household-list" id="hh-list">
+            <div class="household-list-item active">The Daves</div>
+            <div class="household-list-item">Mike's Workshop</div>
+            <button class="btn-add-household" onclick="window.location.href='households.html'">
+              <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><line x1="12" y1="5" x2="12" y2="19"/><line x1="5" y1="12" x2="19" y2="12"/></svg>
+              New Household
+            </button>
+          </div>
+        </div>
+      </div>
+
+      <!-- Quick Stats -->
+      <div class="stats-row">
+        <div class="stat-card">
+          <div class="stat-value">5</div>
+          <div class="stat-label">Total Assets</div>
+        </div>
+        <div class="stat-card">
+          <div class="stat-value" style="color: #10b981;">47</div>
+          <div class="stat-label">Hours Saved</div>
+        </div>
+        <div class="stat-card">
+          <div class="stat-value" style="color: #f59e0b;">$2,340</div>
+          <div class="stat-label">YTD Maintenance</div>
+        </div>
+        <div class="stat-card">
+          <div class="stat-value" style="color: #dc2626;">2</div>
+          <div class="stat-label">Due This Month</div>
+        </div>
+      </div>
+
+      <!-- My Gear -->
+      <div class="section-header">
+        <h2 class="section-title">My Gear</h2>
+        <a href="assets.html" class="btn-primary">
+          <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><line x1="12" y1="5" x2="12" y2="19"/><line x1="5" y1="12" x2="19" y2="12"/></svg>
+          Add Asset
+        </a>
+      </div>
+      <div class="assets-grid">
+        <a href="asset-detail.html" class="asset-card">
+          <div class="asset-type-icon boat">⛵</div>
+          <div class="asset-card-name">Sea Ray 250</div>
+          <div class="asset-card-type">Boat  ·  2019</div>
+        </a>
+        <a href="asset-detail.html" class="asset-card">
+          <div class="asset-type-icon car">🚗</div>
+          <div class="asset-card-name">Mazda 3</div>
+          <div class="asset-card-type">Car  ·  2021</div>
+        </a>
+        <a href="asset-detail.html" class="asset-card">
+          <div class="asset-type-icon truck">🛻</div>
+          <div class="asset-card-name">Silverado 1500</div>
+          <div class="asset-card-type">Truck  ·  2020</div>
+        </a>
+        <a href="asset-detail.html" class="asset-card">
+          <div class="asset-type-icon snowmobile">🏔️</div>
+          <div class="asset-card-name">Ski-Doo Summit 850</div>
+          <div class="asset-card-type">Snowmobile  ·  2022</div>
+        </a>
+        <a href="asset-detail.html" class="asset-card">
+          <div class="asset-type-icon mower">🌱</div>
+          <div class="asset-card-name">Husqvarna LC 140</div>
+          <div class="asset-card-type">Riding Mower  ·  2018</div>
+        </a>
+        <div class="asset-card add-asset" onclick="window.location.href='assets.html'">
+          <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><line x1="12" y1="5" x2="12" y2="19"/><line x1="5" y1="12" x2="19" y2="12"/></svg>
+          <span>Add Asset</span>
+        </div>
+      </div>
+
+      <!-- Upcoming Due -->
+      <div class="section-header" style="margin-top: 8px;">
+        <h2 class="section-title">Upcoming Due</h2>
+      </div>
+      <div class="due-list">
+        <div class="due-item">
+          <div class="due-status due-now"></div>
+          <div class="due-info">
+            <div class="due-name">Mazda 3</div>
+            <div class="due-type">Registration Renewal</div>
+          </div>
+          <span class="due-badge overdue">Overdue</span>
+          <span class="due-date">Jan 15</span>
+        </div>
+        <div class="due-item">
+          <div class="due-status due-soon"></div>
+          <div class="due-info">
+            <div class="due-name">Sea Ray 250</div>
+            <div class="due-type">Annual Service</div>
+          </div>
+          <span class="due-badge soon">Due Soon</span>
+          <span class="due-date">Jul 1</span>
+        </div>
+        <div class="due-item">
+          <div class="due-status due-near"></div>
+          <div class="due-info">
+            <div class="due-name">Ski-Doo Summit</div>
+            <div class="due-type">Winter Storage Prep</div>
+          </div>
+          <span class="due-badge upcoming">Upcoming</span>
+          <span class="due-date">Aug 15</span>
+        </div>
+      </div>
+    </main>
+
+  <script>
+    // Household selector toggle
+    document.getElementById('hh-trigger').addEventListener('click', function(e) {
+      e.stopPropagation();
+      document.getElementById('hh-list').classList.toggle('show');
+    });
+    document.addEventListener('click', function() {
+      document.getElementById('hh-list').classList.remove('show');
+    });
+  </script>
+</body>
+</html>

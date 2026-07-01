@@ -1,0 +1,285 @@
+<!doctype html>
+<html lang="en">
+<head>
+  <meta charset="utf-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1" />
+  <title>Sea Ray 250 — MaintenanceTracker</title>
+  <style>
+    :root {
+      --bg: #f7f7f5;
+      --surface: #ffffff;
+      --fg: #1c1b19;
+      --fg-soft: #5b5a57;
+      --border: #e7e5e4;
+      --accent: #2f9e44;
+      --accent-hover: #2b8a3e;
+      --radius: 12px;
+      --font-sans: -apple-system, BlinkMacSystemFont, 'Segoe UI', system-ui, sans-serif;
+    }
+    * { box-sizing: border-box; margin: 0; padding: 0; }
+    body { font-family: var(--font-sans); background: var(--bg); color: var(--fg); line-height: 1.5; min-height: 100vh; }
+    .shell { max-width: 1100px; margin: 0 auto; padding: 32px 24px; }
+
+    /* Breadcrumb */
+    .breadcrumb { display: flex; align-items: center; gap: 6px; font-size: 13px; color: var(--fg-soft); margin-bottom: 24px; }
+    .breadcrumb a { color: var(--fg-soft); text-decoration: none; }
+    .breadcrumb a:hover { color: var(--accent); text-decoration: underline; }
+    .breadcrumb-sep { font-size: 14px; }
+
+    /* Asset Header */
+    .asset-header { display: flex; align-items: flex-start; justify-content: space-between; margin-bottom: 24px; flex-wrap: wrap; gap: 16px; }
+    .asset-header-info { display: flex; align-items: center; gap: 16px; }
+    .asset-header-icon { width: 56px; height: 56px; border-radius: 14px; background: #dbeafe; color: #2563eb; display: grid; place-items: center; font-size: 28px; }
+    .asset-header-name { font-size: 28px; font-weight: 700; letter-spacing: -0.02em; line-height: 1.2; }
+    .asset-header-type { font-size: 14px; color: var(--fg-soft); margin-top: 2px; }
+    .asset-header-actions { display: flex; gap: 8px; }
+    .btn-action {
+      padding: 8px 14px; border-radius: 8px; font-size: 14px; font-weight: 500; cursor: pointer;
+      font-family: var(--font-sans); transition: all 0.15s; text-decoration: none; display: inline-flex; align-items: center; gap: 6px;
+    }
+    .btn-primary { background: var(--accent); color: white; border: none; }
+    .btn-primary:hover { background: var(--accent-hover); }
+    .btn-secondary { background: var(--surface); color: var(--fg-soft); border: 1px solid var(--border); }
+    .btn-secondary:hover { background: var(--bg); color: var(--fg); }
+
+    /* Detail Cards */
+    .detail-grid { display: grid; grid-template-columns: repeat(auto-fit, minmax(320px, 1fr)); gap: 16px; margin-bottom: 24px; }
+    .detail-card { background: var(--surface); border: 1px solid var(--border); border-radius: var(--radius); overflow: hidden; }
+    .detail-card-header { padding: 14px 20px; border-bottom: 1px solid var(--border); font-size: 14px; font-weight: 600; color: var(--fg); background: var(--bg); }
+    .detail-card-body { padding: 16px 20px; }
+    .detail-row { display: flex; justify-content: space-between; padding: 8px 0; font-size: 14px; border-bottom: 1px solid var(--bg); }
+    .detail-row:last-child { border-bottom: none; }
+    .detail-row .label { color: var(--fg-soft); }
+    .detail-row .value { font-weight: 500; }
+
+    /* Tabs */
+    .tabs { border-bottom: 1px solid var(--border); margin-bottom: 24px; overflow-x: auto; }
+    .tab-list { display: flex; gap: 0; }
+    .tab { padding: 12px 20px; font-size: 14px; font-weight: 500; color: var(--fg-soft); cursor: pointer; border: none; background: none; font-family: var(--font-sans); border-bottom: 2px solid transparent; white-space: nowrap; transition: color 0.15s, border-color 0.15s; }
+    .tab:hover { color: var(--fg); }
+    .tab.active { color: var(--accent); border-bottom-color: var(--accent); }
+    .tab-count { display: inline-flex; align-items: center; justify-content: center; min-width: 20px; height: 20px; padding: 0 6px; border-radius: 99px; background: var(--bg); color: var(--fg-soft); font-size: 12px; margin-left: 6px; }
+    .tab.active .tab-count { background: var(--accent); color: white; }
+
+    /* Record Table */
+    .record-table { width: 100%; border-collapse: collapse; }
+    .record-table th { text-align: left; padding: 10px 20px; font-size: 13px; font-weight: 500; color: var(--fg-soft); border-bottom: 1px solid var(--border); background: var(--bg); }
+    .record-table td { padding: 12px 20px; font-size: 14px; border-bottom: 1px solid var(--bg); color: var(--fg); }
+    .record-table tr:last-child td { border-bottom: none; }
+    .record-table tr:hover td { background: var(--bg); }
+    .record-note { font-size: 13px; color: var(--fg-soft); max-width: 200px; overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
+    .cost-cell { font-weight: 500; font-variant-numeric: tabular-nums; }
+
+    /* Status for reg/warranty */
+    .reg-card { background: var(--surface); border: 1px solid var(--border); border-radius: var(--radius); padding: 20px; margin-bottom: 8px; }
+    .reg-card:last-child { margin-bottom: 0; }
+    .reg-card-header { display: flex; justify-content: space-between; align-items: center; margin-bottom: 12px; }
+    .reg-card-title { font-weight: 600; font-size: 15px; }
+    .reg-status { font-size: 11px; font-weight: 600; padding: 3px 8px; border-radius: 99px; text-transform: uppercase; letter-spacing: 0.06em; }
+    .reg-status.valid { background: #d1fae5; color: #059669; }
+    .reg-status.expired { background: #fef2f2; color: #dc2626; }
+    .reg-detail { display: flex; gap: 24px; font-size: 13px; color: var(--fg-soft); }
+    .reg-detail-item strong { color: var(--fg); font-weight: 500; }
+    .reg-card-actions { display: flex; gap: 8px; margin-top: 12px; }
+    .reg-link { font-size: 13px; color: var(--accent); text-decoration: none; font-weight: 500; cursor: pointer; }
+    .reg-link:hover { text-decoration: underline; }
+    .reg-doc-link { display: inline-flex; align-items: center; gap: 4px; font-size: 13px; color: var(--accent); text-decoration: none; font-weight: 500; cursor: pointer; }
+    .reg-doc-link svg { width: 14px; height: 14px; }
+
+    /* Engine List */
+    .engine-item { display: flex; align-items: flex-start; gap: 14px; padding: 14px 0; border-bottom: 1px solid var(--bg); }
+    .engine-item:last-child { border-bottom: none; }
+    .engine-status { width: 8px; height: 8px; border-radius: 50%; flex-shrink: 0; margin-top: 6px; }
+    .engine-status.active { background: var(--accent); }
+    .engine-status.retired { background: #d1d5db; }
+    .engine-info { flex: 1; }
+    .engine-name { font-weight: 600; font-size: 14px; }
+    .engine-spec { font-size: 13px; color: var(--fg-soft); margin-top: 2px; }
+
+    /* Add new section */
+    .add-section { display: flex; gap: 12px; margin-bottom: 24px; }
+
+    /* Responsive */
+    @media (max-width: 768px) {
+      .shell { padding: 24px 16px; }
+      .asset-header { flex-direction: column; }
+      .detail-grid { grid-template-columns: 1fr; }
+      .reg-detail { flex-direction: column; gap: 6px; }
+    }
+  </style>
+</head>
+<body>
+  <div class="shell">
+    <div class="breadcrumb">
+      <a href="index.html">Dashboard</a>
+      <span class="breadcrumb-sep">&#8250;</span>
+      <a href="assets.html">My Gear</a>
+      <span class="breadcrumb-sep">&#8250;</span>
+      <span class="asset-header-type">Sea Ray 250</span>
+    </div>
+
+    <div class="asset-header">
+      <div class="asset-header-info">
+        <div class="asset-header-icon">&#9872;</div>
+        <div>
+          <div class="asset-header-name">Sea Ray 250</div>
+          <div class="asset-header-type">Boat  ·  2019  ·  HIN: ABC1234D404</div>
+        </div>
+      </div>
+      <div class="asset-header-actions">
+        <button class="btn-action btn-secondary" onclick="editAsset()">Edit</button>
+        <button class="btn-action btn-primary" onclick="document.getElementById('add-record-modal').style.display='flex'">Log Service</button>
+      </div>
+    </div>
+
+    <div class="detail-grid">
+      <div class="detail-card">
+        <div class="detail-card-header">Asset Details</div>
+        <div class="detail-card-body">
+          <div class="detail-row"><span class="label">Type</span><span class="value">Sailboat</span></div>
+          <div class="detail-row"><span class="label">Year</span><span class="value">2019</span></div>
+          <div class="detail-row"><span class="label">HIN</span><span class="value">ABC1234D404</span></div>
+          <div class="detail-row"><span class="label">Engine</span><span class="value">Yamaha F250 (2)</span></div>
+          <div class="detail-row"><span class="label">Length</span><span class="value">25 ft</span></div>
+          <div class="detail-row"><span class="label">Capacity</span><span class="value">12 people</span></div>
+        </div>
+      </div>
+      <div class="detail-card">
+        <div class="detail-card-header">Upcoming Renewals</div>
+        <div class="detail-card-body">
+          <div class="reg-card" style="border:none;padding:8px 0;">
+            <div class="reg-card-header">
+              <span class="reg-card-title">Boat Registration</span>
+              <span class="reg-status valid">Valid</span>
+            </div>
+            <div class="reg-detail">
+              <span><strong>Authority:</strong> DMV</span>
+              <span><strong>Expires:</strong> Jul 1, 2027</span>
+              <span><strong>Cost:</strong> $320</span>
+            </div>
+          </div>
+          <div class="reg-card" style="border:none;padding:8px 0;">
+            <div class="reg-card-header">
+              <span class="reg-card-title">Warranty — Yamaha Outboard</span>
+              <span class="reg-status valid">Valid</span>
+            </div>
+            <div class="reg-detail">
+              <span><strong>Provider:</strong> Yamaha Motor Corporation</span>
+              <span><strong>Expires:</strong> Mar 15, 2026</span>
+            </div>
+          </div>
+        </div>
+      </div>
+    </div>
+
+    <div class="tabs">
+      <div class="tab-list">
+        <button class="tab active" onclick="switchTab(this, 'service-tab')">Service (3)</button>
+        <button class="tab" onclick="switchTab(this, 'fuel-tab')">Fuel (5)</button>
+        <button class="tab" onclick="switchTab(this, 'mileage-tab')">Mileage (8)</button>
+        <button class="tab" onclick="switchTab(this, 'hours-tab')">Hours (2)</button>
+        <button class="tab" onclick="switchTab(this, 'engines-tab')">Engines (2)</button>
+        <button class="tab" onclick="switchTab(this, 'docs-tab')">Docs (1)</button>
+      </div>
+    </div>
+
+    <!-- Service Records Tab -->
+    <div id="service-tab">
+      <div class="add-section">
+        <button class="btn-action btn-primary" onclick="document.getElementById('add-record-modal').style.display='flex'">
+          <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><line x1="12" y1="5" x2="12" y2="19"/><line x1="5" y1="12" x2="19" y2="12"/></svg>
+          Add Service Record
+        </button>
+      </div>
+      <table class="record-table">
+        <thead>
+          <tr>
+            <th>Date</th>
+            <th>Description</th>
+            <th>Provider</th>
+            <th>Cost</th>
+            <th>Notes</th>
+          </tr>
+        </thead>
+        <tbody>
+          <tr>
+            <td>Feb 15, 2026</td>
+            <td>Oil Change & Filter</td>
+            <td>Marina Service Center</td>
+            <td class="cost-cell">$185.00</td>
+            <td class="record-note">25W-40 motor oil, OEM filter</td>
+          </tr>
+          <tr>
+            <td>Oct 3, 2025</td>
+            <td>Winterization</td>
+            <td>Boat Care Plus</td>
+            <td class="cost-cell">$275.00</td>
+            <td class="record-note">Full fuel system treatment, fogging</td>
+          </tr>
+          <tr>
+            <td>Mar 22, 2025</td>
+            <td>Propeller Replacement</td>
+            <td>Yamaha Dealer</td>
+            <td class="cost-cell">$520.00</td>
+            <td class="record-note">New 15P/19P aluminum pitch prop</td>
+          </tr>
+        </tbody>
+      </table>
+    </div>
+
+    <!-- Registration Tab (hidden by default) -->
+    <div id="registration-tab" style="display:none;">
+      <div class="reg-card">
+        <div class="reg-card-header">
+          <span class="reg-card-title">Boat Registration 2026-2027</span>
+          <span class="reg-status valid">Valid until Jul 2027</span>
+        </div>
+        <div class="reg-detail" style="margin:8px 0 8px 0;">
+          <span><strong>Number:</strong> ABC-12345</span>
+          <span><strong>Issued:</strong> Jul 1, 2022</span>
+          <span><strong>Authority:</strong> DMV</span>
+        </div>
+        <div class="reg-card-actions">
+          <span class="reg-link">Renew Registration</span>
+          <span class="reg-doc-link">
+            <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8z"/><polyline points="14 2 14 8 20 8"/></svg>
+            View document
+          </span>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <!-- Add Record Modal -->
+  <div id="add-record-modal" style="display:none;position:fixed;inset:0;background:rgba(0,0,0,0.4);z-index:900;align-items:center;justify-content:center;">
+    <div style="background:white;border-radius:16px;padding:32px;max-width:500px;width:90%;max-height:80vh;overflow-y:auto;">
+      <h3 style="font-size:20px;font-weight:700;margin-bottom:20px;">Log a Service Record</h3>
+      <div style="display:flex;flex-direction:column;gap:8px;">
+        <button class="btn-action btn-secondary" style="width:100%;justify-content:flex-start;margin-bottom:4px;">Oil Change</button>
+        <button class="btn-action btn-secondary" style="width:100%;justify-content:flex-start;margin-bottom:4px;">Engine Repair</button>
+        <button class="btn-action btn-secondary" style="width:100%;justify-content:flex-start;margin-bottom:4px;">Winterization</button>
+        <button class="btn-action btn-secondary" style="width:100%;justify-content:flex-start;margin-bottom:4px;">Custom</button>
+      </div>
+      <div style="margin-top:16px;text-align:right;">
+        <button class="btn-secondary" style="padding:8px 14px;background:transparent;border:1px solid var(--border);border-radius:8px;font-size:14px;font-family:var(--font-sans);color:var(--fg-soft);" onclick="document.getElementById('add-record-modal').style.display='none'">Cancel</button>
+      </div>
+    </div>
+  </div>
+
+  <script>
+    function switchTab(tabBtn, tabId) {
+      document.querySelectorAll('.tab').forEach(t => t.classList.remove('active'));
+      tabBtn.classList.add('active');
+      // Hide all tab bodies, show target
+      ['service-tab','fuel-tab','mileage-tab','hours-tab','engines-tab','docs-tab'].forEach(id => {
+        document.getElementById(id)?.style.setProperty('display', 'none');
+      });
+      document.getElementById(tabId)?.style.setProperty('display', 'block');
+    }
+
+    function editAsset() {
+      // Navigate to edit form or open modal
+    }
+  </script>
+</body>
+</html>
