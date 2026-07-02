@@ -24,12 +24,13 @@ spec:
         - {{ .Values.database.username }}
   backups:
     pgbackrest:
-      {{- if .Values.database.backups.enabled }}
       repos:
         - name: repo1
+          {{- if .Values.database.backups.enabled }}
           schedules:
             full: "0 1 * * 0"
             differential: "0 1 * * 1-6"
+          {{- end }}
           volume:
             volumeClaimSpec:
               accessModes:
@@ -38,7 +39,4 @@ spec:
               resources:
                 requests:
                   storage: {{ .Values.database.backups.backupStorage }}
-      {{- else }}
-      repos: []
-      {{- end }}
 {{- end }}
