@@ -1,9 +1,11 @@
 FROM node:22-alpine AS build
+ARG TARGETARCH
 WORKDIR /app
 COPY package.json package-lock.json ./
-RUN npm ci
+# arm64 is emulated via QEMU in CI; V8's JIT there can hit an emulator SIGILL, so disable it for that arch only.
+RUN if [ "$TARGETARCH" = "arm64" ]; then export NODE_OPTIONS=--jitless; fi; npm ci
 COPY . .
-RUN npm run build
+RUN if [ "$TARGETARCH" = "arm64" ]; then export NODE_OPTIONS=--jitless; fi; npm run build
 
 FROM nginx:alpine AS final
 COPY nginx.conf /etc/nginx/conf.d/default.conf

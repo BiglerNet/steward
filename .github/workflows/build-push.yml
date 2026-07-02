@@ -18,6 +18,9 @@ jobs:
 
       - name: Set up QEMU
         uses: docker/setup-qemu-action@v3
+        with:
+          # Older binfmt QEMU builds SIGILL on Node/V8's arm64 JIT under emulation.
+          image: tonistiigi/binfmt:qemu-v7.0.0-28
 
       - name: Set up Docker Buildx
         uses: docker/setup-buildx-action@v3
