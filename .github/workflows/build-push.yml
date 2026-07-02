@@ -16,12 +16,9 @@ jobs:
     steps:
       - uses: actions/checkout@v4
 
-      - name: Set up QEMU
-        uses: docker/setup-qemu-action@v3
-        with:
-          # Older binfmt QEMU builds SIGILL on Node/V8's arm64 JIT under emulation.
-          image: tonistiigi/binfmt:qemu-v7.0.0-28
-
+      # ubuntu-latest runners already have binfmt/QEMU handlers registered for
+      # arm64; explicitly (re-)installing them via setup-qemu-action has been
+      # observed to swap in a QEMU build that SIGILLs on Node's arm64 JIT.
       - name: Set up Docker Buildx
         uses: docker/setup-buildx-action@v3
 
