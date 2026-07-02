@@ -133,6 +133,4 @@ Common database env vars sourced from the PGO credential secret.
     secretKeyRef:
       name: {{ include "steward.database.credentialSecret" . }}
       key: password
-- name: ConnectionStrings__DefaultConnection
-  value: "Host=$(DB_HOST);Port=$(DB_PORT);Database=$(DB_NAME);Username=$(DB_USER);Password=$(DB_PASSWORD);GSS Encryption Mode=Disable;"
 {{- end }}
