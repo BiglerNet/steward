@@ -24,10 +24,12 @@ builder.Services.AddOpenApi("v1", options =>
 builder.Services.AddProblemDetails();
 builder.Services.AddExceptionHandler<ProblemDetailsExceptionHandler>();
 
-builder.Services.AddStewardDatabase(builder.Configuration);
-builder.Services.AddStewardAuth(builder.Configuration);
+var isSetupMode = args.Contains("--setup");
 
-if (args.Contains("--setup"))
+builder.Services.AddStewardDatabase(builder.Configuration);
+builder.Services.AddStewardAuth(builder.Configuration, registerHostedServices: !isSetupMode);
+
+if (isSetupMode)
 {
     builder.Services.AddHostedService<SetupHostedService>();
 }

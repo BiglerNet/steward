@@ -21,7 +21,8 @@ public static class AuthServiceExtensions
 {
     public static IServiceCollection AddStewardAuth(
         this IServiceCollection services,
-        IConfiguration configuration)
+        IConfiguration configuration,
+        bool registerHostedServices = true)
     {
         services
             .AddIdentity<ApplicationUser, IdentityRole<Guid>>(options =>
@@ -44,7 +45,10 @@ public static class AuthServiceExtensions
 
         services.AddSingleton<InvitationExpiryService>();
         services.AddSingleton<IInvitationExpiryService>(sp => sp.GetRequiredService<InvitationExpiryService>());
-        services.AddHostedService(sp => sp.GetRequiredService<InvitationExpiryService>());
+        if (registerHostedServices)
+        {
+            services.AddHostedService(sp => sp.GetRequiredService<InvitationExpiryService>());
+        }
 
         var jwtKey = configuration["Jwt:Key"]
             ?? throw new InvalidOperationException("Jwt:Key is required.");
@@ -107,7 +111,10 @@ public static class AuthServiceExtensions
 
         services.AddAuthorization();
         services.AddScoped<IAuthorizationHandler, HouseholdAuthorizationHandler>();
-        services.AddHostedService<PlatformAdminRoleSeeder>();
+        if (registerHostedServices)
+        {
+            services.AddHostedService<PlatformAdminRoleSeeder>();
+        }
 
         return services;
     }
