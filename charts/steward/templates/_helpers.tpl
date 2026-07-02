@@ -134,3 +134,14 @@ Common database env vars sourced from the PGO credential secret.
       name: {{ include "steward.database.credentialSecret" . }}
       key: password
 {{- end }}
+
+{{/*
+JWT signing key env var, sourced from the chart-managed secret (see jwt-secret.yaml).
+*/}}
+{{- define "steward.jwt.envVars" -}}
+- name: Jwt__Key
+  valueFrom:
+    secretKeyRef:
+      name: {{ printf "%s-jwt" (include "steward.fullname" .) }}
+      key: key
+{{- end }}

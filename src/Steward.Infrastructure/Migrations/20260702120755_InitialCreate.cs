@@ -1,4 +1,4 @@
-using System;
+﻿using System;
 using Microsoft.EntityFrameworkCore.Migrations;
 using Npgsql.EntityFrameworkCore.PostgreSQL.Metadata;
 
@@ -12,8 +12,12 @@ namespace Steward.Infrastructure.Migrations
         /// <inheritdoc />
         protected override void Up(MigrationBuilder migrationBuilder)
         {
+            migrationBuilder.EnsureSchema(
+                name: "steward");
+
             migrationBuilder.CreateTable(
                 name: "AspNetRoles",
+                schema: "steward",
                 columns: table => new
                 {
                     Id = table.Column<Guid>(type: "uuid", nullable: false),
@@ -28,6 +32,7 @@ namespace Steward.Infrastructure.Migrations
 
             migrationBuilder.CreateTable(
                 name: "AspNetUsers",
+                schema: "steward",
                 columns: table => new
                 {
                     Id = table.Column<Guid>(type: "uuid", nullable: false),
@@ -55,6 +60,7 @@ namespace Steward.Infrastructure.Migrations
 
             migrationBuilder.CreateTable(
                 name: "Assets",
+                schema: "steward",
                 columns: table => new
                 {
                     Id = table.Column<Guid>(type: "uuid", nullable: false),
@@ -92,6 +98,7 @@ namespace Steward.Infrastructure.Migrations
 
             migrationBuilder.CreateTable(
                 name: "AspNetRoleClaims",
+                schema: "steward",
                 columns: table => new
                 {
                     Id = table.Column<int>(type: "integer", nullable: false)
@@ -106,6 +113,7 @@ namespace Steward.Infrastructure.Migrations
                     table.ForeignKey(
                         name: "FK_AspNetRoleClaims_AspNetRoles_RoleId",
                         column: x => x.RoleId,
+                        principalSchema: "steward",
                         principalTable: "AspNetRoles",
                         principalColumn: "Id",
                         onDelete: ReferentialAction.Cascade);
@@ -113,6 +121,7 @@ namespace Steward.Infrastructure.Migrations
 
             migrationBuilder.CreateTable(
                 name: "AspNetUserClaims",
+                schema: "steward",
                 columns: table => new
                 {
                     Id = table.Column<int>(type: "integer", nullable: false)
@@ -127,6 +136,7 @@ namespace Steward.Infrastructure.Migrations
                     table.ForeignKey(
                         name: "FK_AspNetUserClaims_AspNetUsers_UserId",
                         column: x => x.UserId,
+                        principalSchema: "steward",
                         principalTable: "AspNetUsers",
                         principalColumn: "Id",
                         onDelete: ReferentialAction.Cascade);
@@ -134,6 +144,7 @@ namespace Steward.Infrastructure.Migrations
 
             migrationBuilder.CreateTable(
                 name: "AspNetUserLogins",
+                schema: "steward",
                 columns: table => new
                 {
                     LoginProvider = table.Column<string>(type: "text", nullable: false),
@@ -147,6 +158,7 @@ namespace Steward.Infrastructure.Migrations
                     table.ForeignKey(
                         name: "FK_AspNetUserLogins_AspNetUsers_UserId",
                         column: x => x.UserId,
+                        principalSchema: "steward",
                         principalTable: "AspNetUsers",
                         principalColumn: "Id",
                         onDelete: ReferentialAction.Cascade);
@@ -154,6 +166,7 @@ namespace Steward.Infrastructure.Migrations
 
             migrationBuilder.CreateTable(
                 name: "AspNetUserRoles",
+                schema: "steward",
                 columns: table => new
                 {
                     UserId = table.Column<Guid>(type: "uuid", nullable: false),
@@ -165,12 +178,14 @@ namespace Steward.Infrastructure.Migrations
                     table.ForeignKey(
                         name: "FK_AspNetUserRoles_AspNetRoles_RoleId",
                         column: x => x.RoleId,
+                        principalSchema: "steward",
                         principalTable: "AspNetRoles",
                         principalColumn: "Id",
                         onDelete: ReferentialAction.Cascade);
                     table.ForeignKey(
                         name: "FK_AspNetUserRoles_AspNetUsers_UserId",
                         column: x => x.UserId,
+                        principalSchema: "steward",
                         principalTable: "AspNetUsers",
                         principalColumn: "Id",
                         onDelete: ReferentialAction.Cascade);
@@ -178,6 +193,7 @@ namespace Steward.Infrastructure.Migrations
 
             migrationBuilder.CreateTable(
                 name: "AspNetUserTokens",
+                schema: "steward",
                 columns: table => new
                 {
                     UserId = table.Column<Guid>(type: "uuid", nullable: false),
@@ -191,6 +207,7 @@ namespace Steward.Infrastructure.Migrations
                     table.ForeignKey(
                         name: "FK_AspNetUserTokens_AspNetUsers_UserId",
                         column: x => x.UserId,
+                        principalSchema: "steward",
                         principalTable: "AspNetUsers",
                         principalColumn: "Id",
                         onDelete: ReferentialAction.Cascade);
@@ -198,6 +215,7 @@ namespace Steward.Infrastructure.Migrations
 
             migrationBuilder.CreateTable(
                 name: "Households",
+                schema: "steward",
                 columns: table => new
                 {
                     Id = table.Column<Guid>(type: "uuid", nullable: false),
@@ -213,6 +231,7 @@ namespace Steward.Infrastructure.Migrations
                     table.ForeignKey(
                         name: "FK_Households_AspNetUsers_CreatedByUserId",
                         column: x => x.CreatedByUserId,
+                        principalSchema: "steward",
                         principalTable: "AspNetUsers",
                         principalColumn: "Id",
                         onDelete: ReferentialAction.Restrict);
@@ -220,6 +239,7 @@ namespace Steward.Infrastructure.Migrations
 
             migrationBuilder.CreateTable(
                 name: "Engines",
+                schema: "steward",
                 columns: table => new
                 {
                     Id = table.Column<Guid>(type: "uuid", nullable: false),
@@ -236,7 +256,13 @@ namespace Steward.Infrastructure.Migrations
                     Status = table.Column<int>(type: "integer", nullable: false),
                     InstalledDate = table.Column<DateOnly>(type: "date", nullable: true),
                     InstalledAtAssetMiles = table.Column<decimal>(type: "numeric", nullable: true),
-                    InstalledAtAssetHours = table.Column<decimal>(type: "numeric", nullable: true)
+                    InstalledAtAssetHours = table.Column<decimal>(type: "numeric", nullable: true),
+                    HorsepowerHp = table.Column<decimal>(type: "numeric(8,2)", nullable: true),
+                    TorqueNm = table.Column<decimal>(type: "numeric(8,2)", nullable: true),
+                    OilCapacityL = table.Column<decimal>(type: "numeric(6,3)", nullable: true),
+                    RecommendedOilType = table.Column<string>(type: "text", nullable: true),
+                    CoolantCapacityL = table.Column<decimal>(type: "numeric(6,3)", nullable: true),
+                    RecommendedOctane = table.Column<int>(type: "integer", nullable: true)
                 },
                 constraints: table =>
                 {
@@ -244,6 +270,7 @@ namespace Steward.Infrastructure.Migrations
                     table.ForeignKey(
                         name: "FK_Engines_Assets_AssetId",
                         column: x => x.AssetId,
+                        principalSchema: "steward",
                         principalTable: "Assets",
                         principalColumn: "Id",
                         onDelete: ReferentialAction.Cascade);
@@ -251,6 +278,7 @@ namespace Steward.Infrastructure.Migrations
 
             migrationBuilder.CreateTable(
                 name: "MileageLogs",
+                schema: "steward",
                 columns: table => new
                 {
                     Id = table.Column<Guid>(type: "uuid", nullable: false),
@@ -266,6 +294,7 @@ namespace Steward.Infrastructure.Migrations
                     table.ForeignKey(
                         name: "FK_MileageLogs_Assets_AssetId",
                         column: x => x.AssetId,
+                        principalSchema: "steward",
                         principalTable: "Assets",
                         principalColumn: "Id",
                         onDelete: ReferentialAction.Restrict);
@@ -273,12 +302,15 @@ namespace Steward.Infrastructure.Migrations
 
             migrationBuilder.CreateTable(
                 name: "Registrations",
+                schema: "steward",
                 columns: table => new
                 {
                     Id = table.Column<Guid>(type: "uuid", nullable: false),
                     AssetId = table.Column<Guid>(type: "uuid", nullable: false),
                     RegistrationNumber = table.Column<string>(type: "text", nullable: false),
                     IssuingAuthority = table.Column<string>(type: "text", nullable: true),
+                    RenewedOn = table.Column<DateOnly>(type: "date", nullable: true),
+                    Cost = table.Column<decimal>(type: "numeric", nullable: true),
                     ExpiresOn = table.Column<DateOnly>(type: "date", nullable: true),
                     DocumentUrl = table.Column<string>(type: "text", nullable: true),
                     Notes = table.Column<string>(type: "text", nullable: true)
@@ -289,6 +321,7 @@ namespace Steward.Infrastructure.Migrations
                     table.ForeignKey(
                         name: "FK_Registrations_Assets_AssetId",
                         column: x => x.AssetId,
+                        principalSchema: "steward",
                         principalTable: "Assets",
                         principalColumn: "Id",
                         onDelete: ReferentialAction.Restrict);
@@ -296,6 +329,7 @@ namespace Steward.Infrastructure.Migrations
 
             migrationBuilder.CreateTable(
                 name: "Warranties",
+                schema: "steward",
                 columns: table => new
                 {
                     Id = table.Column<Guid>(type: "uuid", nullable: false),
@@ -313,13 +347,81 @@ namespace Steward.Infrastructure.Migrations
                     table.ForeignKey(
                         name: "FK_Warranties_Assets_AssetId",
                         column: x => x.AssetId,
+                        principalSchema: "steward",
                         principalTable: "Assets",
                         principalColumn: "Id",
                         onDelete: ReferentialAction.Restrict);
                 });
 
             migrationBuilder.CreateTable(
+                name: "HouseholdDashboards",
+                schema: "steward",
+                columns: table => new
+                {
+                    Id = table.Column<Guid>(type: "uuid", nullable: false),
+                    HouseholdId = table.Column<Guid>(type: "uuid", nullable: false),
+                    Name = table.Column<string>(type: "character varying(100)", maxLength: 100, nullable: false),
+                    IsDefault = table.Column<bool>(type: "boolean", nullable: false),
+                    Position = table.Column<int>(type: "integer", nullable: false)
+                },
+                constraints: table =>
+                {
+                    table.PrimaryKey("PK_HouseholdDashboards", x => x.Id);
+                    table.ForeignKey(
+                        name: "FK_HouseholdDashboards_Households_HouseholdId",
+                        column: x => x.HouseholdId,
+                        principalSchema: "steward",
+                        principalTable: "Households",
+                        principalColumn: "Id",
+                        onDelete: ReferentialAction.Cascade);
+                });
+
+            migrationBuilder.CreateTable(
+                name: "HouseholdInvitations",
+                schema: "steward",
+                columns: table => new
+                {
+                    Id = table.Column<Guid>(type: "uuid", nullable: false),
+                    HouseholdId = table.Column<Guid>(type: "uuid", nullable: false),
+                    InvitedByUserId = table.Column<Guid>(type: "uuid", nullable: false),
+                    Email = table.Column<string>(type: "text", nullable: false),
+                    Role = table.Column<int>(type: "integer", nullable: false),
+                    InviteCode = table.Column<string>(type: "text", nullable: false),
+                    ExpiresAt = table.Column<DateTimeOffset>(type: "timestamp with time zone", nullable: false),
+                    Status = table.Column<int>(type: "integer", nullable: false),
+                    AcceptedByUserId = table.Column<Guid>(type: "uuid", nullable: true),
+                    AcceptedAt = table.Column<DateTimeOffset>(type: "timestamp with time zone", nullable: true),
+                    CreatedAt = table.Column<DateTimeOffset>(type: "timestamp with time zone", nullable: false)
+                },
+                constraints: table =>
+                {
+                    table.PrimaryKey("PK_HouseholdInvitations", x => x.Id);
+                    table.ForeignKey(
+                        name: "FK_HouseholdInvitations_AspNetUsers_AcceptedByUserId",
+                        column: x => x.AcceptedByUserId,
+                        principalSchema: "steward",
+                        principalTable: "AspNetUsers",
+                        principalColumn: "Id",
+                        onDelete: ReferentialAction.Restrict);
+                    table.ForeignKey(
+                        name: "FK_HouseholdInvitations_AspNetUsers_InvitedByUserId",
+                        column: x => x.InvitedByUserId,
+                        principalSchema: "steward",
+                        principalTable: "AspNetUsers",
+                        principalColumn: "Id",
+                        onDelete: ReferentialAction.Restrict);
+                    table.ForeignKey(
+                        name: "FK_HouseholdInvitations_Households_HouseholdId",
+                        column: x => x.HouseholdId,
+                        principalSchema: "steward",
+                        principalTable: "Households",
+                        principalColumn: "Id",
+                        onDelete: ReferentialAction.Cascade);
+                });
+
+            migrationBuilder.CreateTable(
                 name: "HouseholdMemberships",
+                schema: "steward",
                 columns: table => new
                 {
                     Id = table.Column<Guid>(type: "uuid", nullable: false),
@@ -337,18 +439,21 @@ namespace Steward.Infrastructure.Migrations
                     table.ForeignKey(
                         name: "FK_HouseholdMemberships_AspNetUsers_InvitedByUserId",
                         column: x => x.InvitedByUserId,
+                        principalSchema: "steward",
                         principalTable: "AspNetUsers",
                         principalColumn: "Id",
                         onDelete: ReferentialAction.Restrict);
                     table.ForeignKey(
                         name: "FK_HouseholdMemberships_AspNetUsers_UserId",
                         column: x => x.UserId,
+                        principalSchema: "steward",
                         principalTable: "AspNetUsers",
                         principalColumn: "Id",
                         onDelete: ReferentialAction.Restrict);
                     table.ForeignKey(
                         name: "FK_HouseholdMemberships_Households_HouseholdId",
                         column: x => x.HouseholdId,
+                        principalSchema: "steward",
                         principalTable: "Households",
                         principalColumn: "Id",
                         onDelete: ReferentialAction.Cascade);
@@ -356,6 +461,7 @@ namespace Steward.Infrastructure.Migrations
 
             migrationBuilder.CreateTable(
                 name: "EngineHoursLogs",
+                schema: "steward",
                 columns: table => new
                 {
                     Id = table.Column<Guid>(type: "uuid", nullable: false),
@@ -371,6 +477,7 @@ namespace Steward.Infrastructure.Migrations
                     table.ForeignKey(
                         name: "FK_EngineHoursLogs_Engines_EngineId",
                         column: x => x.EngineId,
+                        principalSchema: "steward",
                         principalTable: "Engines",
                         principalColumn: "Id",
                         onDelete: ReferentialAction.Restrict);
@@ -378,6 +485,7 @@ namespace Steward.Infrastructure.Migrations
 
             migrationBuilder.CreateTable(
                 name: "FuelLogs",
+                schema: "steward",
                 columns: table => new
                 {
                     Id = table.Column<Guid>(type: "uuid", nullable: false),
@@ -400,12 +508,14 @@ namespace Steward.Infrastructure.Migrations
                     table.ForeignKey(
                         name: "FK_FuelLogs_Assets_AssetId",
                         column: x => x.AssetId,
+                        principalSchema: "steward",
                         principalTable: "Assets",
                         principalColumn: "Id",
                         onDelete: ReferentialAction.Restrict);
                     table.ForeignKey(
                         name: "FK_FuelLogs_Engines_EngineId",
                         column: x => x.EngineId,
+                        principalSchema: "steward",
                         principalTable: "Engines",
                         principalColumn: "Id",
                         onDelete: ReferentialAction.Restrict);
@@ -413,6 +523,7 @@ namespace Steward.Infrastructure.Migrations
 
             migrationBuilder.CreateTable(
                 name: "ServiceRecords",
+                schema: "steward",
                 columns: table => new
                 {
                     Id = table.Column<Guid>(type: "uuid", nullable: false),
@@ -432,128 +543,232 @@ namespace Steward.Infrastructure.Migrations
                     table.ForeignKey(
                         name: "FK_ServiceRecords_Assets_AssetId",
                         column: x => x.AssetId,
+                        principalSchema: "steward",
                         principalTable: "Assets",
                         principalColumn: "Id",
                         onDelete: ReferentialAction.Restrict);
                     table.ForeignKey(
                         name: "FK_ServiceRecords_Engines_EngineId",
                         column: x => x.EngineId,
+                        principalSchema: "steward",
                         principalTable: "Engines",
                         principalColumn: "Id",
                         onDelete: ReferentialAction.Restrict);
                 });
 
+            migrationBuilder.CreateTable(
+                name: "DashboardWidgets",
+                schema: "steward",
+                columns: table => new
+                {
+                    Id = table.Column<Guid>(type: "uuid", nullable: false),
+                    DashboardId = table.Column<Guid>(type: "uuid", nullable: false),
+                    WidgetType = table.Column<int>(type: "integer", nullable: false),
+                    WidgetSize = table.Column<int>(type: "integer", nullable: false),
+                    Position = table.Column<int>(type: "integer", nullable: false),
+                    Config = table.Column<string>(type: "character varying(2000)", maxLength: 2000, nullable: true)
+                },
+                constraints: table =>
+                {
+                    table.PrimaryKey("PK_DashboardWidgets", x => x.Id);
+                    table.ForeignKey(
+                        name: "FK_DashboardWidgets_HouseholdDashboards_DashboardId",
+                        column: x => x.DashboardId,
+                        principalSchema: "steward",
+                        principalTable: "HouseholdDashboards",
+                        principalColumn: "Id",
+                        onDelete: ReferentialAction.Cascade);
+                });
+
             migrationBuilder.CreateIndex(
                 name: "IX_AspNetRoleClaims_RoleId",
+                schema: "steward",
                 table: "AspNetRoleClaims",
                 column: "RoleId");
 
             migrationBuilder.CreateIndex(
                 name: "RoleNameIndex",
+                schema: "steward",
                 table: "AspNetRoles",
                 column: "NormalizedName",
                 unique: true);
 
             migrationBuilder.CreateIndex(
                 name: "IX_AspNetUserClaims_UserId",
+                schema: "steward",
                 table: "AspNetUserClaims",
                 column: "UserId");
 
             migrationBuilder.CreateIndex(
                 name: "IX_AspNetUserLogins_UserId",
+                schema: "steward",
                 table: "AspNetUserLogins",
                 column: "UserId");
 
             migrationBuilder.CreateIndex(
                 name: "IX_AspNetUserRoles_RoleId",
+                schema: "steward",
                 table: "AspNetUserRoles",
                 column: "RoleId");
 
             migrationBuilder.CreateIndex(
                 name: "EmailIndex",
+                schema: "steward",
                 table: "AspNetUsers",
                 column: "NormalizedEmail");
 
             migrationBuilder.CreateIndex(
                 name: "UserNameIndex",
+                schema: "steward",
                 table: "AspNetUsers",
                 column: "NormalizedUserName",
                 unique: true);
 
             migrationBuilder.CreateIndex(
                 name: "IX_Assets_HouseholdId",
+                schema: "steward",
                 table: "Assets",
                 column: "HouseholdId");
 
             migrationBuilder.CreateIndex(
+                name: "IX_DashboardWidgets_DashboardId",
+                schema: "steward",
+                table: "DashboardWidgets",
+                column: "DashboardId");
+
+            migrationBuilder.CreateIndex(
                 name: "IX_EngineHoursLogs_EngineId",
+                schema: "steward",
                 table: "EngineHoursLogs",
                 column: "EngineId");
 
             migrationBuilder.CreateIndex(
                 name: "IX_Engines_AssetId",
+                schema: "steward",
                 table: "Engines",
                 column: "AssetId");
 
             migrationBuilder.CreateIndex(
                 name: "IX_FuelLogs_AssetId",
+                schema: "steward",
                 table: "FuelLogs",
                 column: "AssetId");
 
             migrationBuilder.CreateIndex(
                 name: "IX_FuelLogs_EngineId",
+                schema: "steward",
                 table: "FuelLogs",
                 column: "EngineId");
 
             migrationBuilder.CreateIndex(
+                name: "IX_HouseholdDashboards_HouseholdId",
+                schema: "steward",
+                table: "HouseholdDashboards",
+                column: "HouseholdId");
+
+            migrationBuilder.CreateIndex(
+                name: "IX_HouseholdDashboards_HouseholdId_Name",
+                schema: "steward",
+                table: "HouseholdDashboards",
+                columns: new[] { "HouseholdId", "Name" },
+                unique: true);
+
+            migrationBuilder.CreateIndex(
+                name: "IX_HouseholdInvitations_AcceptedByUserId",
+                schema: "steward",
+                table: "HouseholdInvitations",
+                column: "AcceptedByUserId");
+
+            migrationBuilder.CreateIndex(
+                name: "IX_HouseholdInvitations_Email",
+                schema: "steward",
+                table: "HouseholdInvitations",
+                column: "Email");
+
+            migrationBuilder.CreateIndex(
+                name: "IX_HouseholdInvitations_HouseholdId",
+                schema: "steward",
+                table: "HouseholdInvitations",
+                column: "HouseholdId");
+
+            migrationBuilder.CreateIndex(
+                name: "IX_HouseholdInvitations_InviteCode",
+                schema: "steward",
+                table: "HouseholdInvitations",
+                column: "InviteCode",
+                unique: true);
+
+            migrationBuilder.CreateIndex(
+                name: "IX_HouseholdInvitations_InvitedByUserId",
+                schema: "steward",
+                table: "HouseholdInvitations",
+                column: "InvitedByUserId");
+
+            migrationBuilder.CreateIndex(
                 name: "IX_HouseholdMemberships_HouseholdId_UserId",
+                schema: "steward",
                 table: "HouseholdMemberships",
                 columns: new[] { "HouseholdId", "UserId" },
                 unique: true);
 
             migrationBuilder.CreateIndex(
                 name: "IX_HouseholdMemberships_InvitedByUserId",
+                schema: "steward",
                 table: "HouseholdMemberships",
                 column: "InvitedByUserId");
 
             migrationBuilder.CreateIndex(
                 name: "IX_HouseholdMemberships_UserId",
+                schema: "steward",
                 table: "HouseholdMemberships",
                 column: "UserId");
 
             migrationBuilder.CreateIndex(
                 name: "IX_Households_CreatedByUserId",
+                schema: "steward",
                 table: "Households",
                 column: "CreatedByUserId");
 
             migrationBuilder.CreateIndex(
                 name: "IX_Households_PublicSlug",
+                schema: "steward",
                 table: "Households",
                 column: "PublicSlug",
                 unique: true);
 
             migrationBuilder.CreateIndex(
                 name: "IX_MileageLogs_AssetId",
+                schema: "steward",
                 table: "MileageLogs",
                 column: "AssetId");
 
             migrationBuilder.CreateIndex(
                 name: "IX_Registrations_AssetId",
+                schema: "steward",
                 table: "Registrations",
                 column: "AssetId");
 
             migrationBuilder.CreateIndex(
+                name: "IX_Registrations_ExpiresOn",
+                schema: "steward",
+                table: "Registrations",
+                column: "ExpiresOn");
+
+            migrationBuilder.CreateIndex(
                 name: "IX_ServiceRecords_AssetId",
+                schema: "steward",
                 table: "ServiceRecords",
                 column: "AssetId");
 
             migrationBuilder.CreateIndex(
                 name: "IX_ServiceRecords_EngineId",
+                schema: "steward",
                 table: "ServiceRecords",
                 column: "EngineId");
 
             migrationBuilder.CreateIndex(
                 name: "IX_Warranties_AssetId",
+                schema: "steward",
                 table: "Warranties",
                 column: "AssetId");
         }
@@ -562,55 +777,84 @@ namespace Steward.Infrastructure.Migrations
         protected override void Down(MigrationBuilder migrationBuilder)
         {
             migrationBuilder.DropTable(
-                name: "AspNetRoleClaims");
+                name: "AspNetRoleClaims",
+                schema: "steward");
 
             migrationBuilder.DropTable(
-                name: "AspNetUserClaims");
+                name: "AspNetUserClaims",
+                schema: "steward");
 
             migrationBuilder.DropTable(
-                name: "AspNetUserLogins");
+                name: "AspNetUserLogins",
+                schema: "steward");
 
             migrationBuilder.DropTable(
-                name: "AspNetUserRoles");
+                name: "AspNetUserRoles",
+                schema: "steward");
 
             migrationBuilder.DropTable(
-                name: "AspNetUserTokens");
+                name: "AspNetUserTokens",
+                schema: "steward");
 
             migrationBuilder.DropTable(
-                name: "EngineHoursLogs");
+                name: "DashboardWidgets",
+                schema: "steward");
 
             migrationBuilder.DropTable(
-                name: "FuelLogs");
+                name: "EngineHoursLogs",
+                schema: "steward");
 
             migrationBuilder.DropTable(
-                name: "HouseholdMemberships");
+                name: "FuelLogs",
+                schema: "steward");
 
             migrationBuilder.DropTable(
-                name: "MileageLogs");
+                name: "HouseholdInvitations",
+                schema: "steward");
 
             migrationBuilder.DropTable(
-                name: "Registrations");
+                name: "HouseholdMemberships",
+                schema: "steward");
 
             migrationBuilder.DropTable(
-                name: "ServiceRecords");
+                name: "MileageLogs",
+                schema: "steward");
 
             migrationBuilder.DropTable(
-                name: "Warranties");
+                name: "Registrations",
+                schema: "steward");
 
             migrationBuilder.DropTable(
-                name: "AspNetRoles");
+                name: "ServiceRecords",
+                schema: "steward");
 
             migrationBuilder.DropTable(
-                name: "Households");
+                name: "Warranties",
+                schema: "steward");
 
             migrationBuilder.DropTable(
-                name: "Engines");
+                name: "AspNetRoles",
+                schema: "steward");
 
             migrationBuilder.DropTable(
-                name: "AspNetUsers");
+                name: "HouseholdDashboards",
+                schema: "steward");
 
             migrationBuilder.DropTable(
-                name: "Assets");
+                name: "Engines",
+                schema: "steward");
+
+            migrationBuilder.DropTable(
+                name: "Households",
+                schema: "steward");
+
+            migrationBuilder.DropTable(
+                name: "Assets",
+                schema: "steward");
+
+            migrationBuilder.DropTable(
+                name: "AspNetUsers",
+                schema: "steward");
         }
     }
 }

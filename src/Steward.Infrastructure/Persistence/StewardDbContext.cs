@@ -10,6 +10,9 @@ namespace Steward.Infrastructure.Persistence;
 public class StewardDbContext(DbContextOptions<StewardDbContext> options)
     : IdentityDbContext<ApplicationUser, IdentityRole<Guid>, Guid>(options)
 {
+    public const string Schema = "steward";
+
+
     public DbSet<Asset> Assets => Set<Asset>();
     public DbSet<Engine> Engines => Set<Engine>();
     public DbSet<ServiceRecord> ServiceRecords => Set<ServiceRecord>();
@@ -27,6 +30,7 @@ public class StewardDbContext(DbContextOptions<StewardDbContext> options)
     protected override void OnModelCreating(ModelBuilder builder)
     {
         base.OnModelCreating(builder);
+        builder.HasDefaultSchema(Schema);
         builder.ApplyConfigurationsFromAssembly(typeof(StewardDbContext).Assembly);
     }
 }

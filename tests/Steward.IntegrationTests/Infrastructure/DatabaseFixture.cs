@@ -14,7 +14,7 @@ public class DatabaseFixture : IAsyncLifetime
         // hosted services (PlatformAdminRoleSeeder, InvitationExpiryService) don't
         // race against migrations on a database that doesn't exist yet.
         var options = new DbContextOptionsBuilder<StewardDbContext>()
-            .UseNpgsql(IntegrationTestFactory.ConnectionString)
+            .UseNpgsql(IntegrationTestFactory.ConnectionString, DatabaseServiceExtensions.ConfigureNpgsql)
             .Options;
         using (var dbContext = new StewardDbContext(options))
         {

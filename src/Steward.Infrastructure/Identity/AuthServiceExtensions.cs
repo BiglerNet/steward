@@ -50,8 +50,11 @@ public static class AuthServiceExtensions
             services.AddHostedService(sp => sp.GetRequiredService<InvitationExpiryService>());
         }
 
-        var jwtKey = configuration["Jwt:Key"]
-            ?? throw new InvalidOperationException("Jwt:Key is required.");
+        var jwtKey = configuration["Jwt:Key"];
+        if (string.IsNullOrEmpty(jwtKey))
+        {
+            throw new InvalidOperationException("Jwt:Key is required.");
+        }
 
         var authBuilder = services
             .AddAuthentication(options =>

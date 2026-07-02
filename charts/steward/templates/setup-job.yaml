@@ -28,6 +28,7 @@ spec:
             - "--setup"
           env:
             {{- include "steward.database.envVars" . | nindent 12 }}
+            {{- include "steward.jwt.envVars" . | nindent 12 }}
             {{- with .Values.api.env }}
             {{- toYaml . | nindent 12 }}
             {{- end }}
