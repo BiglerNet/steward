@@ -7,7 +7,7 @@ on:
 
 jobs:
   deploy-prod:
-    runs-on: ubuntu-latest
+    runs-on: biglernet-arc-runner-set
     environment: production
     permissions:
       contents: read
@@ -50,7 +50,7 @@ jobs:
 
       - name: Deploy to prod
         env:
-          KUBECONFIG_DATA: ${{ secrets.BIGLERNET_ONPREM_KUBECONFIG }}
+          KUBECONFIG_DATA: ${{ secrets.STEWARD_KUBECONFIG }}
         run: |
           echo "$KUBECONFIG_DATA" > /tmp/kubeconfig
           export KUBECONFIG=/tmp/kubeconfig
