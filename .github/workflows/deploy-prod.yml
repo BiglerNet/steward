@@ -56,7 +56,6 @@ jobs:
           export KUBECONFIG=/tmp/kubeconfig
           helm upgrade --install steward charts/steward \
             -n steward-prod \
-            --create-namespace \
             -f charts/steward/values-prod.yaml \
             --set api.image.tag=${{ github.event.release.tag_name }} \
             --set web.image.tag=${{ github.event.release.tag_name }} \

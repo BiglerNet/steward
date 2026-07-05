@@ -29,7 +29,6 @@ jobs:
           SHA=${{ github.event.workflow_run.head_sha }}
           helm upgrade --install steward charts/steward \
             -n steward-test \
-            --create-namespace \
             -f charts/steward/values-test.yaml \
             --set api.image.tag=sha-${SHA} \
             --set web.image.tag=sha-${SHA} \
