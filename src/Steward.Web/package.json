@@ -12,6 +12,7 @@
     "generate:api": "openapi-typescript http://localhost:5000/openapi/v1.json -o src/api/schema.d.ts"
   },
   "dependencies": {
+    "@biglernet/design-tokens": "^0.1.2",
     "@hookform/resolvers": "^5.4.0",
     "@radix-ui/react-avatar": "^1.2.0",
     "@radix-ui/react-dialog": "^1.1.17",

@@ -2,6 +2,7 @@ using FluentValidation;
 using Steward.Api.Common;
 using Steward.Application.Auth;
 using Steward.Application.Households;
+using Steward.Domain.Common.Exceptions;
 using Steward.Infrastructure.Identity;
 using Microsoft.AspNetCore.Authentication;
 using Microsoft.AspNetCore.Authorization;
@@ -17,6 +18,7 @@ public class AuthController(
     IHouseholdService householdService,
     IValidator<RegisterRequest> registerValidator,
     IValidator<LoginRequest> loginValidator,
+    IValidator<UpdateThemePreferenceRequest> updateThemePreferenceValidator,
     UserManager<ApplicationUser> userManager,
     IConfiguration configuration) : ControllerBase
 {
@@ -103,7 +105,34 @@ public class AuthController(
             return NotFound();
         }
 
-        return Ok(new UserProfileResponse(user.Id, user.Email!, user.DisplayName, user.AvatarUrl));
+        return Ok(new UserProfileResponse(user.Id, user.Email!, user.DisplayName, user.AvatarUrl, user.ThemePreference));
+    }
+
+    [Authorize]
+    [HttpPatch("me/theme")]
+    public async Task<IActionResult> UpdateThemePreference(UpdateThemePreferenceRequest request, CancellationToken cancellationToken)
+    {
+        var validation = await updateThemePreferenceValidator.ValidateAsync(request, cancellationToken);
+        if (!validation.IsValid)
+        {
+            return ValidationProblem(validation.ToModelState());
+        }
+
+        var userId = User.GetUserId();
+        var user = await userManager.FindByIdAsync(userId.ToString());
+        if (user is null)
+        {
+            return NotFound();
+        }
+
+        user.ThemePreference = request.ThemePreference;
+        var result = await userManager.UpdateAsync(user);
+        if (!result.Succeeded)
+        {
+            throw new ConflictException(string.Join("; ", result.Errors.Select(e => e.Description)));
+        }
+
+        return Ok(new UserProfileResponse(user.Id, user.Email!, user.DisplayName, user.AvatarUrl, user.ThemePreference));
     }
 
     [Authorize]

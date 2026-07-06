@@ -19,3 +19,16 @@ if (typeof window.ResizeObserver === "undefined") {
 if (typeof window.PointerEvent === "undefined") {
   window.PointerEvent = window.MouseEvent as unknown as typeof PointerEvent;
 }
+if (typeof window.matchMedia === "undefined") {
+  window.matchMedia = (query: string) =>
+    ({
+      matches: false,
+      media: query,
+      onchange: null,
+      addListener: () => {},
+      removeListener: () => {},
+      addEventListener: () => {},
+      removeEventListener: () => {},
+      dispatchEvent: () => false,
+    }) as unknown as MediaQueryList;
+}

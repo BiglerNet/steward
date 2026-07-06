@@ -6,6 +6,7 @@ import type {
   OAuthExchangeRequest,
   PendingInviteSummary,
   RegisterRequest,
+  ThemePreference,
 } from "@/api/types";
 import { clearSession, readSession, writeSession } from "@/lib/session";
 
@@ -20,6 +21,7 @@ interface AuthContextValue {
   exchangeOAuthCode: (request: OAuthExchangeRequest) => Promise<void>;
   logout: () => void;
   removePendingInvite: (inviteCode: string) => void;
+  updateThemePreference: (themePreference: ThemePreference) => Promise<void>;
 }
 
 const AuthContext = createContext<AuthContextValue | null>(null);
@@ -79,6 +81,19 @@ export function AuthProvider({ children }: { children: ReactNode }) {
     });
   }
 
+  async function updateThemePreference(themePreference: ThemePreference) {
+    const response = await authApi.updateThemePreference({ themePreference });
+    setUser((current) => (current ? { ...current, themePreference: response.themePreference } : current));
+    if (token && user && expiresAt) {
+      writeSession({
+        token,
+        expiresAt,
+        user: { ...user, themePreference: response.themePreference },
+        pendingInvites,
+      });
+    }
+  }
+
   const value: AuthContextValue = {
     user,
     token,
@@ -90,6 +105,7 @@ export function AuthProvider({ children }: { children: ReactNode }) {
     exchangeOAuthCode,
     logout,
     removePendingInvite,
+    updateThemePreference,
   };
 
   return <AuthContext.Provider value={value}>{children}</AuthContext.Provider>;

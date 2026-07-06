@@ -45,6 +45,8 @@ jobs:
           context: ${{ matrix.image.context }}
           file: ${{ matrix.image.file }}
           platforms: ${{ matrix.platform }}
+          secrets: |
+            npm_token=${{ secrets.BIGLERNET_NPM_TOKEN }}
           outputs: type=image,name=ghcr.io/biglernet/steward/${{ matrix.image.name }},push-by-digest=true,name-canonical=true,push=true
 
       - name: Export digest

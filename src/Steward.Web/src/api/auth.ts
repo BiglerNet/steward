@@ -4,6 +4,7 @@ import type {
   LoginRequest,
   OAuthExchangeRequest,
   RegisterRequest,
+  UpdateThemePreferenceRequest,
   UserProfileResponse,
 } from "@/api/types";
 
@@ -24,6 +25,13 @@ export async function exchangeOAuthCode(request: OAuthExchangeRequest): Promise<
 
 export async function me(): Promise<UserProfileResponse> {
   const { data } = await apiClient.get<UserProfileResponse>("/api/auth/me");
+  return data;
+}
+
+export async function updateThemePreference(
+  request: UpdateThemePreferenceRequest
+): Promise<UserProfileResponse> {
+  const { data } = await apiClient.patch<UserProfileResponse>("/api/auth/me/theme", request);
   return data;
 }
 

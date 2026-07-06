@@ -32,7 +32,7 @@ describe("AuthCallbackPage", () => {
     vi.mocked(authApi.exchangeOAuthCode).mockResolvedValue({
       token: "token-123",
       expiresAt: "2026-01-01T00:00:00Z",
-      user: { id: "1", email: "user@example.com", displayName: null },
+      user: { id: "1", email: "user@example.com", displayName: null, themePreference: null },
       pendingInvites: [],
     });
 

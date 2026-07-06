@@ -1,0 +1,52 @@
+## 1. Upstream fix (biglernet-design-system repo — prerequisite)
+
+- [x] 1.1 Rename `.theme-dark` → `.dark` in `../biglernet-design-system/tokens/dark.css`
+- [x] 1.2 Update `../biglernet-design-system/prototype.html` to use `.dark` instead of `.theme-dark` (class toggling JS + any references)
+- [x] 1.3 Remove the dead duplicate `--border`/`--border-subtle` declaration in `tokens/dark.css` (oklch value immediately shadowed by the rgba value)
+- [x] 1.4 Bump the package version and `npm publish` (or equivalent) so `maintenance-tracker` can consume the fixed tokens
+
+## 2. Consume the design system package (Web)
+
+- [x] 2.1 Add `.npmrc` scoping `@biglernet` to the GitHub Packages registry
+- [x] 2.2 Add `@biglernet/design-tokens` as a dependency in `src/Steward.Web/package.json` (now `^0.1.2`, picking up the upstream light-mode hover-contrast fix) and install — done now that a GitHub PAT (`read:packages`) is configured, stored as the `BIGLERNET_NPM_TOKEN` GitHub Actions secret on the repo. Also added a repeatable install mechanism for Docker/CI (not originally scoped in this task, but required to make the dependency usable outside a dev machine): the Web `Dockerfile` runs `npm config set //npm.pkg.github.com/:_authToken=...` from a BuildKit `--mount=type=secret` (so the token never lands in an image layer) before `npm ci`; `docker-compose.yml` passes it through as a build secret sourced from `BIGLERNET_NPM_TOKEN` in `.env`; `ci.yml` and `build-push.yml` do the equivalent (`npm config set` / `docker/build-push-action`'s `secrets:` input) from `secrets.BIGLERNET_NPM_TOKEN`. Deliberately did **not** add an `_authToken` line to the committed project `.npmrc` — npm resolves project-level config above user-level `~/.npmrc`, so a placeholder like `${NODE_AUTH_TOKEN}` there would shadow a real token already configured in a dev's global `~/.npmrc` and silently break plain local `npm install` whenever that env var isn't set (hit this exact regression while testing and fixed it by moving auth into `npm config set` calls instead).
+- [x] 2.3 Load `Inter` and `IBM Plex Mono` — **implemented via Google Fonts `<link>` in `index.html` (matching the design system's own `prototype.html` precedent), not self-hosted `@font-face` files as design.md's stated preference. Flagging this as a deviation: self-hosting needs real font binaries added to the repo, which wasn't practical to source in this session.**
+
+## 3. Remap tokens (Web)
+
+- [x] 3.1 In `index.css`, replace the hand-authored hex values under `:root` with `var()` references into the design system's light tokens, per the mapping table in `design.md` (background, foreground, card, popover, border, input, primary, secondary, destructive, warning, success, radius)
+- [x] 3.2 Map `--muted`/`--accent` (background roles) to `--surface-hover`, and `--muted-foreground` to the design system's `--muted` (text token) — do not map `--accent`/`--muted` to `--accent-primary`
+- [x] 3.3 `--ring` — **implemented as `--ring: var(--accent-light)` (a soft, light-tinted color) rather than a literal `box-shadow: var(--shadow-focus)` override. Tailwind's `ring-*` utilities already render as box-shadows via `--ring`, and a competing global `:focus-visible` box-shadow rule would lose to Tailwind's utility-class specificity without `!important`. This achieves the same soft-glow intent through the existing mechanism without touching component markup or resorting to `!important`.**
+- [x] 3.4 Repeat the mapping under `.dark` using the design system's dark tokens (now `.dark`-keyed after task 1.1)
+- [x] 3.5 Manually verified end-to-end with a real registered user, driving Chromium headlessly against the native dev stack (dotnet API + Postgres + Vite): register/login card, dropdown menu (incl. the new theme radio group), dialog (Add asset), select (asset type), filter chips/tabs, table empty-state, avatar, focus ring — in both light and dark. No unintended red tint on neutral hover/selected states anywhere; brand red only appears on the primary CTA and the active filter chip, as intended. **Found and fixed one pre-existing bug while verifying**: `DropdownMenuContent` (`src/components/ui/dropdown-menu.tsx`) had both `bg-popover` and `bg-background` classes — `bg-background` won the cascade, so every dropdown menu (not just the new theme control) was rendering at page-background darkness instead of the popover/card surface. Removed the stray `bg-background` class; not something this change introduced, but it directly affected the hover-state check this task asked for, so fixed inline. **Flagging, not fixing**: in light mode the design system's own `--surface-hover` (oklch 99.5%) is only 0.5% lighter than `--surface`/`--popover` (100%/99%), so neutral hover highlights (e.g. "Log out") are very subtle in light mode specifically — clearly visible in dark mode (19% → 24%). This is an upstream token characteristic, not a mapping bug on our side; worth a call on whether to request a stronger light-mode hover token from biglernet-design-system.
+- [x] 3.6 Remove/retire `docs/design/tokens.md` as the token source of truth (or mark it superseded) now that `biglernet-design-system` is authoritative
+
+## 4. Backend: ThemePreference field + endpoint (Domain/Application/Infrastructure/Api)
+
+- [x] 4.1 Add `ThemePreference` to `ApplicationUser` in `src/Steward.Infrastructure/Identity/ApplicationUser.cs` — **implemented as `Steward.Domain.Enums.ThemePreference?` (plain C# enum, stored as a nullable `integer` column, consistent with every other enum in this codebase, e.g. `HouseholdMemberStatus`). The API still serializes it as `"Light"`/`"Dark"`/`"System"` strings thanks to the `JsonStringEnumConverter` already registered globally in `Program.cs`, so the wire contract matches the spec despite the DB column being an int, not a string.**
+- [x] 4.2 Create and apply an EF Core migration adding the nullable `ThemePreference` column — `20260705232727_AddThemePreference`, applied to the local dev database
+- [x] 4.3 Add `ThemePreference` to `AuthenticatedUser` and `UserProfileResponse` in `src/Steward.Application/Auth/Dtos.cs`
+- [x] 4.4 Update `AuthService` (register/login/OAuth exchange paths all funnel through `BuildAuthResponseAsync`) to populate `ThemePreference` on the returned `AuthenticatedUser`
+- [x] 4.5 Add `PATCH /api/auth/me/theme` to `AuthController.cs`: `[Authorize]`, accepts `{ themePreference }`, updates the calling user's `ApplicationUser` via `UserManager`, returns the updated `UserProfileResponse`
+- [x] 4.6 Add `UpdateThemePreferenceRequest` + `UpdateThemePreferenceRequestValidator` (FluentValidation `IsInEnum()`), auto-registered via the existing `AddValidatorsFromAssembly` scan
+- [x] 4.7 Update `Me()` in `AuthController.cs` to include `ThemePreference` in its `UserProfileResponse`
+- [x] 4.8 Regenerate the frontend's typed API client (`npm run generate:api` with the API running) to pick up the new field/endpoint — **note: `schema.d.ts` types `ThemePreference` as `number`, not a string literal union. This is a pre-existing, codebase-wide quirk (every enum, e.g. `HouseholdMemberRole`, `WidgetSize`, has the same mistyping) in how the Microsoft.AspNetCore.OpenApi schema describes enums vs. how `JsonStringEnumConverter` actually serializes them at runtime. Out of scope to fix here; frontend code below types theme values explicitly rather than trusting the generated type.**
+
+## 5. Frontend: ThemeProvider and resolution order (Web)
+
+- [x] 5.1 Created `src/context/ThemeContext.tsx` (`ThemeProvider`/`useTheme`) implementing the resolution order: authenticated user's `themePreference` → `localStorage` (`mt.themePreference`, via new `src/lib/theme.ts`) → `"System"`, with `System` resolved live against `prefers-color-scheme`
+- [x] 5.2 Applies `.dark` on `document.documentElement` via `useLayoutEffect` (not `useEffect`) so it runs before the browser paints, avoiding a flash of the wrong theme. Since `AuthContext`'s session/user hydration from `localStorage` is already synchronous (not an effect), this covers first paint on reload too, not just client-side navigation.
+- [x] 5.3 `AuthContext.tsx` now exposes `user.themePreference` and an `updateThemePreference(themePreference)` mutation that calls the new endpoint and updates both React state and the persisted session (mirrors the existing `removePendingInvite` pattern)
+- [x] 5.4 `ThemeProvider.setThemePreference`: updates local React state immediately, writes to `localStorage` unconditionally, and calls `AuthContext.updateThemePreference` only when `isAuthenticated`
+- [x] 5.5 `ThemeProvider` registers a `prefers-color-scheme` `matchMedia` change listener and re-resolves the effective theme live whenever the active preference is `"System"`
+
+## 6. Frontend: UserMenu control (Web)
+
+- [x] 6.1 Added a `DropdownMenuRadioGroup`/`DropdownMenuRadioItem` (new primitive added to `components/ui/dropdown-menu.tsx`, wrapping Radix's `RadioItem` — didn't exist before) with Light/Dark/System items to `UserMenu.tsx`, above "Log out", showing the active choice via the radio indicator
+- [x] 6.2 `onValueChange` on the radio group calls `ThemeProvider`'s `setThemePreference` directly
+
+## 7. Tests
+
+- [x] 7.1 `tests/Steward.UnitTests/Auth/UpdateThemePreferenceRequestValidatorTests.cs` (validation) + `tests/Steward.UnitTests/Identity/AuthServiceTests.cs` additions (ThemePreference propagation through register/OAuth exchange). Scoping and 401 covered at the integration level (7.2) since they require the real `[Authorize]` pipeline and `UserManager`, which aren't practical to unit-test in isolation.
+- [x] 7.2 `tests/Steward.IntegrationTests/Auth/AuthControllerThemePreferenceTests.cs`: register → set theme → `GET /api/auth/me` reflects it; 401 with no token; 400 on an out-of-range value; a second user's `GET /api/auth/me` is unaffected by the first user's update. All 101 integration tests pass (4 new).
+- [x] 7.3 `src/context/ThemeContext.test.tsx`: authenticated value wins over local override; local override wins over OS preference when logged out; falls back to OS preference when nothing is stored; `System` tracks a live `prefers-color-scheme` change; change handler writes `localStorage` and calls the API when authenticated
+- [x] 7.4 `src/components/auth/UserMenu.test.tsx`: all three `menuitemradio` options render with the active one's `aria-checked` reflecting the current preference; selecting one calls the update endpoint. Frontend suite: 75/75 passing (up from 68, 7 new).
