@@ -1,5 +1,6 @@
 using Steward.Application.Auth;
 using Steward.Application.Identity;
+using Steward.Domain.Enums;
 using Steward.Infrastructure.Identity;
 using Steward.Infrastructure.Persistence;
 using Microsoft.AspNetCore.Identity;
@@ -145,5 +146,44 @@ public class AuthServiceTests
         await _userManager.DidNotReceive().AddToRoleAsync(
             Arg.Any<ApplicationUser>(),
             Arg.Any<string>());
+    }
+
+    // --- ThemePreference propagation ---
+
+    [Fact]
+    public async Task RegisterAsync_NewUser_ReturnsNullThemePreference()
+    {
+        var service = CreateService();
+
+        var response = await service.RegisterAsync(
+            new RegisterRequest("new@example.com", "Password123!", "New User"), TestContext.Current.CancellationToken);
+
+        Assert.Null(response.User.ThemePreference);
+    }
+
+    [Fact]
+    public async Task ExchangeOAuthCodeAsync_UserWithStoredThemePreference_ReturnsIt()
+    {
+        var existingUser = new ApplicationUser
+        {
+            Id = Guid.NewGuid(),
+            Email = "user@example.com",
+            UserName = "user@example.com",
+            ThemePreference = ThemePreference.Dark,
+        };
+        _oAuthExchangeService.TryRedeemCode("valid-code", out Arg.Any<Guid>())
+            .Returns(x =>
+            {
+                x[1] = existingUser.Id;
+                return true;
+            });
+        _userManager.FindByIdAsync(existingUser.Id.ToString())
+            .Returns(Task.FromResult<ApplicationUser?>(existingUser));
+
+        var service = CreateService();
+
+        var response = await service.ExchangeOAuthCodeAsync("valid-code", TestContext.Current.CancellationToken);
+
+        Assert.Equal(ThemePreference.Dark, response.User.ThemePreference);
     }
 }

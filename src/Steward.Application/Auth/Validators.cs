@@ -23,3 +23,11 @@ public class LoginRequestValidator : AbstractValidator<LoginRequest>
         RuleFor(x => x.Password).NotEmpty();
     }
 }
+
+public class UpdateThemePreferenceRequestValidator : AbstractValidator<UpdateThemePreferenceRequest>
+{
+    public UpdateThemePreferenceRequestValidator()
+    {
+        RuleFor(x => x.ThemePreference).IsInEnum();
+    }
+}

@@ -125,7 +125,7 @@ public class AuthService(
         return new AuthResponse(
             token,
             DateTimeOffset.UtcNow.AddMinutes(expiryMinutes),
-            new AuthenticatedUser(user.Id, user.Email!, user.DisplayName),
+            new AuthenticatedUser(user.Id, user.Email!, user.DisplayName, user.ThemePreference),
             pendingInvites);
     }
 

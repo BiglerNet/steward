@@ -9,7 +9,7 @@ vi.mock("@/api/auth");
 const authResponse = {
   token: "token-123",
   expiresAt: "2026-01-01T00:00:00Z",
-  user: { id: "user-1", email: "user@example.com", displayName: "User One" },
+  user: { id: "user-1", email: "user@example.com", displayName: "User One", themePreference: null },
   pendingInvites: [{ inviteCode: "abc", householdName: "Smith Garage", role: "Contributor" as const, expiresAt: "2026-02-01T00:00:00Z" }],
 };
 

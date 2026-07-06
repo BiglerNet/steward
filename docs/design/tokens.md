@@ -1,5 +1,8 @@
 # Steward — Design Tokens
 
+> **Superseded.** The frontend's tokens now come from the `@biglernet/design-tokens` package
+> (see `../../src/Steward.Web/src/index.css`), not this file. Kept for historical reference only.
+
 > Bind these to `:root` in every page. They define the full visual system for the prototype.
 
 ## Colors

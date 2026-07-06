@@ -1,6 +1,7 @@
 export type HouseholdMemberRole = "Owner" | "Contributor" | "Viewer";
 export type HouseholdMemberStatus = "Pending" | "Active" | "Revoked";
 export type InvitationStatus = "Pending" | "Accepted" | "Revoked" | "Expired";
+export type ThemePreference = "Light" | "Dark" | "System";
 
 export interface PendingInviteSummary {
   inviteCode: string;
@@ -13,6 +14,7 @@ export interface AuthenticatedUser {
   id: string;
   email: string;
   displayName: string | null;
+  themePreference: ThemePreference | null;
 }
 
 export interface AuthResponse {
@@ -27,6 +29,11 @@ export interface UserProfileResponse {
   email: string;
   displayName: string | null;
   avatarUrl: string | null;
+  themePreference: ThemePreference | null;
+}
+
+export interface UpdateThemePreferenceRequest {
+  themePreference: ThemePreference;
 }
 
 export interface RegisterRequest {

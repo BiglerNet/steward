@@ -1,3 +1,5 @@
+using Steward.Domain.Enums;
+
 namespace Steward.Application.Auth;
 
 public record RegisterRequest(string Email, string Password, string DisplayName);
@@ -8,7 +10,7 @@ public record OAuthExchangeRequest(string Code);
 
 public record PendingInviteSummary(string InviteCode, string HouseholdName, string Role, DateTimeOffset ExpiresAt);
 
-public record AuthenticatedUser(Guid Id, string Email, string? DisplayName);
+public record AuthenticatedUser(Guid Id, string Email, string? DisplayName, ThemePreference? ThemePreference);
 
 public record AuthResponse(
     string Token,
@@ -16,4 +18,6 @@ public record AuthResponse(
     AuthenticatedUser User,
     IReadOnlyCollection<PendingInviteSummary> PendingInvites);
 
-public record UserProfileResponse(Guid Id, string Email, string? DisplayName, string? AvatarUrl);
+public record UserProfileResponse(Guid Id, string Email, string? DisplayName, string? AvatarUrl, ThemePreference? ThemePreference);
+
+public record UpdateThemePreferenceRequest(ThemePreference ThemePreference);
