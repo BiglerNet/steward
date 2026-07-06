@@ -34,6 +34,8 @@ services:
     build:
       context: src/Steward.Web
       dockerfile: Dockerfile
+      secrets:
+        - npm_token
     depends_on:
       - api
     env_file: .env
@@ -43,3 +45,7 @@ services:
 volumes:
   postgres_data:
   storage_data:
+
+secrets:
+  npm_token:
+    environment: BIGLERNET_NPM_TOKEN

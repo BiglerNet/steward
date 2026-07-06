@@ -32,6 +32,9 @@ jobs:
           cache: npm
           cache-dependency-path: src/Steward.Web/package-lock.json
 
+      - name: Configure GitHub Packages auth
+        run: npm config set //npm.pkg.github.com/:_authToken="${{ secrets.BIGLERNET_NPM_TOKEN }}"
+
       - name: Install frontend deps
         working-directory: src/Steward.Web
         run: npm ci
