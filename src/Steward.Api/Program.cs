@@ -62,6 +62,8 @@ builder.Services.AddCors(options =>
               .AllowAnyHeader()
               .AllowAnyMethod());
 });
+builder.Services.AddHealthChecks()
+    .AddDbContextCheck<StewardDbContext>();
 
 var app = builder.Build();
 
@@ -76,11 +78,11 @@ if (app.Environment.IsDevelopment())
 }
 
 app.UseExceptionHandler();
-app.UseHttpsRedirection();
 app.UseCors();
 app.UseAuthentication();
 app.UseAuthorization();
 app.MapControllers();
+app.MapHealthChecks("/healthz");
 
 app.Run();
 
