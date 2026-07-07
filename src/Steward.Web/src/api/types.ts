@@ -51,6 +51,12 @@ export interface OAuthExchangeRequest {
   code: string;
 }
 
+export interface OAuthProvidersResponse {
+  google: boolean;
+  facebook: boolean;
+  apple: boolean;
+}
+
 export interface HouseholdResponse {
   id: string;
   name: string;

@@ -86,6 +86,7 @@ public static class AuthServiceExtensions
                 options.SignInScheme = IdentityConstants.ExternalScheme;
                 options.ClientId = googleClientId;
                 options.ClientSecret = configuration["Auth:Google:ClientSecret"]!;
+                options.CallbackPath = "/api/signin-google";
             });
         }
 

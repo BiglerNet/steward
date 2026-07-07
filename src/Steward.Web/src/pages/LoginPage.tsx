@@ -4,7 +4,7 @@ import { useState } from "react";
 import { useForm } from "react-hook-form";
 import { Link, useNavigate } from "react-router";
 import { z } from "zod";
-import { OAuthButtons } from "@/components/auth/OAuthButtons";
+import { OAuthButtons, useOAuthSectionVisible } from "@/components/auth/OAuthButtons";
 import { Button } from "@/components/ui/button";
 import { Card, CardContent } from "@/components/ui/card";
 import { Form, FormControl, FormField, FormItem, FormLabel, FormMessage } from "@/components/ui/form";
@@ -23,6 +23,7 @@ export function LoginPage() {
   const { login } = useAuth();
   const navigate = useNavigate();
   const [formError, setFormError] = useState<string | null>(null);
+  const showOAuthSection = useOAuthSectionVisible();
 
   const form = useForm<FormValues>({
     resolver: zodResolver(schema),
@@ -54,6 +55,16 @@ export function LoginPage() {
       <Card className="shadow-[0_4px_24px_rgba(0,0,0,0.04)]">
         <CardContent className="space-y-6 py-8">
           <h2 className="text-h2">Log in</h2>
+          {showOAuthSection && (
+            <>
+              <OAuthButtons />
+              <div className="flex items-center gap-3 text-caption font-medium uppercase tracking-wide text-muted-foreground">
+                <div className="h-px flex-1 bg-border" />
+                or continue with
+                <div className="h-px flex-1 bg-border" />
+              </div>
+            </>
+          )}
           <Form {...form}>
             <form onSubmit={form.handleSubmit(onSubmit)} className="space-y-4">
               <FormField
@@ -88,12 +99,6 @@ export function LoginPage() {
               </Button>
             </form>
           </Form>
-          <div className="flex items-center gap-3 text-caption font-medium uppercase tracking-wide text-muted-foreground">
-            <div className="h-px flex-1 bg-border" />
-            or continue with
-            <div className="h-px flex-1 bg-border" />
-          </div>
-          <OAuthButtons />
         </CardContent>
       </Card>
 

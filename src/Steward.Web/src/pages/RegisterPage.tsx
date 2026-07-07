@@ -1,42 +1,70 @@
 import { zodResolver } from "@hookform/resolvers/zod";
-import { Wrench } from "lucide-react";
+import { Check, Eye, EyeOff, Wrench, X } from "lucide-react";
 import { useState } from "react";
 import { useForm } from "react-hook-form";
 import { Link, useNavigate } from "react-router";
 import { z } from "zod";
-import { OAuthButtons } from "@/components/auth/OAuthButtons";
+import { OAuthButtons, useOAuthSectionVisible } from "@/components/auth/OAuthButtons";
 import { Button } from "@/components/ui/button";
 import { Card, CardContent } from "@/components/ui/card";
 import { Form, FormControl, FormField, FormItem, FormLabel, FormMessage } from "@/components/ui/form";
 import { Input } from "@/components/ui/input";
 import { useAuth } from "@/context/AuthContext";
 import { applyValidationErrors, getApiErrorMessage } from "@/lib/apiErrors";
+import { cn } from "@/lib/utils";
 
-const schema = z.object({
-  email: z.string().email("Enter a valid email address"),
-  password: z
-    .string()
-    .min(8, "Password must be at least 8 characters")
-    .regex(/[^a-zA-Z0-9]/, "Password must contain at least one non-alphanumeric character"),
-  displayName: z.string().min(1, "Display name is required"),
-});
+const PASSWORD_MIN_LENGTH = 8;
+const PASSWORD_NON_ALPHANUMERIC = /[^a-zA-Z0-9]/;
+
+const schema = z
+  .object({
+    email: z.string().email("Enter a valid email address"),
+    password: z
+      .string()
+      .min(PASSWORD_MIN_LENGTH, "Password must be at least 8 characters")
+      .regex(PASSWORD_NON_ALPHANUMERIC, "Password must contain at least one non-alphanumeric character"),
+    confirmPassword: z.string(),
+    displayName: z.string().min(1, "Display name is required"),
+  })
+  .refine((values) => values.password === values.confirmPassword, {
+    message: "Passwords do not match",
+    path: ["confirmPassword"],
+  });
 
 type FormValues = z.infer<typeof schema>;
+
+interface PasswordRequirement {
+  label: string;
+  isSatisfied: (password: string) => boolean;
+}
+
+const PASSWORD_REQUIREMENTS: PasswordRequirement[] = [
+  { label: "At least 8 characters", isSatisfied: (password) => password.length >= PASSWORD_MIN_LENGTH },
+  {
+    label: "At least one non-alphanumeric character",
+    isSatisfied: (password) => PASSWORD_NON_ALPHANUMERIC.test(password),
+  },
+];
 
 export function RegisterPage() {
   const { register } = useAuth();
   const navigate = useNavigate();
   const [formError, setFormError] = useState<string | null>(null);
+  const [showPassword, setShowPassword] = useState(false);
+  const [showConfirmPassword, setShowConfirmPassword] = useState(false);
+  const showOAuthSection = useOAuthSectionVisible();
 
   const form = useForm<FormValues>({
     resolver: zodResolver(schema),
-    defaultValues: { email: "", password: "", displayName: "" },
+    defaultValues: { email: "", password: "", confirmPassword: "", displayName: "" },
   });
+
+  const password = form.watch("password");
 
   async function onSubmit(values: FormValues) {
     setFormError(null);
     try {
-      await register(values);
+      await register({ email: values.email, password: values.password, displayName: values.displayName });
       navigate("/");
     } catch (error) {
       if (!applyValidationErrors(error, form.setError)) {
@@ -58,6 +86,16 @@ export function RegisterPage() {
       <Card className="shadow-[0_4px_24px_rgba(0,0,0,0.04)]">
         <CardContent className="space-y-6 py-8">
           <h2 className="text-h2">Create an account</h2>
+          {showOAuthSection && (
+            <>
+              <OAuthButtons />
+              <div className="flex items-center gap-3 text-caption font-medium uppercase tracking-wide text-muted-foreground">
+                <div className="h-px flex-1 bg-border" />
+                or continue with
+                <div className="h-px flex-1 bg-border" />
+              </div>
+            </>
+          )}
           <Form {...form}>
             <form onSubmit={form.handleSubmit(onSubmit)} className="space-y-4">
               <FormField
@@ -92,9 +130,73 @@ export function RegisterPage() {
                 render={({ field }) => (
                   <FormItem>
                     <FormLabel>Password</FormLabel>
-                    <FormControl>
-                      <Input type="password" autoComplete="new-password" {...field} />
-                    </FormControl>
+                    <div className="relative">
+                      <FormControl>
+                        <Input
+                          type={showPassword ? "text" : "password"}
+                          autoComplete="new-password"
+                          className="pr-10"
+                          {...field}
+                        />
+                      </FormControl>
+                      <button
+                        type="button"
+                        onClick={() => setShowPassword((value) => !value)}
+                        aria-label={showPassword ? "Hide password" : "Show password"}
+                        className="absolute inset-y-0 right-0 flex w-10 items-center justify-center text-muted-foreground hover:text-foreground"
+                      >
+                        {showPassword ? <EyeOff className="h-4 w-4" /> : <Eye className="h-4 w-4" />}
+                      </button>
+                    </div>
+                    <ul className="space-y-1">
+                      {PASSWORD_REQUIREMENTS.map((requirement) => {
+                        const isSatisfied = requirement.isSatisfied(password);
+                        return (
+                          <li
+                            key={requirement.label}
+                            className={cn(
+                              "flex items-center gap-1.5 text-caption",
+                              isSatisfied ? "text-emerald-600" : "text-muted-foreground"
+                            )}
+                          >
+                            {isSatisfied ? (
+                              <Check className="h-3.5 w-3.5" aria-hidden />
+                            ) : (
+                              <X className="h-3.5 w-3.5" aria-hidden />
+                            )}
+                            {requirement.label}
+                          </li>
+                        );
+                      })}
+                    </ul>
+                    <FormMessage />
+                  </FormItem>
+                )}
+              />
+              <FormField
+                control={form.control}
+                name="confirmPassword"
+                render={({ field }) => (
+                  <FormItem>
+                    <FormLabel>Confirm password</FormLabel>
+                    <div className="relative">
+                      <FormControl>
+                        <Input
+                          type={showConfirmPassword ? "text" : "password"}
+                          autoComplete="new-password"
+                          className="pr-10"
+                          {...field}
+                        />
+                      </FormControl>
+                      <button
+                        type="button"
+                        onClick={() => setShowConfirmPassword((value) => !value)}
+                        aria-label={showConfirmPassword ? "Hide password" : "Show password"}
+                        className="absolute inset-y-0 right-0 flex w-10 items-center justify-center text-muted-foreground hover:text-foreground"
+                      >
+                        {showConfirmPassword ? <EyeOff className="h-4 w-4" /> : <Eye className="h-4 w-4" />}
+                      </button>
+                    </div>
                     <FormMessage />
                   </FormItem>
                 )}
@@ -105,12 +207,6 @@ export function RegisterPage() {
               </Button>
             </form>
           </Form>
-          <div className="flex items-center gap-3 text-caption font-medium uppercase tracking-wide text-muted-foreground">
-            <div className="h-px flex-1 bg-border" />
-            or continue with
-            <div className="h-px flex-1 bg-border" />
-          </div>
-          <OAuthButtons />
         </CardContent>
       </Card>
 

@@ -3,6 +3,7 @@ import type {
   AuthResponse,
   LoginRequest,
   OAuthExchangeRequest,
+  OAuthProvidersResponse,
   RegisterRequest,
   UpdateThemePreferenceRequest,
   UserProfileResponse,
@@ -41,4 +42,9 @@ export async function acceptInvite(code: string): Promise<void> {
 
 export function oauthLoginUrl(provider: string, apiBaseUrl: string): string {
   return `${apiBaseUrl}/api/auth/oauth/${provider}/login`;
+}
+
+export async function getOAuthProviders(): Promise<OAuthProvidersResponse> {
+  const { data } = await apiClient.get<OAuthProvidersResponse>("/api/auth/oauth/providers");
+  return data;
 }
