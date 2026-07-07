@@ -21,3 +21,5 @@ public record AuthResponse(
 public record UserProfileResponse(Guid Id, string Email, string? DisplayName, string? AvatarUrl, ThemePreference? ThemePreference);
 
 public record UpdateThemePreferenceRequest(ThemePreference ThemePreference);
+
+public record OAuthProvidersResponse(bool Google, bool Facebook, bool Apple);

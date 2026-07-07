@@ -1,0 +1,16 @@
+{
+  "version": "2.0.0",
+  "tasks": [
+    {
+      "label": "db: run migrations",
+      "type": "shell",
+      "command": "docker compose up -d --wait postgres && dotnet ef database update --project src/Steward.Infrastructure --startup-project src/Steward.Api",
+      "presentation": {
+        "reveal": "always",
+        "panel": "shared",
+        "focus": true
+      },
+      "problemMatcher": []
+    }
+  ]
+}

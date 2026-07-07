@@ -50,6 +50,15 @@ public class AuthController(
         return Ok(response);
     }
 
+    [HttpGet("oauth/providers")]
+    public IActionResult OAuthProviders()
+    {
+        return Ok(new OAuthProvidersResponse(
+            !string.IsNullOrEmpty(configuration["Auth:Google:ClientId"]),
+            !string.IsNullOrEmpty(configuration["Auth:Facebook:ClientId"]),
+            !string.IsNullOrEmpty(configuration["Auth:Apple:ClientId"])));
+    }
+
     [HttpGet("oauth/{provider}/login")]
     public IActionResult OAuthLogin(string provider)
     {
