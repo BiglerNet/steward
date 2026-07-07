@@ -20,6 +20,18 @@ api:
       value: Production
     - name: ASPNETCORE_URLS
       value: http://+:8080
+  # Mount all keys from existing Secrets/ConfigMaps as env vars.
+  # Example:
+  #   envFrom:
+  #     - secretRef:
+  #         name: steward-google-oauth
+  #     - configMapRef:
+  #         name: steward-feature-flags
+  envFrom:
+    - secretRef:
+        name: steward-api-secrets
+    - configMapRef:
+        name: steward-api-config
 
 web:
   image:
