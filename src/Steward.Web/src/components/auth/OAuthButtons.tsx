@@ -36,7 +36,7 @@ export function OAuthButtons() {
   const enabledProviders = useEnabledProviders();
   const { resolvedTheme } = useTheme();
   const [pendingProvider, setPendingProvider] = useState<string | null>(null);
-  const apiBaseUrl = window.__APP_CONFIG__?.apiBaseUrl || import.meta.env.VITE_API_BASE_URL;
+  const apiBaseUrl = window.__APP_CONFIG__?.apiBaseUrl ?? import.meta.env.VITE_API_BASE_URL;
 
   if (enabledProviders.length === 0) {
     return null;

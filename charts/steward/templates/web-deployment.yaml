@@ -25,9 +25,5 @@ spec:
             - name: http
               containerPort: {{ .Values.web.port }}
               protocol: TCP
-          env:
-            - name: API_BASE_URL
-              {{- $scheme := ternary "https" "http" (not (empty .Values.ingress.tlsSecretName)) }}
-              value: {{ .Values.web.apiBaseUrl | default (printf "%s://%s" $scheme .Values.ingress.host) | quote }}
           resources:
             {{- toYaml .Values.web.resources | nindent 12 }}

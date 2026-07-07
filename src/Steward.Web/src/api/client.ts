@@ -2,7 +2,7 @@ import axios from "axios";
 import { toast } from "sonner";
 import { clearSession, readSession } from "@/lib/session";
 
-const apiBaseUrl = window.__APP_CONFIG__?.apiBaseUrl || import.meta.env.VITE_API_BASE_URL;
+const apiBaseUrl = window.__APP_CONFIG__?.apiBaseUrl ?? import.meta.env.VITE_API_BASE_URL;
 
 export const apiClient = axios.create({
   baseURL: apiBaseUrl,
