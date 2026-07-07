@@ -39,6 +39,9 @@ web:
     tag: latest
     pullPolicy: IfNotPresent
   port: 80
+  # Override the API base URL passed to the web container. Defaults to
+  # https://<ingress.host> when tlsSecretName is set, http:// otherwise.
+  apiBaseUrl: ""
   resources:
     requests:
       cpu: 50m
