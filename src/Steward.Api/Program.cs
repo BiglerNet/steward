@@ -1,5 +1,6 @@
 using System.Text.Json.Serialization;
 using Asp.Versioning;
+using Microsoft.AspNetCore.HttpOverrides;
 using Steward.Api.ExceptionHandling;
 using Steward.Api.OpenApi;
 using Steward.Application;
@@ -65,6 +66,14 @@ builder.Services.AddCors(options =>
 builder.Services.AddHealthChecks()
     .AddDbContextCheck<StewardDbContext>();
 
+builder.Services.Configure<ForwardedHeadersOptions>(options =>
+{
+    options.ForwardedHeaders = ForwardedHeaders.XForwardedFor | ForwardedHeaders.XForwardedProto;
+    // Trust any proxy in the cluster — Traefik's pod IP isn't fixed.
+    options.KnownIPNetworks.Clear();
+    options.KnownProxies.Clear();
+});
+
 var app = builder.Build();
 
 if (app.Environment.IsDevelopment())
@@ -77,6 +86,7 @@ if (app.Environment.IsDevelopment())
     });
 }
 
+app.UseForwardedHeaders();
 app.UseExceptionHandler();
 app.UseCors();
 app.UseAuthentication();
