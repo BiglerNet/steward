@@ -14,6 +14,7 @@ public class StewardDbContext(DbContextOptions<StewardDbContext> options)
 
 
     public DbSet<Asset> Assets => Set<Asset>();
+    public DbSet<AssetPhoto> AssetPhotos => Set<AssetPhoto>();
     public DbSet<Engine> Engines => Set<Engine>();
     public DbSet<ServiceRecord> ServiceRecords => Set<ServiceRecord>();
     public DbSet<MileageLog> MileageLogs => Set<MileageLog>();
@@ -26,6 +27,7 @@ public class StewardDbContext(DbContextOptions<StewardDbContext> options)
     public DbSet<HouseholdInvitation> HouseholdInvitations => Set<HouseholdInvitation>();
     public DbSet<HouseholdDashboard> HouseholdDashboards => Set<HouseholdDashboard>();
     public DbSet<DashboardWidget> DashboardWidgets => Set<DashboardWidget>();
+    public DbSet<RefreshToken> RefreshTokens => Set<RefreshToken>();
 
     protected override void OnModelCreating(ModelBuilder builder)
     {

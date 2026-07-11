@@ -1,7 +1,6 @@
 using Steward.Application.Assets;
-using Steward.Domain.Common.Exceptions;
+using Steward.Application.AssetTypes;
 using Steward.Domain.Entities.Assets;
-using Steward.Domain.Enums;
 
 namespace Steward.Infrastructure.Assets;
 
@@ -9,61 +8,26 @@ internal static class AssetMapper
 {
     public static Asset CreateEntity(Guid householdId, CreateAssetRequest request)
     {
-        Asset asset = request.AssetType switch
+        var definition = AssetTypeRegistry.Get(request.Category);
+
+        Asset asset = definition.StructuralType switch
         {
-            AssetType.Snowmobile => new Snowmobile { Name = request.Name, TrackLengthIn = request.TrackLengthIn },
-            AssetType.Utv => new Utv { Name = request.Name },
-            AssetType.Boat => new Boat
-            {
-                Name = request.Name,
-                Hin = request.Hin,
-                HullMaterial = request.HullMaterial,
-                LengthFt = request.LengthFt,
-                BeamFt = request.BeamFt,
-            },
-            AssetType.Car => new Car { Name = request.Name },
-            AssetType.Truck => new Truck { Name = request.Name },
-            AssetType.SnowmobileTrailer => new SnowmobileTrailer
-            {
-                Name = request.Name,
-                BallSizeIn = request.BallSizeIn,
-                MaxLoadLbs = request.MaxLoadLbs,
-            },
-            AssetType.EnclosedTrailer => new EnclosedTrailer
-            {
-                Name = request.Name,
-                InteriorHeightFt = request.InteriorHeightFt,
-                InteriorLengthFt = request.InteriorLengthFt,
-            },
-            AssetType.RidingMower => new RidingMower { Name = request.Name, CuttingWidthIn = request.CuttingWidthIn },
-            AssetType.PowerWasher => new PowerWasher
-            {
-                Name = request.Name,
-                MaxPsi = request.MaxPsi,
-                MaxGpm = request.MaxGpm,
-            },
-            AssetType.SmallEngine => new SmallEngine
-            {
-                Name = request.Name,
-                EquipmentDescription = request.EquipmentDescription,
-            },
-            _ => throw new BadRequestException($"Unknown asset type '{request.AssetType}'."),
+            AssetStructuralType.Vehicle => new Vehicle { Name = request.Name },
+            AssetStructuralType.Boat => new Boat { Name = request.Name },
+            AssetStructuralType.Trailer => new Trailer { Name = request.Name },
+            AssetStructuralType.Equipment => new Equipment { Name = request.Name },
+            _ => throw new InvalidOperationException(
+                $"Unknown structural type '{definition.StructuralType}' for category '{request.Category}'."),
         };
 
         asset.Id = Guid.NewGuid();
         asset.HouseholdId = householdId;
+        asset.Category = request.Category;
         asset.Description = request.Description;
         asset.Year = request.Year;
-        asset.PhotoUrl = request.PhotoUrl;
-        asset.UsageTrackingMode = request.UsageTrackingMode;
+        asset.UsageTrackingMode = request.UsageTrackingMode ?? definition.DefaultUsageTrackingMode;
 
-        if (asset is Vehicle vehicle)
-        {
-            vehicle.Vin = request.Vin;
-            vehicle.Color = request.Color;
-            vehicle.Make = request.Make;
-            vehicle.Model = request.Model;
-        }
+        ApplyTypeFields(asset, request);
 
         return asset;
     }
@@ -73,95 +37,94 @@ internal static class AssetMapper
         asset.Name = request.Name;
         asset.Description = request.Description;
         asset.Year = request.Year;
-        asset.PhotoUrl = request.PhotoUrl;
         asset.UsageTrackingMode = request.UsageTrackingMode;
 
-        if (asset is Vehicle vehicle)
-        {
-            vehicle.Vin = request.Vin;
-            vehicle.Color = request.Color;
-            vehicle.Make = request.Make;
-            vehicle.Model = request.Model;
-        }
-
-        switch (asset)
-        {
-            case Boat boat:
-                boat.Hin = request.Hin;
-                boat.HullMaterial = request.HullMaterial;
-                boat.LengthFt = request.LengthFt;
-                boat.BeamFt = request.BeamFt;
-                break;
-            case Snowmobile snowmobile:
-                snowmobile.TrackLengthIn = request.TrackLengthIn;
-                break;
-            case SnowmobileTrailer snowmobileTrailer:
-                snowmobileTrailer.BallSizeIn = request.BallSizeIn;
-                snowmobileTrailer.MaxLoadLbs = request.MaxLoadLbs;
-                break;
-            case EnclosedTrailer enclosedTrailer:
-                enclosedTrailer.InteriorHeightFt = request.InteriorHeightFt;
-                enclosedTrailer.InteriorLengthFt = request.InteriorLengthFt;
-                break;
-            case RidingMower ridingMower:
-                ridingMower.CuttingWidthIn = request.CuttingWidthIn;
-                break;
-            case PowerWasher powerWasher:
-                powerWasher.MaxPsi = request.MaxPsi;
-                powerWasher.MaxGpm = request.MaxGpm;
-                break;
-            case SmallEngine smallEngine:
-                smallEngine.EquipmentDescription = request.EquipmentDescription;
-                break;
-        }
+        ApplyTypeFields(asset, request);
     }
-
-    public static AssetType GetAssetType(Asset asset) => asset switch
-    {
-        Snowmobile => AssetType.Snowmobile,
-        Utv => AssetType.Utv,
-        Boat => AssetType.Boat,
-        Car => AssetType.Car,
-        Truck => AssetType.Truck,
-        SnowmobileTrailer => AssetType.SnowmobileTrailer,
-        EnclosedTrailer => AssetType.EnclosedTrailer,
-        RidingMower => AssetType.RidingMower,
-        PowerWasher => AssetType.PowerWasher,
-        SmallEngine => AssetType.SmallEngine,
-        _ => throw new BadRequestException($"Unknown asset type '{asset.GetType().Name}'."),
-    };
 
     public static AssetResponse ToResponse(Asset asset)
     {
         var vehicle = asset as Vehicle;
+        var boat = asset as Boat;
+        var trailer = asset as Trailer;
+        var equipment = asset as Equipment;
 
         return new AssetResponse(
             asset.Id,
             asset.HouseholdId,
-            GetAssetType(asset),
+            asset.Category,
+            AssetTypeRegistry.Get(asset.Category).StructuralType,
             asset.Name,
             asset.Description,
             asset.Year,
-            asset.PhotoUrl,
+            asset.CoverPhotoId,
             asset.UsageTrackingMode,
             vehicle?.Vin,
-            vehicle?.Color,
-            vehicle?.Make,
-            vehicle?.Model,
-            (asset as Boat)?.Hin,
-            (asset as Boat)?.HullMaterial,
-            (asset as Boat)?.LengthFt,
-            (asset as Boat)?.BeamFt,
-            (asset as Snowmobile)?.TrackLengthIn,
-            (asset as SnowmobileTrailer)?.BallSizeIn,
-            (asset as SnowmobileTrailer)?.MaxLoadLbs,
-            (asset as EnclosedTrailer)?.InteriorHeightFt,
-            (asset as EnclosedTrailer)?.InteriorLengthFt,
-            (asset as RidingMower)?.CuttingWidthIn,
-            (asset as PowerWasher)?.MaxPsi,
-            (asset as PowerWasher)?.MaxGpm,
-            (asset as SmallEngine)?.EquipmentDescription,
+            vehicle?.Make ?? boat?.Make,
+            vehicle?.Model ?? boat?.Model,
+            vehicle?.Color ?? boat?.Color,
+            vehicle?.TrackLengthIn,
+            boat?.Hin,
+            boat?.HullMaterial,
+            boat?.HullType,
+            boat?.DriveType,
+            boat?.KeelType,
+            boat?.MastHeightFt,
+            boat?.MastCount,
+            boat?.LengthFt,
+            boat?.BeamFt,
+            trailer?.BallSizeIn,
+            trailer?.MaxLoadLbs,
+            trailer?.InteriorHeightFt,
+            trailer?.InteriorLengthFt,
+            equipment?.CuttingWidthIn,
+            equipment?.MaxPsi,
+            equipment?.MaxGpm,
+            equipment?.EquipmentDescription,
+            vehicle?.LicensePlate ?? trailer?.LicensePlate,
             asset.CreatedAt,
             asset.UpdatedAt);
+    }
+
+    private static void ApplyTypeFields(Asset asset, IAssetTypeFields fields)
+    {
+        switch (asset)
+        {
+            case Vehicle vehicle:
+                vehicle.Vin = fields.Vin;
+                vehicle.Make = fields.Make;
+                vehicle.Model = fields.Model;
+                vehicle.Color = fields.Color;
+                vehicle.TrackLengthIn = fields.TrackLengthIn;
+                vehicle.LicensePlate = fields.LicensePlate;
+                break;
+            case Boat boat:
+                boat.Hin = fields.Hin;
+                boat.HullMaterial = fields.HullMaterial;
+                boat.HullType = fields.HullType;
+                boat.DriveType = fields.DriveType;
+                boat.KeelType = fields.KeelType;
+                boat.MastHeightFt = fields.MastHeightFt;
+                boat.MastCount = fields.MastCount;
+                boat.LengthFt = fields.LengthFt;
+                boat.BeamFt = fields.BeamFt;
+                boat.Make = fields.Make;
+                boat.Model = fields.Model;
+                boat.Color = fields.Color;
+                break;
+            case Trailer trailer:
+                trailer.BallSizeIn = fields.BallSizeIn;
+                trailer.MaxLoadLbs = fields.MaxLoadLbs;
+                trailer.InteriorHeightFt = fields.InteriorHeightFt;
+                trailer.InteriorLengthFt = fields.InteriorLengthFt;
+                trailer.LicensePlate = fields.LicensePlate;
+                break;
+            case Equipment equipment:
+                equipment.CuttingWidthIn = fields.CuttingWidthIn;
+                equipment.MaxPsi = fields.MaxPsi;
+                equipment.MaxGpm = fields.MaxGpm;
+                equipment.EquipmentDescription = fields.EquipmentDescription;
+                break;
+        }
     }
 }

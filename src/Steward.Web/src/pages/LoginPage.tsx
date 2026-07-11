@@ -7,6 +7,7 @@ import { z } from "zod";
 import { OAuthButtons, useOAuthSectionVisible } from "@/components/auth/OAuthButtons";
 import { Button } from "@/components/ui/button";
 import { Card, CardContent } from "@/components/ui/card";
+import { Checkbox } from "@/components/ui/checkbox";
 import { Form, FormControl, FormField, FormItem, FormLabel, FormMessage } from "@/components/ui/form";
 import { Input } from "@/components/ui/input";
 import { useAuth } from "@/context/AuthContext";
@@ -15,6 +16,7 @@ import { applyValidationErrors, getApiErrorMessage } from "@/lib/apiErrors";
 const schema = z.object({
   email: z.string().email("Enter a valid email address"),
   password: z.string().min(1, "Password is required"),
+  rememberMe: z.boolean(),
 });
 
 type FormValues = z.infer<typeof schema>;
@@ -27,7 +29,7 @@ export function LoginPage() {
 
   const form = useForm<FormValues>({
     resolver: zodResolver(schema),
-    defaultValues: { email: "", password: "" },
+    defaultValues: { email: "", password: "", rememberMe: true },
   });
 
   async function onSubmit(values: FormValues) {
@@ -90,6 +92,21 @@ export function LoginPage() {
                       <Input type="password" autoComplete="current-password" {...field} />
                     </FormControl>
                     <FormMessage />
+                  </FormItem>
+                )}
+              />
+              <FormField
+                control={form.control}
+                name="rememberMe"
+                render={({ field }) => (
+                  <FormItem className="flex flex-row items-center gap-2 space-y-0">
+                    <FormControl>
+                      <Checkbox
+                        checked={field.value}
+                        onChange={(e) => field.onChange(e.target.checked)}
+                      />
+                    </FormControl>
+                    <FormLabel className="font-normal">Remember me</FormLabel>
                   </FormItem>
                 )}
               />

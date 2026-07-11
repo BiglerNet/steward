@@ -19,6 +19,8 @@ public class AuthController(
     IValidator<RegisterRequest> registerValidator,
     IValidator<LoginRequest> loginValidator,
     IValidator<UpdateThemePreferenceRequest> updateThemePreferenceValidator,
+    IValidator<RefreshRequest> refreshValidator,
+    IValidator<LogoutRequest> logoutValidator,
     UserManager<ApplicationUser> userManager,
     IConfiguration configuration) : ControllerBase
 {
@@ -101,6 +103,33 @@ public class AuthController(
     {
         var response = await authService.ExchangeOAuthCodeAsync(request.Code, cancellationToken);
         return Ok(response);
+    }
+
+    [HttpPost("refresh")]
+    public async Task<IActionResult> Refresh(RefreshRequest request, CancellationToken cancellationToken)
+    {
+        var validation = await refreshValidator.ValidateAsync(request, cancellationToken);
+        if (!validation.IsValid)
+        {
+            return ValidationProblem(validation.ToModelState());
+        }
+
+        var response = await authService.RefreshAsync(request, cancellationToken);
+        return Ok(response);
+    }
+
+    [Authorize]
+    [HttpPost("logout")]
+    public async Task<IActionResult> Logout(LogoutRequest request, CancellationToken cancellationToken)
+    {
+        var validation = await logoutValidator.ValidateAsync(request, cancellationToken);
+        if (!validation.IsValid)
+        {
+            return ValidationProblem(validation.ToModelState());
+        }
+
+        await authService.LogoutAsync(request, cancellationToken);
+        return Ok();
     }
 
     [Authorize]

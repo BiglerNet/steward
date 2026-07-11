@@ -1,4 +1,5 @@
 using Steward.Application.Assets;
+using Steward.Application.AssetTypes;
 using Steward.Domain.Common.Exceptions;
 using Steward.Domain.Entities.Assets;
 using Steward.Domain.Enums;
@@ -24,14 +25,19 @@ public class AssetService(StewardDbContext dbContext) : IAssetService
     }
 
     public async Task<IReadOnlyCollection<AssetResponse>> ListAsync(
-        Guid householdId, AssetType? assetType, CancellationToken cancellationToken = default)
+        Guid householdId, AssetCategory? category, AssetGroup? group, CancellationToken cancellationToken = default)
     {
         var query = dbContext.Assets.AsNoTracking().Where(a => a.HouseholdId == householdId);
 
-        if (assetType is { } type)
+        if (category is { } categoryFilter)
         {
-            var discriminator = type.ToString();
-            query = query.Where(a => EF.Property<string>(a, "Discriminator") == discriminator);
+            query = query.Where(a => a.Category == categoryFilter);
+        }
+
+        if (group is { } groupFilter)
+        {
+            var categories = AssetTypeRegistry.CategoriesInGroup(groupFilter);
+            query = query.Where(a => categories.Contains(a.Category));
         }
 
         var assets = await query.ToListAsync(cancellationToken);
@@ -50,9 +56,15 @@ public class AssetService(StewardDbContext dbContext) : IAssetService
     {
         var asset = await FindAssetAsync(householdId, assetId, cancellationToken);
 
-        if (request.AssetType is { } requestedType && requestedType != AssetMapper.GetAssetType(asset))
+        if (request.Category is { } requestedCategory && requestedCategory != asset.Category)
         {
-            throw new BadRequestException("assetType cannot be changed after creation.");
+            throw new BadRequestException("category cannot be changed after creation.");
+        }
+
+        var inapplicable = AssetTypeFieldCheck.FindInapplicableFields(asset.Category, request);
+        if (inapplicable.Count > 0)
+        {
+            throw new BadRequestException(AssetTypeFieldCheck.InapplicableMessage(inapplicable[0], asset.Category));
         }
 
         AssetMapper.ApplyUpdate(asset, request);

@@ -44,7 +44,8 @@ describe("LoginPage", () => {
   it("logs in successfully", async () => {
     vi.mocked(authApi.login).mockResolvedValue({
       token: "token-123",
-      expiresAt: "2026-01-01T00:00:00Z",
+      refreshToken: "refresh-token-123",
+      expiresAt: new Date(Date.now() + 3_600_000).toISOString(),
       user: { id: "1", email: "user@example.com", displayName: null, themePreference: null },
       pendingInvites: [],
     });
@@ -59,6 +60,37 @@ describe("LoginPage", () => {
     await waitFor(() => expect(authApi.login).toHaveBeenCalledWith({
       email: "user@example.com",
       password: "password123",
+      rememberMe: true,
+    }));
+  });
+
+  it("defaults 'Remember me' to checked", () => {
+    renderLoginPage();
+
+    expect(screen.getByLabelText("Remember me")).toBeChecked();
+  });
+
+  it("sends rememberMe: false when the checkbox is unchecked before submit", async () => {
+    vi.mocked(authApi.login).mockResolvedValue({
+      token: "token-123",
+      refreshToken: "refresh-token-123",
+      expiresAt: new Date(Date.now() + 3_600_000).toISOString(),
+      user: { id: "1", email: "user@example.com", displayName: null, themePreference: null },
+      pendingInvites: [],
+    });
+
+    renderLoginPage();
+    const user = userEvent.setup();
+
+    await user.type(screen.getByLabelText("Email"), "user@example.com");
+    await user.type(screen.getByLabelText("Password"), "password123");
+    await user.click(screen.getByLabelText("Remember me"));
+    await user.click(screen.getByRole("button", { name: "Log in" }));
+
+    await waitFor(() => expect(authApi.login).toHaveBeenCalledWith({
+      email: "user@example.com",
+      password: "password123",
+      rememberMe: false,
     }));
   });
 

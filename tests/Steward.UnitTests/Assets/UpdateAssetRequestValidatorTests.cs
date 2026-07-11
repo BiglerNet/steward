@@ -9,7 +9,7 @@ public class UpdateAssetRequestValidatorTests
     private readonly UpdateAssetRequestValidator _validator = new();
 
     [Fact]
-    public void Valid_Request_Without_AssetType_Passes()
+    public void Valid_Request_Without_Category_Passes()
     {
         var request = NewRequest("Ski-Doo Renamed");
 
@@ -29,13 +29,13 @@ public class UpdateAssetRequestValidatorTests
     }
 
     [Fact]
-    public void Unknown_AssetType_Fails()
+    public void Unknown_Category_Fails()
     {
-        var request = NewRequest("Mystery") with { AssetType = (AssetType)999 };
+        var request = NewRequest("Mystery") with { Category = (AssetCategory)999 };
 
         var result = _validator.TestValidate(request);
 
-        result.ShouldHaveValidationErrorFor(x => x.AssetType!.Value);
+        result.ShouldHaveValidationErrorFor(x => x.Category!.Value);
     }
 
     [Theory]
@@ -51,9 +51,9 @@ public class UpdateAssetRequestValidatorTests
     }
 
     [Fact]
-    public void Boat_With_NonPositive_BeamFt_Fails()
+    public void NonPositive_BeamFt_Fails()
     {
-        var request = NewRequest("Sea Ray") with { AssetType = AssetType.Boat, BeamFt = 0m };
+        var request = NewRequest("Sea Ray") with { BeamFt = 0m };
 
         var result = _validator.TestValidate(request);
 
@@ -61,31 +61,55 @@ public class UpdateAssetRequestValidatorTests
     }
 
     [Fact]
-    public void PowerWasher_With_NonPositive_MaxGpm_Fails()
+    public void NonPositive_MaxGpm_Fails()
     {
-        var request = NewRequest("Washer") with { AssetType = AssetType.PowerWasher, MaxGpm = 0m };
+        var request = NewRequest("Washer") with { MaxGpm = 0m };
 
         var result = _validator.TestValidate(request);
 
         result.ShouldHaveValidationErrorFor(x => x.MaxGpm);
     }
 
+    [Fact]
+    public void NonPositive_MastHeightFt_Fails()
+    {
+        var request = NewRequest("Wind Dancer") with { MastHeightFt = 0m };
+
+        var result = _validator.TestValidate(request);
+
+        result.ShouldHaveValidationErrorFor(x => x.MastHeightFt);
+    }
+
+    [Fact]
+    public void Invalid_HullType_Fails()
+    {
+        var request = NewRequest("Wind Dancer") with { HullType = (HullType)999 };
+
+        var result = _validator.TestValidate(request);
+
+        result.ShouldHaveValidationErrorFor(x => x.HullType!.Value);
+    }
+
     private static UpdateAssetRequest NewRequest(string name) => new(
-        AssetType: null,
+        Category: null,
         Name: name,
         Description: null,
         Year: null,
-        PhotoUrl: null,
         UsageTrackingMode: UsageTrackingMode.None,
         Vin: null,
-        Color: null,
         Make: null,
         Model: null,
+        Color: null,
+        TrackLengthIn: null,
         Hin: null,
         HullMaterial: null,
+        HullType: null,
+        DriveType: null,
+        KeelType: null,
+        MastHeightFt: null,
+        MastCount: null,
         LengthFt: null,
         BeamFt: null,
-        TrackLengthIn: null,
         BallSizeIn: null,
         MaxLoadLbs: null,
         InteriorHeightFt: null,
@@ -93,5 +117,5 @@ public class UpdateAssetRequestValidatorTests
         CuttingWidthIn: null,
         MaxPsi: null,
         MaxGpm: null,
-        EquipmentDescription: null);
+        EquipmentDescription: null, LicensePlate: null);
 }

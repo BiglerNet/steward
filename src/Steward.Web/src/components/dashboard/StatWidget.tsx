@@ -8,9 +8,9 @@ interface StatWidgetProps {
 
 export function StatWidget({ label, value, subLabel }: StatWidgetProps) {
   return (
-    <Card className="h-full">
+    <Card className="flex h-full flex-col">
       <CardHeader>{label}</CardHeader>
-      <CardContent className="flex flex-col gap-1 pt-4">
+      <CardContent className="flex flex-1 flex-col items-center justify-center gap-1 pt-4 text-center">
         <span className="text-3xl font-bold tabular-nums">{value}</span>
         {subLabel && <span className="text-sm text-muted-foreground">{subLabel}</span>}
       </CardContent>

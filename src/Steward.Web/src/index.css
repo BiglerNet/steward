@@ -41,6 +41,17 @@
   --warning: var(--warn);
   --warning-bg: var(--warn-bg);
   --radius: var(--radius-md);
+
+  --asset-chip-road-bg: #fff3e0;
+  --asset-chip-road-fg: #b45309;
+  --asset-chip-powersport-bg: #fce4ec;
+  --asset-chip-powersport-fg: #be185d;
+  --asset-chip-water-bg: #dff6ff;
+  --asset-chip-water-fg: #0369a1;
+  --asset-chip-trailer-bg: #f3e5f5;
+  --asset-chip-trailer-fg: #7e22ce;
+  --asset-chip-equipment-bg: #fff8e1;
+  --asset-chip-equipment-fg: #a16207;
 }
 
 .dark {
@@ -66,6 +77,17 @@
   --destructive-foreground: #fff;
   --warning: var(--warn);
   --warning-bg: var(--warn-bg);
+
+  --asset-chip-road-bg: #4a3418;
+  --asset-chip-road-fg: #fbbf6c;
+  --asset-chip-powersport-bg: #4a1f30;
+  --asset-chip-powersport-fg: #f9a8d4;
+  --asset-chip-water-bg: #123047;
+  --asset-chip-water-fg: #7dd3fc;
+  --asset-chip-trailer-bg: #3a2447;
+  --asset-chip-trailer-fg: #d8b4fe;
+  --asset-chip-equipment-bg: #4a3c14;
+  --asset-chip-equipment-fg: #fcd34d;
 }
 
 @theme inline {
@@ -94,6 +116,16 @@
   --color-warning-bg: var(--warning-bg);
   --color-success: var(--success);
   --color-success-bg: var(--success-bg);
+  --color-asset-chip-road-bg: var(--asset-chip-road-bg);
+  --color-asset-chip-road-fg: var(--asset-chip-road-fg);
+  --color-asset-chip-powersport-bg: var(--asset-chip-powersport-bg);
+  --color-asset-chip-powersport-fg: var(--asset-chip-powersport-fg);
+  --color-asset-chip-water-bg: var(--asset-chip-water-bg);
+  --color-asset-chip-water-fg: var(--asset-chip-water-fg);
+  --color-asset-chip-trailer-bg: var(--asset-chip-trailer-bg);
+  --color-asset-chip-trailer-fg: var(--asset-chip-trailer-fg);
+  --color-asset-chip-equipment-bg: var(--asset-chip-equipment-bg);
+  --color-asset-chip-equipment-fg: var(--asset-chip-equipment-fg);
   --radius-sm: calc(var(--radius) - 0.125rem);
   --radius-md: var(--radius);
   --radius-lg: calc(var(--radius) + 0.25rem);

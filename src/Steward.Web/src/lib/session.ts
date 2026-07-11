@@ -1,10 +1,11 @@
 import type { AuthResponse } from "@/api/types";
 
-const SESSION_KEY = "mt.session";
+export const SESSION_KEY = "mt.session";
 const LAST_HOUSEHOLD_KEY = "mt.lastHouseholdId";
 
 export interface StoredSession {
   token: string;
+  refreshToken: string;
   expiresAt: string;
   user: AuthResponse["user"];
   pendingInvites: AuthResponse["pendingInvites"];

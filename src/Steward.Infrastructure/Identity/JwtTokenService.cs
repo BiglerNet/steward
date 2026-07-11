@@ -15,7 +15,7 @@ public class JwtTokenService(IConfiguration configuration) : IJwtTokenService
             ?? throw new InvalidOperationException("Jwt:Key is required.");
         var issuer = configuration["Jwt:Issuer"];
         var audience = configuration["Jwt:Audience"];
-        var expiryMinutes = configuration.GetValue<int?>("Jwt:ExpiryMinutes") ?? 15;
+        var expiryMinutes = configuration.GetValue<int?>("Jwt:ExpiryMinutes") ?? 30;
 
         var claims = new List<Claim>
         {

@@ -48,6 +48,17 @@ public class LocalFileStorageService(IConfiguration configuration) : IFileStorag
         return Task.FromResult((stream, contentType));
     }
 
+    public Task<long> GetSizeAsync(string storageKey, CancellationToken cancellationToken = default)
+    {
+        var fullPath = ResolvePath(storageKey);
+        if (!File.Exists(fullPath))
+        {
+            throw new NotFoundException("Document not found.");
+        }
+
+        return Task.FromResult(new FileInfo(fullPath).Length);
+    }
+
     public Task DeleteAsync(string storageKey, CancellationToken cancellationToken = default)
     {
         var fullPath = ResolvePath(storageKey);

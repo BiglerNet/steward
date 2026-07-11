@@ -19,6 +19,7 @@ export interface AuthenticatedUser {
 
 export interface AuthResponse {
   token: string;
+  refreshToken: string;
   expiresAt: string;
   user: AuthenticatedUser;
   pendingInvites: PendingInviteSummary[];
@@ -45,10 +46,19 @@ export interface RegisterRequest {
 export interface LoginRequest {
   email: string;
   password: string;
+  rememberMe: boolean;
 }
 
 export interface OAuthExchangeRequest {
   code: string;
+}
+
+export interface RefreshRequest {
+  refreshToken: string;
+}
+
+export interface LogoutRequest {
+  refreshToken: string;
 }
 
 export interface OAuthProvidersResponse {
@@ -62,7 +72,11 @@ export interface HouseholdResponse {
   name: string;
   publicSlug: string;
   isPublicVisible: boolean;
+  country: string | null;
+  region: string | null;
   userRole: HouseholdMemberRole;
+  storageUsedBytes: number;
+  storageQuotaBytes: number;
   createdAt: string;
 }
 
@@ -70,12 +84,27 @@ export interface CreateHouseholdRequest {
   name: string;
   publicSlug: string;
   isPublicVisible: boolean;
+  country: string | null;
+  region: string | null;
 }
 
 export interface UpdateHouseholdRequest {
   name: string;
   publicSlug: string;
   isPublicVisible: boolean;
+  country: string | null;
+  region: string | null;
+}
+
+export interface RegionDefinition {
+  code: string;
+  name: string;
+}
+
+export interface CountryDefinition {
+  code: string;
+  name: string;
+  regions: RegionDefinition[];
 }
 
 export interface MembershipResponse {
@@ -105,38 +134,89 @@ export interface InviteMemberRequest {
   role: HouseholdMemberRole;
 }
 
-export type AssetType =
-  | "Snowmobile"
-  | "Utv"
-  | "Boat"
+export type AssetCategory =
   | "Car"
   | "Truck"
-  | "SnowmobileTrailer"
+  | "Suv"
+  | "Van"
+  | "Motorcycle"
+  | "Utv"
+  | "Atv"
+  | "Snowmobile"
+  | "DirtBike"
+  | "GolfCart"
+  | "PowerBoat"
+  | "Sailboat"
+  | "Pwc"
+  | "UtilityTrailer"
   | "EnclosedTrailer"
+  | "SnowmobileTrailer"
+  | "BoatTrailer"
   | "RidingMower"
   | "PowerWasher"
+  | "Generator"
   | "SmallEngine";
 
+export type AssetGroup = "Road" | "Powersport" | "Water" | "Trailer" | "Equipment";
+
+export type AssetStructuralType = "Vehicle" | "Boat" | "Trailer" | "Equipment";
+
+export type VinDecodeSupport = "None" | "BestEffort" | "Supported";
+
+export type HullType = "Monohull" | "Catamaran" | "Trimaran" | "Pontoon" | "Other";
+export type DriveType = "Inboard" | "Outboard" | "SternDrive" | "JetDrive";
+
 export type UsageTrackingMode = "None" | "Mileage" | "Hours" | "Both";
+
+export interface VinDecodeResult {
+  vin: string;
+  make: string | null;
+  model: string | null;
+  modelYear: number | null;
+  bodyClass: string | null;
+  vehicleType: string | null;
+  fuelTypePrimary: string | null;
+  engineCylinders: number | null;
+  displacementLiters: number | null;
+}
+
+export interface AssetTypeDefinition {
+  category: AssetCategory;
+  group: AssetGroup;
+  structuralType: AssetStructuralType;
+  displayLabel: string;
+  defaultUsageTrackingMode: UsageTrackingMode;
+  typicallyHasEngine: boolean;
+  vinDecodeSupport: VinDecodeSupport;
+  typicalPermitKinds: string[];
+  applicableFields: string[];
+  icon: string;
+}
 
 export interface AssetResponse {
   id: string;
   householdId: string;
-  assetType: AssetType;
+  category: AssetCategory;
+  structuralType: AssetStructuralType;
   name: string;
   description: string | null;
   year: number | null;
-  photoUrl: string | null;
+  coverPhotoId: string | null;
   usageTrackingMode: UsageTrackingMode;
   vin: string | null;
-  color: string | null;
   make: string | null;
   model: string | null;
+  color: string | null;
+  trackLengthIn: number | null;
   hin: string | null;
   hullMaterial: string | null;
+  hullType: HullType | null;
+  driveType: DriveType | null;
+  keelType: string | null;
+  mastHeightFt: number | null;
+  mastCount: number | null;
   lengthFt: number | null;
   beamFt: number | null;
-  trackLengthIn: number | null;
   ballSizeIn: number | null;
   maxLoadLbs: number | null;
   interiorHeightFt: number | null;
@@ -145,17 +225,35 @@ export interface AssetResponse {
   maxPsi: number | null;
   maxGpm: number | null;
   equipmentDescription: string | null;
+  licensePlate: string | null;
   createdAt: string;
   updatedAt: string;
 }
 
 export type AssetFields = Omit<
   AssetResponse,
-  "id" | "householdId" | "createdAt" | "updatedAt"
+  "id" | "householdId" | "structuralType" | "coverPhotoId" | "createdAt" | "updatedAt"
 >;
 
-export type CreateAssetRequest = AssetFields;
+export type CreateAssetRequest = Omit<AssetFields, "usageTrackingMode"> & {
+  usageTrackingMode: UsageTrackingMode | null;
+};
 export type UpdateAssetRequest = AssetFields;
+
+export interface AssetPhotoResponse {
+  id: string;
+  assetId: string;
+  width: number;
+  height: number;
+  sizeBytes: number;
+  createdAt: string;
+}
+
+export interface SetCoverPhotoRequest {
+  photoId: string;
+}
+
+export type PhotoVariant = "thumb" | "display";
 
 export type EngineType = "Ice" | "Electric" | "Hybrid";
 export type FuelType = "Gasoline" | "Diesel" | "TwoStroke" | "FourStroke" | "Electric" | "None";
@@ -305,11 +403,15 @@ export interface CreateFuelLogRequest {
 
 export type UpdateFuelLogRequest = CreateFuelLogRequest;
 
+export type RegistrationKind = "Registration" | "TrailPass" | "Permit";
+
 export interface RegistrationResponse {
   id: string;
   assetId: string;
-  registrationNumber: string;
+  kind: RegistrationKind;
+  registrationNumber: string | null;
   issuingAuthority: string | null;
+  validFrom: string | null;
   renewedOn: string | null;
   cost: number | null;
   expiresOn: string | null;
@@ -319,8 +421,10 @@ export interface RegistrationResponse {
 }
 
 export interface CreateRegistrationRequest {
-  registrationNumber: string;
+  kind: RegistrationKind;
+  registrationNumber: string | null;
   issuingAuthority: string | null;
+  validFrom: string | null;
   renewedOn: string | null;
   cost: number | null;
   expiresOn: string | null;

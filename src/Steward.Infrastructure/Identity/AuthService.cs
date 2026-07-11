@@ -14,6 +14,7 @@ public class AuthService(
     SignInManager<ApplicationUser> signInManager,
     IJwtTokenService jwtTokenService,
     IOAuthExchangeService oAuthExchangeService,
+    IRefreshTokenService refreshTokenService,
     StewardDbContext dbContext,
     IConfiguration configuration) : IAuthService
 {
@@ -45,7 +46,7 @@ public class AuthService(
         }
 
         var pendingInvites = await GetPendingInvitesAsync(request.Email, cancellationToken);
-        return await BuildAuthResponseAsync(user, pendingInvites);
+        return await BuildAuthResponseAsync(user, pendingInvites, rememberMe: true, cancellationToken);
     }
 
     public async Task<AuthResponse> LoginAsync(LoginRequest request, CancellationToken cancellationToken = default)
@@ -62,7 +63,7 @@ public class AuthService(
             throw new UnauthorizedException("Invalid email or password.");
         }
 
-        return await BuildAuthResponseAsync(user, []);
+        return await BuildAuthResponseAsync(user, [], request.RememberMe, cancellationToken);
     }
 
     public async Task<string> HandleOAuthCallbackAsync(
@@ -112,18 +113,48 @@ public class AuthService(
             ?? throw new BadRequestException("Exchange code is invalid or expired.");
 
         var pendingInvites = await GetPendingInvitesAsync(user.Email!, cancellationToken);
-        return await BuildAuthResponseAsync(user, pendingInvites);
+        return await BuildAuthResponseAsync(user, pendingInvites, rememberMe: true, cancellationToken);
     }
 
-    private async Task<AuthResponse> BuildAuthResponseAsync(
-        ApplicationUser user, IReadOnlyCollection<PendingInviteSummary> pendingInvites)
+    public async Task<AuthResponse> RefreshAsync(RefreshRequest request, CancellationToken cancellationToken = default)
     {
+        var rotated = await refreshTokenService.RotateAsync(request.RefreshToken, cancellationToken)
+            ?? throw new UnauthorizedException("Refresh token is invalid, expired, or revoked.");
+
+        var user = await userManager.FindByIdAsync(rotated.UserId.ToString())
+            ?? throw new UnauthorizedException("Refresh token is invalid, expired, or revoked.");
+
         var roles = (await userManager.GetRolesAsync(user)).ToList();
-        var expiryMinutes = configuration.GetValue<int?>("Jwt:ExpiryMinutes") ?? 15;
+        var expiryMinutes = configuration.GetValue<int?>("Jwt:ExpiryMinutes") ?? 30;
         var token = jwtTokenService.GenerateToken(new JwtTokenRequest(user.Id, user.Email!, user.DisplayName, roles));
 
         return new AuthResponse(
             token,
+            rotated.Token,
+            DateTimeOffset.UtcNow.AddMinutes(expiryMinutes),
+            new AuthenticatedUser(user.Id, user.Email!, user.DisplayName, user.ThemePreference),
+            []);
+    }
+
+    public async Task LogoutAsync(LogoutRequest request, CancellationToken cancellationToken = default)
+    {
+        await refreshTokenService.RevokeChainAsync(request.RefreshToken, cancellationToken);
+    }
+
+    private async Task<AuthResponse> BuildAuthResponseAsync(
+        ApplicationUser user,
+        IReadOnlyCollection<PendingInviteSummary> pendingInvites,
+        bool rememberMe,
+        CancellationToken cancellationToken)
+    {
+        var roles = (await userManager.GetRolesAsync(user)).ToList();
+        var expiryMinutes = configuration.GetValue<int?>("Jwt:ExpiryMinutes") ?? 30;
+        var token = jwtTokenService.GenerateToken(new JwtTokenRequest(user.Id, user.Email!, user.DisplayName, roles));
+        var refreshToken = await refreshTokenService.IssueAsync(user.Id, rememberMe, cancellationToken);
+
+        return new AuthResponse(
+            token,
+            refreshToken.Token,
             DateTimeOffset.UtcNow.AddMinutes(expiryMinutes),
             new AuthenticatedUser(user.Id, user.Email!, user.DisplayName, user.ThemePreference),
             pendingInvites);

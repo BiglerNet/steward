@@ -15,21 +15,25 @@ public class AssetHouseholdIsolationTests(DatabaseFixture fixture) : Integration
         var clientA = CreateAuthenticatedClient(ownerA);
 
         var createResponse = await clientA.PostAsJsonAsync($"/api/households/{householdA}/assets", new CreateAssetRequest(
-                AssetType: AssetType.Snowmobile,
+                Category: AssetCategory.Snowmobile,
                 Name: "Ski-Doo",
                 Description: null,
                 Year: null,
-                PhotoUrl: null,
-                UsageTrackingMode: UsageTrackingMode.None,
+                UsageTrackingMode: null,
                 Vin: null,
-                Color: null,
                 Make: null,
                 Model: null,
+                Color: null,
+                TrackLengthIn: null,
                 Hin: null,
                 HullMaterial: null,
+                HullType: null,
+                DriveType: null,
+                KeelType: null,
+                MastHeightFt: null,
+                MastCount: null,
                 LengthFt: null,
                 BeamFt: null,
-                TrackLengthIn: null,
                 BallSizeIn: null,
                 MaxLoadLbs: null,
                 InteriorHeightFt: null,
@@ -37,7 +41,7 @@ public class AssetHouseholdIsolationTests(DatabaseFixture fixture) : Integration
                 CuttingWidthIn: null,
                 MaxPsi: null,
                 MaxGpm: null,
-                EquipmentDescription: null), TestJson.Options, cancellationToken: TestContext.Current.CancellationToken);
+                EquipmentDescription: null, LicensePlate: null), TestJson.Options, cancellationToken: TestContext.Current.CancellationToken);
         createResponse.EnsureSuccessStatusCode();
         var asset = (await createResponse.Content.ReadFromJsonAsync<AssetResponse>(TestJson.Options, cancellationToken: TestContext.Current.CancellationToken))!;
 

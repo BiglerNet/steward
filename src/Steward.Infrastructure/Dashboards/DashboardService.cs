@@ -391,10 +391,12 @@ public class DashboardService(StewardDbContext dbContext) : IDashboardService
             Position = 0,
             Widgets =
             [
-                new DashboardWidget { Id = Guid.NewGuid(), WidgetType = WidgetType.AssetCount, WidgetSize = WidgetSize.Small, Position = 0 },
-                new DashboardWidget { Id = Guid.NewGuid(), WidgetType = WidgetType.CylinderIndex, WidgetSize = WidgetSize.Small, Position = 1 },
-                new DashboardWidget { Id = Guid.NewGuid(), WidgetType = WidgetType.DueSoon, WidgetSize = WidgetSize.Full, Position = 2, Config = "{\"daysAhead\":30}" },
-                new DashboardWidget { Id = Guid.NewGuid(), WidgetType = WidgetType.RecentActivity, WidgetSize = WidgetSize.Full, Position = 3, Config = "{\"limit\":5}" },
+                new DashboardWidget { Id = Guid.NewGuid(), WidgetType = WidgetType.CylinderIndex, WidgetSize = WidgetSize.Small, Position = 0 },
+                new DashboardWidget { Id = Guid.NewGuid(), WidgetType = WidgetType.TotalDisplacement, WidgetSize = WidgetSize.Small, Position = 1 },
+                new DashboardWidget { Id = Guid.NewGuid(), WidgetType = WidgetType.TotalHorsepower, WidgetSize = WidgetSize.Small, Position = 2 },
+                new DashboardWidget { Id = Guid.NewGuid(), WidgetType = WidgetType.AssetCount, WidgetSize = WidgetSize.Small, Position = 3 },
+                new DashboardWidget { Id = Guid.NewGuid(), WidgetType = WidgetType.RecentActivity, WidgetSize = WidgetSize.Full, Position = 4, Config = "{\"limit\":5}" },
+                new DashboardWidget { Id = Guid.NewGuid(), WidgetType = WidgetType.DueSoon, WidgetSize = WidgetSize.Full, Position = 5, Config = "{\"daysAhead\":30}" },
             ],
         };
 

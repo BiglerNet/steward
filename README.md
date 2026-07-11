@@ -40,7 +40,10 @@ Set the following via `dotnet user-secrets`, environment variables, or `appsetti
 | `ConnectionStrings:DefaultConnection` | PostgreSQL connection string |
 | `Jwt:Key` | HS256 signing key for JWT access tokens (min 32 chars) |
 | `Jwt:Issuer` / `Jwt:Audience` | JWT issuer/audience values |
-| `Jwt:ExpiryMinutes` | Access token lifetime (default 15) |
+| `Jwt:ExpiryMinutes` | Access token lifetime (default 30) |
+| `Jwt:RefreshToken:RememberMeExpiry` | Refresh token lifetime when "Remember me" is checked (default 30 days) |
+| `Jwt:RefreshToken:DefaultExpiry` | Refresh token lifetime when "Remember me" is unchecked (default 10 hours) |
+| `Jwt:RefreshToken:ReuseGracePeriod` | Window after rotation during which reusing the old refresh token is tolerated rather than treated as theft (default 45s) |
 | `Auth:Google:ClientId` / `ClientSecret` | Google OAuth credentials (optional — provider skipped if unset) |
 | `Auth:Facebook:ClientId` / `ClientSecret` | Facebook OAuth credentials (optional — provider skipped if unset) |
 | `Auth:Apple:ClientId` / `KeyId` / `TeamId` | Apple OAuth credentials (optional — provider skipped if unset) |

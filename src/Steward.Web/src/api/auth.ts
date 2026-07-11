@@ -2,8 +2,10 @@ import { apiClient } from "@/api/client";
 import type {
   AuthResponse,
   LoginRequest,
+  LogoutRequest,
   OAuthExchangeRequest,
   OAuthProvidersResponse,
+  RefreshRequest,
   RegisterRequest,
   UpdateThemePreferenceRequest,
   UserProfileResponse,
@@ -22,6 +24,15 @@ export async function login(request: LoginRequest): Promise<AuthResponse> {
 export async function exchangeOAuthCode(request: OAuthExchangeRequest): Promise<AuthResponse> {
   const { data } = await apiClient.post<AuthResponse>("/api/auth/oauth/exchange", request);
   return data;
+}
+
+export async function refresh(request: RefreshRequest): Promise<AuthResponse> {
+  const { data } = await apiClient.post<AuthResponse>("/api/auth/refresh", request);
+  return data;
+}
+
+export async function logout(request: LogoutRequest): Promise<void> {
+  await apiClient.post("/api/auth/logout", request);
 }
 
 export async function me(): Promise<UserProfileResponse> {

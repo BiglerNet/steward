@@ -13,7 +13,11 @@ const household: HouseholdResponse = {
   name: "Smith Garage",
   publicSlug: "smith-garage",
   isPublicVisible: false,
+  country: null,
+  region: null,
   userRole: "Owner",
+  storageUsedBytes: 0,
+  storageQuotaBytes: 1073741824,
   createdAt: "2026-01-01T00:00:00Z",
 };
 

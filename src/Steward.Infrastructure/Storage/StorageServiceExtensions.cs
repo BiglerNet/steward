@@ -11,6 +11,8 @@ public static class StorageServiceExtensions
     {
         services.Configure<FileUploadOptions>(configuration.GetSection(FileUploadOptions.SectionName));
         services.AddSingleton<IFileStorageService, LocalFileStorageService>();
+        services.AddSingleton<IImageProcessor, SkiaImageProcessor>();
+        services.AddScoped<IStorageQuotaService, StorageQuotaService>();
 
         return services;
     }

@@ -1,5 +1,6 @@
 using Steward.Application.Auth;
 using Steward.Application.Identity;
+using Steward.Domain.Common.Exceptions;
 using Steward.Domain.Enums;
 using Steward.Infrastructure.Identity;
 using Steward.Infrastructure.Persistence;
@@ -15,6 +16,7 @@ public class AuthServiceTests
     private readonly UserManager<ApplicationUser> _userManager;
     private readonly IJwtTokenService _jwtTokenService;
     private readonly IOAuthExchangeService _oAuthExchangeService;
+    private readonly IRefreshTokenService _refreshTokenService;
     private readonly StewardDbContext _dbContext;
 
     public AuthServiceTests()
@@ -44,6 +46,10 @@ public class AuthServiceTests
         _oAuthExchangeService = Substitute.For<IOAuthExchangeService>();
         _oAuthExchangeService.GenerateCode(Arg.Any<Guid>()).Returns("test-code");
 
+        _refreshTokenService = Substitute.For<IRefreshTokenService>();
+        _refreshTokenService.IssueAsync(Arg.Any<Guid>(), Arg.Any<bool>(), Arg.Any<CancellationToken>())
+            .Returns(new RefreshTokenIssueResult("test-refresh-token", DateTimeOffset.UtcNow.AddDays(30)));
+
         var dbOptions = new DbContextOptionsBuilder<StewardDbContext>()
             .UseInMemoryDatabase(Guid.NewGuid().ToString())
             .Options;
@@ -60,7 +66,7 @@ public class AuthServiceTests
             })
             .Build();
 
-        return new AuthService(_userManager, null!, _jwtTokenService, _oAuthExchangeService, _dbContext, config);
+        return new AuthService(_userManager, null!, _jwtTokenService, _oAuthExchangeService, _refreshTokenService, _dbContext, config);
     }
 
     // --- RegisterAsync ---
@@ -185,5 +191,50 @@ public class AuthServiceTests
         var response = await service.ExchangeOAuthCodeAsync("valid-code", TestContext.Current.CancellationToken);
 
         Assert.Equal(ThemePreference.Dark, response.User.ThemePreference);
+    }
+
+    // --- RefreshAsync ---
+
+    [Fact]
+    public async Task RefreshAsync_ReDerivesRolesFromDatabase()
+    {
+        var user = new ApplicationUser { Id = Guid.NewGuid(), Email = "user@example.com", UserName = "user@example.com" };
+        _refreshTokenService.RotateAsync(Arg.Any<string>(), Arg.Any<CancellationToken>())
+            .Returns(new RefreshTokenRotateResult(user.Id, "new-refresh-token", DateTimeOffset.UtcNow.AddDays(30)));
+        _userManager.FindByIdAsync(user.Id.ToString())
+            .Returns(Task.FromResult<ApplicationUser?>(user));
+        _userManager.GetRolesAsync(user)
+            .Returns(Task.FromResult<IList<string>>(new List<string> { "PlatformAdmin" }));
+
+        var service = CreateService();
+
+        var response = await service.RefreshAsync(new RefreshRequest("old-token"), TestContext.Current.CancellationToken);
+
+        _jwtTokenService.Received(1).GenerateToken(Arg.Is<JwtTokenRequest>(r => r.Roles.Contains("PlatformAdmin")));
+        Assert.Equal("new-refresh-token", response.RefreshToken);
+    }
+
+    [Fact]
+    public async Task RefreshAsync_InvalidToken_ThrowsUnauthorized()
+    {
+        _refreshTokenService.RotateAsync(Arg.Any<string>(), Arg.Any<CancellationToken>())
+            .Returns((RefreshTokenRotateResult?)null);
+
+        var service = CreateService();
+
+        await Assert.ThrowsAsync<UnauthorizedException>(() =>
+            service.RefreshAsync(new RefreshRequest("bad-token"), TestContext.Current.CancellationToken));
+    }
+
+    // --- LogoutAsync ---
+
+    [Fact]
+    public async Task LogoutAsync_RevokesTokenChain()
+    {
+        var service = CreateService();
+
+        await service.LogoutAsync(new LogoutRequest("some-token"), TestContext.Current.CancellationToken);
+
+        await _refreshTokenService.Received(1).RevokeChainAsync("some-token", Arg.Any<CancellationToken>());
     }
 }

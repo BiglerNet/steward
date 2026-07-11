@@ -22,16 +22,17 @@
 --success:     #10b981    (positive stats, valid states)
 --success-bg:  #f0fdf4    (light success background for badges)
 
---light-asset-types:
-  boat:        #dff6ff    (light blue background for boat icons)
-  car:         #fff3e0    (light amber background for car icons)
-  truck:       #e8f5e9    (light green background for truck icons)
-  snowmobile:  #e3f2fd    (light sky blue for snowmobile icons)
-  utv:         #fce4ec    (light pink for utv icons)
-  trailer:     #f3e5f5    (light purple for trailer icons)
-  mower:       #e8f5e9    (light green for mower icons)
-  powerscraper:#fff8e1    (light yellow for powerscraper icons)
-  small-engine:#f5f5dc    (light khaki for small-engine icons)
+--asset-chip-{group}-bg / --asset-chip-{group}-fg:
+  Per-registry-group chip tint pairs (light + dark values in index.css), one pair per
+  AssetGroup rather than per category. The registry serves an icon identity only
+  (`AssetTypeDefinition.icon`, a lucide icon name) — never a color; the frontend owns the
+  chip's background/foreground per theme via these variables, consumed through the shared
+  `AssetTypeIcon` component.
+  road:        bg #fff3e0 / fg #b45309 (light)   bg #4a3418 / fg #fbbf6c (dark)
+  powersport:  bg #fce4ec / fg #be185d (light)   bg #4a1f30 / fg #f9a8d4 (dark)
+  water:       bg #dff6ff / fg #0369a1 (light)   bg #123047 / fg #7dd3fc (dark)
+  trailer:     bg #f3e5f5 / fg #7e22ce (light)   bg #3a2447 / fg #d8b4fe (dark)
+  equipment:   bg #fff8e1 / fg #a16207 (light)   bg #4a3c14 / fg #fcd34d (dark)
 ```
 
 ## Typography

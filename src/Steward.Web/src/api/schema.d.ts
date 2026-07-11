@@ -4,6 +4,195 @@
  */
 
 export interface paths {
+    "/api/households/{householdId}/assets/{assetId}/photos": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        get: {
+            parameters: {
+                query?: {
+                    "api-version"?: string;
+                };
+                header?: never;
+                path: {
+                    householdId: string;
+                    assetId: string;
+                };
+                cookie?: never;
+            };
+            requestBody?: never;
+            responses: {
+                /** @description OK */
+                200: {
+                    headers: {
+                        [name: string]: unknown;
+                    };
+                    content?: never;
+                };
+            };
+        };
+        put?: never;
+        post: {
+            parameters: {
+                query?: {
+                    "api-version"?: string;
+                };
+                header?: never;
+                path: {
+                    householdId: string;
+                    assetId: string;
+                };
+                cookie?: never;
+            };
+            requestBody: {
+                content: {
+                    "multipart/form-data": {
+                        file?: components["schemas"]["IFormFile"];
+                    };
+                };
+            };
+            responses: {
+                /** @description OK */
+                200: {
+                    headers: {
+                        [name: string]: unknown;
+                    };
+                    content?: never;
+                };
+            };
+        };
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
+    "/api/households/{householdId}/assets/{assetId}/photos/{photoId}/content": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        get: {
+            parameters: {
+                query?: {
+                    variant?: string;
+                    "api-version"?: string;
+                };
+                header?: never;
+                path: {
+                    householdId: string;
+                    assetId: string;
+                    photoId: string;
+                };
+                cookie?: never;
+            };
+            requestBody?: never;
+            responses: {
+                /** @description OK */
+                200: {
+                    headers: {
+                        [name: string]: unknown;
+                    };
+                    content?: never;
+                };
+            };
+        };
+        put?: never;
+        post?: never;
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
+    "/api/households/{householdId}/assets/{assetId}/photos/{photoId}": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        get?: never;
+        put?: never;
+        post?: never;
+        delete: {
+            parameters: {
+                query?: {
+                    "api-version"?: string;
+                };
+                header?: never;
+                path: {
+                    householdId: string;
+                    assetId: string;
+                    photoId: string;
+                };
+                cookie?: never;
+            };
+            requestBody?: never;
+            responses: {
+                /** @description OK */
+                200: {
+                    headers: {
+                        [name: string]: unknown;
+                    };
+                    content?: never;
+                };
+            };
+        };
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
+    "/api/households/{householdId}/assets/{assetId}/cover-photo": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        get?: never;
+        put: {
+            parameters: {
+                query?: {
+                    "api-version"?: string;
+                };
+                header?: never;
+                path: {
+                    householdId: string;
+                    assetId: string;
+                };
+                cookie?: never;
+            };
+            requestBody: {
+                content: {
+                    "application/json": components["schemas"]["SetCoverPhotoRequest"];
+                    "text/json": components["schemas"]["SetCoverPhotoRequest"];
+                    "application/*+json": components["schemas"]["SetCoverPhotoRequest"];
+                };
+            };
+            responses: {
+                /** @description OK */
+                200: {
+                    headers: {
+                        [name: string]: unknown;
+                    };
+                    content?: never;
+                };
+            };
+        };
+        post?: never;
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
     "/api/households/{householdId}/assets": {
         parameters: {
             query?: never;
@@ -14,7 +203,8 @@ export interface paths {
         get: {
             parameters: {
                 query?: {
-                    assetType?: components["schemas"]["AssetType"];
+                    category?: components["schemas"]["AssetCategory"];
+                    group?: components["schemas"]["AssetGroup"];
                     "api-version"?: string;
                 };
                 header?: never;
@@ -152,6 +342,45 @@ export interface paths {
                 };
             };
         };
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
+    "/api/asset-types": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        get: {
+            parameters: {
+                query?: {
+                    "api-version"?: string;
+                };
+                header?: never;
+                path?: never;
+                cookie?: never;
+            };
+            requestBody?: never;
+            responses: {
+                /** @description OK */
+                200: {
+                    headers: {
+                        [name: string]: unknown;
+                    };
+                    content: {
+                        "text/plain": components["schemas"]["AssetTypeDefinition"][];
+                        "application/json": components["schemas"]["AssetTypeDefinition"][];
+                        "text/json": components["schemas"]["AssetTypeDefinition"][];
+                    };
+                };
+            };
+        };
+        put?: never;
+        post?: never;
+        delete?: never;
         options?: never;
         head?: never;
         patch?: never;
@@ -371,6 +600,88 @@ export interface paths {
                     "application/json": components["schemas"]["OAuthExchangeRequest"];
                     "text/json": components["schemas"]["OAuthExchangeRequest"];
                     "application/*+json": components["schemas"]["OAuthExchangeRequest"];
+                };
+            };
+            responses: {
+                /** @description OK */
+                200: {
+                    headers: {
+                        [name: string]: unknown;
+                    };
+                    content?: never;
+                };
+            };
+        };
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
+    "/api/auth/refresh": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        get?: never;
+        put?: never;
+        post: {
+            parameters: {
+                query?: {
+                    "api-version"?: string;
+                };
+                header?: never;
+                path?: never;
+                cookie?: never;
+            };
+            requestBody: {
+                content: {
+                    "application/json": components["schemas"]["RefreshRequest"];
+                    "text/json": components["schemas"]["RefreshRequest"];
+                    "application/*+json": components["schemas"]["RefreshRequest"];
+                };
+            };
+            responses: {
+                /** @description OK */
+                200: {
+                    headers: {
+                        [name: string]: unknown;
+                    };
+                    content?: never;
+                };
+            };
+        };
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
+    "/api/auth/logout": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        get?: never;
+        put?: never;
+        post: {
+            parameters: {
+                query?: {
+                    "api-version"?: string;
+                };
+                header?: never;
+                path?: never;
+                cookie?: never;
+            };
+            requestBody: {
+                content: {
+                    "application/json": components["schemas"]["LogoutRequest"];
+                    "text/json": components["schemas"]["LogoutRequest"];
+                    "application/*+json": components["schemas"]["LogoutRequest"];
                 };
             };
             responses: {
@@ -1819,6 +2130,88 @@ export interface paths {
         patch?: never;
         trace?: never;
     };
+    "/api/admin/households/{householdId}/storage-quota": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        get?: never;
+        put: {
+            parameters: {
+                query?: {
+                    "api-version"?: string;
+                };
+                header?: never;
+                path: {
+                    householdId: string;
+                };
+                cookie?: never;
+            };
+            requestBody: {
+                content: {
+                    "application/json": components["schemas"]["SetStorageQuotaRequest"];
+                    "text/json": components["schemas"]["SetStorageQuotaRequest"];
+                    "application/*+json": components["schemas"]["SetStorageQuotaRequest"];
+                };
+            };
+            responses: {
+                /** @description OK */
+                200: {
+                    headers: {
+                        [name: string]: unknown;
+                    };
+                    content?: never;
+                };
+            };
+        };
+        post?: never;
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
+    "/api/regions": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        get: {
+            parameters: {
+                query?: {
+                    "api-version"?: string;
+                };
+                header?: never;
+                path?: never;
+                cookie?: never;
+            };
+            requestBody?: never;
+            responses: {
+                /** @description OK */
+                200: {
+                    headers: {
+                        [name: string]: unknown;
+                    };
+                    content: {
+                        "text/plain": components["schemas"]["CountryDefinition"][];
+                        "application/json": components["schemas"]["CountryDefinition"][];
+                        "text/json": components["schemas"]["CountryDefinition"][];
+                    };
+                };
+            };
+        };
+        put?: never;
+        post?: never;
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
     "/api/households/{householdId}/assets/{assetId}/registrations": {
         parameters: {
             query?: never;
@@ -2180,6 +2573,47 @@ export interface paths {
         patch?: never;
         trace?: never;
     };
+    "/api/vin-decode/{vin}": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        get: {
+            parameters: {
+                query?: {
+                    "api-version"?: string;
+                };
+                header?: never;
+                path: {
+                    vin: string;
+                };
+                cookie?: never;
+            };
+            requestBody?: never;
+            responses: {
+                /** @description OK */
+                200: {
+                    headers: {
+                        [name: string]: unknown;
+                    };
+                    content: {
+                        "text/plain": components["schemas"]["VinDecodeResult"];
+                        "application/json": components["schemas"]["VinDecodeResult"];
+                        "text/json": components["schemas"]["VinDecodeResult"];
+                    };
+                };
+            };
+        };
+        put?: never;
+        post?: never;
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
     "/api/households/{householdId}/assets/{assetId}/warranties": {
         parameters: {
             query?: never;
@@ -2410,30 +2844,57 @@ export type webhooks = Record<string, never>;
 export interface components {
     schemas: {
         /** @enum {unknown} */
-        AssetType: "Snowmobile" | "Utv" | "Boat" | "Car" | "Truck" | "SnowmobileTrailer" | "EnclosedTrailer" | "RidingMower" | "PowerWasher" | "SmallEngine";
+        AssetCategory: "Car" | "Truck" | "Suv" | "Van" | "Motorcycle" | "Utv" | "Atv" | "Snowmobile" | "DirtBike" | "GolfCart" | "PowerBoat" | "Sailboat" | "Pwc" | "UtilityTrailer" | "EnclosedTrailer" | "SnowmobileTrailer" | "BoatTrailer" | "RidingMower" | "PowerWasher" | "Generator" | "SmallEngine";
+        /** @enum {unknown} */
+        AssetGroup: "Road" | "Powersport" | "Water" | "Trailer" | "Equipment" | null;
+        /** @enum {unknown} */
+        AssetStructuralType: "Vehicle" | "Boat" | "Trailer" | "Equipment";
+        AssetTypeDefinition: {
+            category: components["schemas"]["AssetCategory"];
+            group: components["schemas"]["AssetGroup"];
+            structuralType: components["schemas"]["AssetStructuralType"];
+            displayLabel: string;
+            defaultUsageTrackingMode: components["schemas"]["UsageTrackingMode"];
+            typicallyHasEngine: boolean;
+            vinDecodeSupport: components["schemas"]["VinDecodeSupport"];
+            typicalPermitKinds: string[];
+            applicableFields: string[];
+            icon: string;
+        };
         AssignRoleRequest: {
             role: string;
         };
+        CountryDefinition: {
+            code: string;
+            name: string;
+            regions: components["schemas"]["RegionDefinition"][];
+        };
         CreateAssetRequest: {
-            assetType: components["schemas"]["AssetType"];
+            category: components["schemas"]["AssetCategory"];
             name: string;
             description: null | string;
             /** Format: int32 */
             year: null | number | string;
-            photoUrl: null | string;
-            usageTrackingMode: components["schemas"]["UsageTrackingMode"];
+            usageTrackingMode: null | components["schemas"]["UsageTrackingMode"];
             vin: null | string;
-            color: null | string;
             make: null | string;
             model: null | string;
+            color: null | string;
+            /** Format: double */
+            trackLengthIn: null | number | string;
             hin: null | string;
             hullMaterial: null | string;
+            hullType: null | components["schemas"]["HullType"];
+            driveType: null | components["schemas"]["DriveType"];
+            keelType: null | string;
+            /** Format: double */
+            mastHeightFt: null | number | string;
+            /** Format: int32 */
+            mastCount: null | number | string;
             /** Format: double */
             lengthFt: null | number | string;
             /** Format: double */
             beamFt: null | number | string;
-            /** Format: double */
-            trackLengthIn: null | number | string;
             /** Format: double */
             ballSizeIn: null | number | string;
             /** Format: double */
@@ -2449,6 +2910,7 @@ export interface components {
             /** Format: double */
             maxGpm: null | number | string;
             equipmentDescription: null | string;
+            licensePlate: null | string;
         };
         CreateDashboardRequest: {
             name: string;
@@ -2518,6 +2980,8 @@ export interface components {
             name: string;
             publicSlug: string;
             isPublicVisible: boolean;
+            country: null | string;
+            region: null | string;
         };
         CreateMileageLogRequest: {
             /** Format: date */
@@ -2529,8 +2993,11 @@ export interface components {
             notes: null | string;
         };
         CreateRegistrationRequest: {
-            registrationNumber: string;
+            kind: null | components["schemas"]["RegistrationKind"];
+            registrationNumber: null | string;
             issuingAuthority: null | string;
+            /** Format: date */
+            validFrom: null | string;
             /** Format: date */
             renewedOn: null | string;
             /** Format: double */
@@ -2564,6 +3031,8 @@ export interface components {
             notes: null | string;
         };
         /** @enum {unknown} */
+        DriveType: "Inboard" | "Outboard" | "SternDrive" | "JetDrive" | null;
+        /** @enum {unknown} */
         EngineType: "Ice" | "Electric" | "Hybrid";
         /** @enum {unknown} */
         FuelLogType: "Fillup" | "Consumption";
@@ -2571,6 +3040,8 @@ export interface components {
         FuelType: "Gasoline" | "Diesel" | "TwoStroke" | "FourStroke" | "Electric" | "None";
         /** @enum {unknown} */
         HouseholdMemberRole: "Owner" | "Contributor" | "Viewer";
+        /** @enum {unknown} */
+        HullType: "Monohull" | "Catamaran" | "Trimaran" | "Pontoon" | "Other" | null;
         /** Format: binary */
         IFormFile: string;
         InviteMemberRequest: {
@@ -2580,40 +3051,68 @@ export interface components {
         LoginRequest: {
             email: string;
             password: string;
+            /** @default true */
+            rememberMe: boolean;
+        };
+        LogoutRequest: {
+            refreshToken: string;
         };
         OAuthExchangeRequest: {
             code: string;
+        };
+        RefreshRequest: {
+            refreshToken: string;
+        };
+        RegionDefinition: {
+            code: string;
+            name: string;
         };
         RegisterRequest: {
             email: string;
             password: string;
             displayName: string;
         };
+        /** @enum {unknown} */
+        RegistrationKind: "Registration" | "TrailPass" | "Permit" | null;
         ReplaceWidgetLayoutRequest: {
             widgets: components["schemas"]["WidgetDefinition"][];
+        };
+        SetCoverPhotoRequest: {
+            /** Format: uuid */
+            photoId: string;
+        };
+        SetStorageQuotaRequest: {
+            /** Format: int64 */
+            quotaBytes: null | number | string;
         };
         /** @enum {unknown} */
         ThemePreference: "Light" | "Dark" | "System";
         UpdateAssetRequest: {
-            assetType: null | components["schemas"]["AssetType"];
+            category: null | components["schemas"]["AssetCategory"];
             name: string;
             description: null | string;
             /** Format: int32 */
             year: null | number | string;
-            photoUrl: null | string;
             usageTrackingMode: components["schemas"]["UsageTrackingMode"];
             vin: null | string;
-            color: null | string;
             make: null | string;
             model: null | string;
+            color: null | string;
+            /** Format: double */
+            trackLengthIn: null | number | string;
             hin: null | string;
             hullMaterial: null | string;
+            hullType: null | components["schemas"]["HullType"];
+            driveType: null | components["schemas"]["DriveType"];
+            keelType: null | string;
+            /** Format: double */
+            mastHeightFt: null | number | string;
+            /** Format: int32 */
+            mastCount: null | number | string;
             /** Format: double */
             lengthFt: null | number | string;
             /** Format: double */
             beamFt: null | number | string;
-            /** Format: double */
-            trackLengthIn: null | number | string;
             /** Format: double */
             ballSizeIn: null | number | string;
             /** Format: double */
@@ -2629,6 +3128,7 @@ export interface components {
             /** Format: double */
             maxGpm: null | number | string;
             equipmentDescription: null | string;
+            licensePlate: null | string;
         };
         UpdateDashboardRequest: {
             name: string;
@@ -2700,6 +3200,8 @@ export interface components {
             name: string;
             publicSlug: string;
             isPublicVisible: boolean;
+            country: null | string;
+            region: null | string;
         };
         UpdateMileageLogRequest: {
             /** Format: date */
@@ -2711,8 +3213,11 @@ export interface components {
             notes: null | string;
         };
         UpdateRegistrationRequest: {
-            registrationNumber: string;
+            kind: null | components["schemas"]["RegistrationKind"];
+            registrationNumber: null | string;
             issuingAuthority: null | string;
+            /** Format: date */
+            validFrom: null | string;
             /** Format: date */
             renewedOn: null | string;
             /** Format: double */
@@ -2749,7 +3254,23 @@ export interface components {
             notes: null | string;
         };
         /** @enum {unknown} */
-        UsageTrackingMode: "None" | "Mileage" | "Hours" | "Both";
+        UsageTrackingMode: "None" | "Mileage" | "Hours" | "Both" | null;
+        VinDecodeResult: {
+            vin: string;
+            make: null | string;
+            model: null | string;
+            /** Format: int32 */
+            modelYear: null | number | string;
+            bodyClass: null | string;
+            vehicleType: null | string;
+            fuelTypePrimary: null | string;
+            /** Format: int32 */
+            engineCylinders: null | number | string;
+            /** Format: double */
+            displacementLiters: null | number | string;
+        };
+        /** @enum {unknown} */
+        VinDecodeSupport: "None" | "BestEffort" | "Supported";
         /** @enum {unknown} */
         VolumeUnit: "Gallons" | "Liters";
         WidgetDefinition: {

@@ -1,10 +1,10 @@
 import { useQuery } from "@tanstack/react-query";
 import { listAssets } from "@/api/assets";
-import type { AssetType } from "@/api/types";
+import type { AssetCategory } from "@/api/types";
 
-export function useAssets(householdId: string, assetType?: AssetType) {
+export function useAssets(householdId: string, category?: AssetCategory) {
   return useQuery({
-    queryKey: ["households", householdId, "assets", { assetType }],
-    queryFn: () => listAssets(householdId, assetType),
+    queryKey: ["households", householdId, "assets", { category }],
+    queryFn: () => listAssets(householdId, category),
   });
 }

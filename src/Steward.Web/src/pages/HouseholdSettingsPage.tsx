@@ -1,7 +1,9 @@
 import { useParams } from "react-router";
 import { Card, CardContent, CardHeader } from "@/components/ui/card";
+import { HouseholdLocationForm } from "@/components/households/HouseholdLocationForm";
 import { MembersPanel } from "@/components/households/MembersPanel";
 import { RenameHouseholdForm } from "@/components/households/RenameHouseholdForm";
+import { StorageUsageSummary } from "@/components/households/StorageUsageSummary";
 import { useHouseholds } from "@/hooks/useHouseholds";
 
 export function HouseholdSettingsPage() {
@@ -14,6 +16,7 @@ export function HouseholdSettingsPage() {
   }
 
   const canManage = household.userRole === "Owner" || household.userRole === "Contributor";
+  const isOwner = household.userRole === "Owner";
 
   return (
     <div className="max-w-2xl space-y-6">
@@ -25,9 +28,24 @@ export function HouseholdSettingsPage() {
         </CardContent>
       </Card>
       <Card>
+        <CardHeader>Location</CardHeader>
+        <CardContent>
+          <HouseholdLocationForm household={household} canEdit={isOwner} />
+        </CardContent>
+      </Card>
+      <Card>
         <CardHeader>Members</CardHeader>
         <CardContent>
           <MembersPanel householdId={household.id} canManage={canManage} />
+        </CardContent>
+      </Card>
+      <Card>
+        <CardHeader>Storage</CardHeader>
+        <CardContent>
+          <StorageUsageSummary
+            usedBytes={household.storageUsedBytes}
+            quotaBytes={household.storageQuotaBytes}
+          />
         </CardContent>
       </Card>
     </div>

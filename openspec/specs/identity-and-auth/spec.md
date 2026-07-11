@@ -12,11 +12,11 @@ The system SHALL use ASP.NET Core Identity for user management. The `Application
 ---
 
 ### Requirement: JWT Bearer authentication
-The system SHALL issue signed JWT access tokens upon successful authentication. All protected API endpoints SHALL require a valid `Authorization: Bearer <token>` header. Unauthenticated requests SHALL receive HTTP 401.
+The system SHALL issue signed JWT access tokens upon successful authentication, paired with a server-tracked refresh token. All protected API endpoints SHALL require a valid `Authorization: Bearer <token>` header. Unauthenticated requests SHALL receive HTTP 401.
 
 Token claims SHALL include: `sub` (user ID), `email`, `name` (DisplayName), and `role` (ASP.NET Identity roles).
 
-Access tokens SHALL have a configurable expiry defaulting to 15 minutes.
+Access tokens SHALL have a configurable expiry defaulting to 30 minutes (`Jwt:ExpiryMinutes`).
 
 #### Scenario: Valid token grants access
 - **WHEN** a request is sent to a protected endpoint with a valid, non-expired JWT

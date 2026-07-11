@@ -1,14 +1,16 @@
 using Steward.Application.Households;
 using Steward.Application.Households.Memberships;
+using Steward.Application.Storage;
 using Steward.Domain.Common.Exceptions;
 using Steward.Domain.Entities;
 using Steward.Domain.Enums;
 using Steward.Infrastructure.Persistence;
 using Microsoft.EntityFrameworkCore;
+using Microsoft.Extensions.Options;
 
 namespace Steward.Infrastructure.Households;
 
-public class HouseholdService(StewardDbContext dbContext) : IHouseholdService
+public class HouseholdService(StewardDbContext dbContext, IOptions<FileUploadOptions> uploadOptions) : IHouseholdService
 {
     public async Task<HouseholdResponse> CreateAsync(
         Guid userId, CreateHouseholdRequest request, CancellationToken cancellationToken = default)
@@ -24,6 +26,8 @@ public class HouseholdService(StewardDbContext dbContext) : IHouseholdService
             Name = request.Name,
             PublicSlug = request.PublicSlug,
             IsPublicVisible = request.IsPublicVisible,
+            Country = request.Country,
+            Region = request.Region,
             CreatedAt = DateTimeOffset.UtcNow,
             CreatedByUserId = userId,
         };
@@ -75,10 +79,21 @@ public class HouseholdService(StewardDbContext dbContext) : IHouseholdService
     public async Task<IReadOnlyCollection<HouseholdResponse>> ListForUserAsync(
         Guid userId, CancellationToken cancellationToken = default)
     {
+        var defaultQuota = uploadOptions.Value.HouseholdQuotaBytes;
+
         return await dbContext.HouseholdMemberships.AsNoTracking()
             .Where(m => m.UserId == userId && m.Status == HouseholdMemberStatus.Active)
             .Join(dbContext.Households, m => m.HouseholdId, h => h.Id, (m, h) => new HouseholdResponse(
-                h.Id, h.Name, h.PublicSlug, h.IsPublicVisible, m.Role.ToString(), h.CreatedAt))
+                h.Id,
+                h.Name,
+                h.PublicSlug,
+                h.IsPublicVisible,
+                h.Country,
+                h.Region,
+                m.Role.ToString(),
+                h.StorageUsedBytes,
+                h.StorageQuotaOverrideBytes ?? defaultQuota,
+                h.CreatedAt))
             .ToListAsync(cancellationToken);
     }
 
@@ -98,6 +113,8 @@ public class HouseholdService(StewardDbContext dbContext) : IHouseholdService
         household.Name = request.Name;
         household.PublicSlug = request.PublicSlug;
         household.IsPublicVisible = request.IsPublicVisible;
+        household.Country = request.Country;
+        household.Region = request.Region;
 
         await dbContext.SaveChangesAsync(cancellationToken);
 
@@ -244,12 +261,32 @@ public class HouseholdService(StewardDbContext dbContext) : IHouseholdService
         return new HouseholdMembersResponse(members, pendingInvites);
     }
 
-    private static HouseholdResponse ToResponse(Household household, HouseholdMemberRole? role) => new(
+    public async Task SetStorageQuotaOverrideAsync(
+        Guid householdId, long? quotaBytes, CancellationToken cancellationToken = default)
+    {
+        if (quotaBytes is <= 0)
+        {
+            throw new BadRequestException("quotaBytes must be positive.");
+        }
+
+        var household = await dbContext.Households
+            .FirstOrDefaultAsync(h => h.Id == householdId, cancellationToken)
+            ?? throw new BadRequestException("Household not found.");
+
+        household.StorageQuotaOverrideBytes = quotaBytes;
+        await dbContext.SaveChangesAsync(cancellationToken);
+    }
+
+    private HouseholdResponse ToResponse(Household household, HouseholdMemberRole? role) => new(
         household.Id,
         household.Name,
         household.PublicSlug,
         household.IsPublicVisible,
+        household.Country,
+        household.Region,
         role?.ToString() ?? "PlatformAdmin",
+        household.StorageUsedBytes,
+        household.StorageQuotaOverrideBytes ?? uploadOptions.Value.HouseholdQuotaBytes,
         household.CreatedAt);
 
     private static InvitationResponse ToResponse(HouseholdInvitation invitation) => new(

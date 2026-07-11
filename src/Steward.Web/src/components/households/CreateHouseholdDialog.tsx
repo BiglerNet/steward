@@ -46,6 +46,8 @@ export function CreateHouseholdDialog({ trigger }: CreateHouseholdDialogProps) {
         name: values.name,
         publicSlug: slugify(values.name),
         isPublicVisible: false,
+        country: null,
+        region: null,
       }),
     onSuccess: (household) => {
       queryClient.invalidateQueries({ queryKey: ["households"] });

@@ -15,6 +15,7 @@ public class ProblemDetailsExceptionHandler(IProblemDetailsService problemDetail
             BadRequestException => StatusCodes.Status400BadRequest,
             UnauthorizedException => StatusCodes.Status401Unauthorized,
             NotFoundException => StatusCodes.Status404NotFound,
+            BadGatewayException => StatusCodes.Status502BadGateway,
             _ => 0,
         };
 

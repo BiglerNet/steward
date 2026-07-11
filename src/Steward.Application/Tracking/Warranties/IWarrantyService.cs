@@ -14,12 +14,13 @@ public interface IWarrantyService
         UpdateWarrantyRequest request,
         CancellationToken cancellationToken = default);
 
-    Task DeleteAsync(Guid assetId, Guid warrantyId, CancellationToken cancellationToken = default);
+    Task DeleteAsync(Guid householdId, Guid assetId, Guid warrantyId, CancellationToken cancellationToken = default);
 
     Task<WarrantyResponse> SetDocumentAsync(
-        Guid assetId, Guid warrantyId, string storageKey, CancellationToken cancellationToken = default);
+        Guid householdId, Guid assetId, Guid warrantyId, string storageKey, long sizeBytes, CancellationToken cancellationToken = default);
 
-    Task RemoveDocumentAsync(Guid assetId, Guid warrantyId, CancellationToken cancellationToken = default);
+    Task RemoveDocumentAsync(
+        Guid householdId, Guid assetId, Guid warrantyId, CancellationToken cancellationToken = default);
 
     Task<string?> GetDocumentStorageKeyAsync(
         Guid assetId, Guid warrantyId, CancellationToken cancellationToken = default);

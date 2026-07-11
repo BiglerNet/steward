@@ -4,9 +4,13 @@ namespace Steward.Application.Auth;
 
 public record RegisterRequest(string Email, string Password, string DisplayName);
 
-public record LoginRequest(string Email, string Password);
+public record LoginRequest(string Email, string Password, bool RememberMe = true);
 
 public record OAuthExchangeRequest(string Code);
+
+public record RefreshRequest(string RefreshToken);
+
+public record LogoutRequest(string RefreshToken);
 
 public record PendingInviteSummary(string InviteCode, string HouseholdName, string Role, DateTimeOffset ExpiresAt);
 
@@ -14,6 +18,7 @@ public record AuthenticatedUser(Guid Id, string Email, string? DisplayName, Them
 
 public record AuthResponse(
     string Token,
+    string RefreshToken,
     DateTimeOffset ExpiresAt,
     AuthenticatedUser User,
     IReadOnlyCollection<PendingInviteSummary> PendingInvites);

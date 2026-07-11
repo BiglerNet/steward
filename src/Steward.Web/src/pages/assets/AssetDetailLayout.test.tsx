@@ -3,30 +3,39 @@ import { render, screen } from "@testing-library/react";
 import { MemoryRouter, Route, Routes } from "react-router";
 import { beforeEach, describe, expect, it, vi } from "vitest";
 import * as assetsApi from "@/api/assets";
+import * as assetTypesApi from "@/api/assetTypes";
 import * as useHouseholdsModule from "@/hooks/useHouseholds";
 import { AssetDetailLayout } from "@/pages/assets/AssetDetailLayout";
+import { testAssetTypeRegistry } from "@/test-fixtures/assetTypes";
 
 vi.mock("@/api/assets");
+vi.mock("@/api/assetTypes");
 vi.mock("@/hooks/useHouseholds");
 
 const car = {
   id: "asset-1",
   householdId: "house-1",
-  assetType: "Car" as const,
+  category: "Car" as const,
+  structuralType: "Vehicle" as const,
   name: "Family Car",
   description: null,
   year: 2018,
-  photoUrl: null,
+  coverPhotoId: null,
   usageTrackingMode: "Mileage" as const,
   vin: "1HGCM82633A123456",
-  color: "Blue",
   make: "Honda",
   model: "Civic",
+  color: "Blue",
+  trackLengthIn: null,
   hin: null,
   hullMaterial: null,
+  hullType: null,
+  driveType: null,
+  keelType: null,
+  mastHeightFt: null,
+  mastCount: null,
   lengthFt: null,
   beamFt: null,
-  trackLengthIn: null,
   ballSizeIn: null,
   maxLoadLbs: null,
   interiorHeightFt: null,
@@ -35,6 +44,7 @@ const car = {
   maxPsi: null,
   maxGpm: null,
   equipmentDescription: null,
+  licensePlate: null,
   createdAt: "2026-01-01T00:00:00Z",
   updatedAt: "2026-01-01T00:00:00Z",
 };
@@ -47,6 +57,8 @@ function mockRole(userRole: "Owner" | "Contributor" | "Viewer") {
         name: "Garage",
         publicSlug: "garage",
         isPublicVisible: false,
+        country: null,
+        region: null,
         userRole,
         createdAt: "2026-01-01T00:00:00Z",
       },
@@ -73,6 +85,7 @@ describe("AssetDetailLayout", () => {
   beforeEach(() => {
     vi.clearAllMocks();
     vi.mocked(assetsApi.getAsset).mockResolvedValue(car);
+    vi.mocked(assetTypesApi.listAssetTypes).mockResolvedValue(testAssetTypeRegistry);
   });
 
   it("shows the Edit control for a Contributor but not Delete", async () => {
@@ -103,5 +116,23 @@ describe("AssetDetailLayout", () => {
     await screen.findByText("Family Car");
     expect(screen.queryByRole("button", { name: "Edit" })).not.toBeInTheDocument();
     expect(screen.queryByRole("button", { name: "Delete" })).not.toBeInTheDocument();
+  });
+
+  it("shows the license plate in the header when populated", async () => {
+    mockRole("Owner");
+    vi.mocked(assetsApi.getAsset).mockResolvedValue({ ...car, licensePlate: "ABC-1234" });
+
+    renderLayout();
+
+    expect(await screen.findByText(/ABC-1234/)).toBeInTheDocument();
+  });
+
+  it("shows no plate placeholder when the license plate is unset", async () => {
+    mockRole("Owner");
+
+    renderLayout();
+
+    await screen.findByText("Family Car");
+    expect(screen.getByText("Car · 2018")).toBeInTheDocument();
   });
 });

@@ -1,3 +1,4 @@
+using Steward.Domain.Entities;
 using Steward.Domain.Entities.Assets;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.EntityFrameworkCore.Metadata.Builders;
@@ -14,17 +15,16 @@ public class AssetConfiguration : IEntityTypeConfiguration<Asset>
         builder.Property(a => a.Name).IsRequired();
 
         builder.HasDiscriminator<string>("Discriminator")
-            .HasValue<Snowmobile>(nameof(Snowmobile))
-            .HasValue<Utv>(nameof(Utv))
+            .HasValue<Vehicle>(nameof(Vehicle))
             .HasValue<Boat>(nameof(Boat))
-            .HasValue<Car>(nameof(Car))
-            .HasValue<Truck>(nameof(Truck))
-            .HasValue<SnowmobileTrailer>(nameof(SnowmobileTrailer))
-            .HasValue<EnclosedTrailer>(nameof(EnclosedTrailer))
-            .HasValue<RidingMower>(nameof(RidingMower))
-            .HasValue<PowerWasher>(nameof(PowerWasher))
-            .HasValue<SmallEngine>(nameof(SmallEngine));
+            .HasValue<Trailer>(nameof(Trailer))
+            .HasValue<Equipment>(nameof(Equipment));
 
         builder.HasIndex(a => a.HouseholdId);
+
+        builder.HasOne<AssetPhoto>()
+            .WithMany()
+            .HasForeignKey(a => a.CoverPhotoId)
+            .OnDelete(DeleteBehavior.SetNull);
     }
 }

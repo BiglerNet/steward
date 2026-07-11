@@ -31,6 +31,8 @@ function mockRole(userRole: "Owner" | "Contributor" | "Viewer") {
         name: "Garage",
         publicSlug: "garage",
         isPublicVisible: false,
+        country: null,
+        region: null,
         userRole,
         createdAt: "2026-01-01T00:00:00Z",
       },

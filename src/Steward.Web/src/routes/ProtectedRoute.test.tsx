@@ -38,7 +38,8 @@ describe("route guards", () => {
       "mt.session",
       JSON.stringify({
         token: "token-123",
-        expiresAt: "2026-01-01T00:00:00Z",
+        refreshToken: "refresh-token-123",
+        expiresAt: new Date(Date.now() + 3_600_000).toISOString(),
         user: { id: "1", email: "user@example.com", displayName: null },
         pendingInvites: [],
       })
@@ -54,7 +55,8 @@ describe("route guards", () => {
       "mt.session",
       JSON.stringify({
         token: "token-123",
-        expiresAt: "2026-01-01T00:00:00Z",
+        refreshToken: "refresh-token-123",
+        expiresAt: new Date(Date.now() + 3_600_000).toISOString(),
         user: { id: "1", email: "user@example.com", displayName: null },
         pendingInvites: [],
       })

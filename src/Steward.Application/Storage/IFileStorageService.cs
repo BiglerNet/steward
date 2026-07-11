@@ -8,5 +8,7 @@ public interface IFileStorageService
     Task<(Stream Content, string ContentType)> OpenReadAsync(
         string storageKey, CancellationToken cancellationToken = default);
 
+    Task<long> GetSizeAsync(string storageKey, CancellationToken cancellationToken = default);
+
     Task DeleteAsync(string storageKey, CancellationToken cancellationToken = default);
 }

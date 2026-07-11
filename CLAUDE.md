@@ -37,7 +37,7 @@ npm run dev          # Vite dev server
 npm run build         # tsc -b && vite build
 npm run lint          # eslint
 npm test              # vitest run
-npm run generate:api  # regenerate src/api/schema.d.ts from the running API's OpenAPI doc (needs API on :5000)
+npm run generate:api  # regenerate src/api/schema.d.ts from the API's OpenAPI doc (starts postgres/API on :5000 itself if not already running)
 ```
 
 Run `generate:api` after changing any API contract (DTOs, routes) so the frontend's typed client stays in sync.
@@ -79,7 +79,7 @@ Asset
 
 Household-scoped, **resource-based authorization** — not per-household dynamic roles. Every household-scoped resource implements `IHouseholdResource` (exposes `HouseholdId`); `HouseholdAuthorizationHandler` (Infrastructure/Authorization) checks the caller's `HouseholdMembership` row and role (`Owner`/`Contributor`/`Viewer`) against `HouseholdOperations` (`View`/`Edit`/`Delete`/`Invite`). `PlatformAdmin` is an ASP.NET Core Identity role that bypasses household checks entirely. When adding a new authorized endpoint, build an `IHouseholdResource` wrapper for the target entity and call the existing handler — don't write new authorization logic per-controller.
 
-Auth is stateless JWT Bearer (15 min expiry, no refresh tokens yet) plus OAuth (Google/Facebook/Apple) exchanged via `IOAuthExchangeService`.
+Auth is JWT Bearer for access (30 min expiry) backed by a server-tracked, rotating refresh token (`IRefreshTokenService`, hashed at rest in the `RefreshTokens` table) via `POST /api/auth/refresh` and `POST /api/auth/logout`, plus OAuth (Google/Facebook/Apple) exchanged via `IOAuthExchangeService`.
 
 ### Frontend structure (`src/Steward.Web/src`)
 

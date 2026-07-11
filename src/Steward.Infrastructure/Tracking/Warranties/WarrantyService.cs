@@ -7,7 +7,8 @@ using Microsoft.EntityFrameworkCore;
 
 namespace Steward.Infrastructure.Tracking.Warranties;
 
-public class WarrantyService(StewardDbContext dbContext, IFileStorageService fileStorageService)
+public class WarrantyService(
+    StewardDbContext dbContext, IFileStorageService fileStorageService, IStorageQuotaService storageQuotaService)
     : IWarrantyService
 {
     public async Task<WarrantyResponse> CreateAsync(
@@ -59,26 +60,39 @@ public class WarrantyService(StewardDbContext dbContext, IFileStorageService fil
         return ToResponse(warranty);
     }
 
-    public async Task DeleteAsync(Guid assetId, Guid warrantyId, CancellationToken cancellationToken = default)
+    public async Task DeleteAsync(
+        Guid householdId, Guid assetId, Guid warrantyId, CancellationToken cancellationToken = default)
     {
         var warranty = await FindWarrantyAsync(assetId, warrantyId, cancellationToken);
+        var storageKey = warranty.DocumentUrl;
 
-        if (warranty.DocumentUrl is { } storageKey)
+        if (storageKey is not null)
         {
-            await fileStorageService.DeleteAsync(storageKey, cancellationToken);
+            var size = await fileStorageService.GetSizeAsync(storageKey, cancellationToken);
+            await storageQuotaService.AdjustUsageAsync(householdId, -size, cancellationToken);
         }
 
         dbContext.Warranties.Remove(warranty);
         await dbContext.SaveChangesAsync(cancellationToken);
+
+        if (storageKey is not null)
+        {
+            await fileStorageService.DeleteAsync(storageKey, cancellationToken);
+        }
     }
 
     public async Task<WarrantyResponse> SetDocumentAsync(
-        Guid assetId, Guid warrantyId, string storageKey, CancellationToken cancellationToken = default)
+        Guid householdId, Guid assetId, Guid warrantyId, string storageKey, long sizeBytes,
+        CancellationToken cancellationToken = default)
     {
         var warranty = await FindWarrantyAsync(assetId, warrantyId, cancellationToken);
         var previousStorageKey = warranty.DocumentUrl;
+        var previousSize = previousStorageKey is not null
+            ? await fileStorageService.GetSizeAsync(previousStorageKey, cancellationToken)
+            : 0;
 
         warranty.DocumentUrl = storageKey;
+        await storageQuotaService.AdjustUsageAsync(householdId, sizeBytes - previousSize, cancellationToken);
         await dbContext.SaveChangesAsync(cancellationToken);
 
         if (previousStorageKey is not null)
@@ -89,13 +103,16 @@ public class WarrantyService(StewardDbContext dbContext, IFileStorageService fil
         return ToResponse(warranty);
     }
 
-    public async Task RemoveDocumentAsync(Guid assetId, Guid warrantyId, CancellationToken cancellationToken = default)
+    public async Task RemoveDocumentAsync(
+        Guid householdId, Guid assetId, Guid warrantyId, CancellationToken cancellationToken = default)
     {
         var warranty = await FindWarrantyAsync(assetId, warrantyId, cancellationToken);
 
         if (warranty.DocumentUrl is { } storageKey)
         {
+            var size = await fileStorageService.GetSizeAsync(storageKey, cancellationToken);
             warranty.DocumentUrl = null;
+            await storageQuotaService.AdjustUsageAsync(householdId, -size, cancellationToken);
             await dbContext.SaveChangesAsync(cancellationToken);
             await fileStorageService.DeleteAsync(storageKey, cancellationToken);
         }
