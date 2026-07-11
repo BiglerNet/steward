@@ -1,8 +1,14 @@
-import axios from "axios";
+import axios, { type AxiosRequestConfig } from "axios";
 import { toast } from "sonner";
 import { clearSession, readSession } from "@/lib/session";
+import { refreshSession } from "@/lib/sessionRefresh";
 
 const apiBaseUrl = window.__APP_CONFIG__?.apiBaseUrl ?? import.meta.env.VITE_API_BASE_URL;
+const REFRESH_PATH = "/api/auth/refresh";
+
+interface RetryableRequestConfig extends AxiosRequestConfig {
+  _retried?: boolean;
+}
 
 export const apiClient = axios.create({
   baseURL: apiBaseUrl,
@@ -17,17 +23,37 @@ apiClient.interceptors.request.use((config) => {
   return config;
 });
 
+function redirectToLogin() {
+  clearSession();
+  if (window.location.pathname !== "/login") {
+    window.location.assign("/login");
+  }
+}
+
 apiClient.interceptors.response.use(
   (response) => response,
-  (error) => {
+  async (error) => {
     const status = error.response?.status;
+    const config = error.config as RetryableRequestConfig | undefined;
 
     if (status === 401) {
-      clearSession();
-      if (window.location.pathname !== "/login") {
-        window.location.assign("/login");
+      // The refresh call itself 401ing, or a request we already retried once,
+      // means refreshing won't help — fall back to the reactive logout.
+      if (!config || config.url?.includes(REFRESH_PATH) || config._retried) {
+        redirectToLogin();
+        return Promise.reject(error);
       }
-      return Promise.reject(error);
+
+      const refreshed = await refreshSession();
+      if (!refreshed) {
+        redirectToLogin();
+        return Promise.reject(error);
+      }
+
+      config._retried = true;
+      config.headers = config.headers ?? {};
+      config.headers.Authorization = `Bearer ${refreshed.token}`;
+      return apiClient.request(config);
     }
 
     if (status === 403) {

@@ -40,7 +40,10 @@ public class AssetsController(
 
     [HttpGet]
     public async Task<IActionResult> List(
-        Guid householdId, [FromQuery] AssetType? assetType, CancellationToken cancellationToken)
+        Guid householdId,
+        [FromQuery] AssetCategory? category,
+        [FromQuery] AssetGroup? group,
+        CancellationToken cancellationToken)
     {
         var authResult = await authorizationService.AuthorizeAsync(
             User, new HouseholdResource(householdId), HouseholdOperations.View);
@@ -49,7 +52,7 @@ public class AssetsController(
             return Forbid();
         }
 
-        var assets = await assetService.ListAsync(householdId, assetType, cancellationToken);
+        var assets = await assetService.ListAsync(householdId, category, group, cancellationToken);
         return Ok(assets);
     }
 

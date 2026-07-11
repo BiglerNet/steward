@@ -31,3 +31,19 @@ public class UpdateThemePreferenceRequestValidator : AbstractValidator<UpdateThe
         RuleFor(x => x.ThemePreference).IsInEnum();
     }
 }
+
+public class RefreshRequestValidator : AbstractValidator<RefreshRequest>
+{
+    public RefreshRequestValidator()
+    {
+        RuleFor(x => x.RefreshToken).NotEmpty();
+    }
+}
+
+public class LogoutRequestValidator : AbstractValidator<LogoutRequest>
+{
+    public LogoutRequestValidator()
+    {
+        RuleFor(x => x.RefreshToken).NotEmpty();
+    }
+}

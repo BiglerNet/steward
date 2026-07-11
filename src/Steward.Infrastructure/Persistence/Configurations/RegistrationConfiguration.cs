@@ -10,7 +10,6 @@ public class RegistrationConfiguration : IEntityTypeConfiguration<Registration>
     public void Configure(EntityTypeBuilder<Registration> builder)
     {
         builder.HasKey(r => r.Id);
-        builder.Property(r => r.RegistrationNumber).IsRequired();
 
         builder.HasOne<Asset>()
             .WithMany()

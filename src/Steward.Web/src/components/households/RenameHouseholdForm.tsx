@@ -33,6 +33,8 @@ export function RenameHouseholdForm({ household, canEdit }: RenameHouseholdFormP
         name: values.name,
         publicSlug: household.publicSlug,
         isPublicVisible: household.isPublicVisible,
+        country: household.country,
+        region: household.region,
       }),
     onSuccess: () => {
       queryClient.invalidateQueries({ queryKey: ["households"] });

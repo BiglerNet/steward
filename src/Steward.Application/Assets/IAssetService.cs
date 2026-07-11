@@ -8,7 +8,7 @@ public interface IAssetService
         Guid householdId, CreateAssetRequest request, CancellationToken cancellationToken = default);
 
     Task<IReadOnlyCollection<AssetResponse>> ListAsync(
-        Guid householdId, AssetType? assetType, CancellationToken cancellationToken = default);
+        Guid householdId, AssetCategory? category, AssetGroup? group, CancellationToken cancellationToken = default);
 
     Task<AssetResponse> GetByIdAsync(
         Guid householdId, Guid assetId, CancellationToken cancellationToken = default);

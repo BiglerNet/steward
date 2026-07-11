@@ -153,10 +153,52 @@ namespace Steward.Infrastructure.Migrations
                     b.ToTable("AspNetUserTokens", "steward");
                 });
 
+            modelBuilder.Entity("Steward.Domain.Entities.AssetPhoto", b =>
+                {
+                    b.Property<Guid>("Id")
+                        .ValueGeneratedOnAdd()
+                        .HasColumnType("uuid");
+
+                    b.Property<Guid>("AssetId")
+                        .HasColumnType("uuid");
+
+                    b.Property<DateTimeOffset>("CreatedAt")
+                        .HasColumnType("timestamp with time zone");
+
+                    b.Property<string>("DisplayStorageKey")
+                        .IsRequired()
+                        .HasColumnType("text");
+
+                    b.Property<int>("Height")
+                        .HasColumnType("integer");
+
+                    b.Property<long>("SizeBytes")
+                        .HasColumnType("bigint");
+
+                    b.Property<string>("ThumbStorageKey")
+                        .IsRequired()
+                        .HasColumnType("text");
+
+                    b.Property<int>("Width")
+                        .HasColumnType("integer");
+
+                    b.HasKey("Id");
+
+                    b.HasIndex("AssetId");
+
+                    b.ToTable("AssetPhotos", "steward");
+                });
+
             modelBuilder.Entity("Steward.Domain.Entities.Assets.Asset", b =>
                 {
                     b.Property<Guid>("Id")
                         .ValueGeneratedOnAdd()
+                        .HasColumnType("uuid");
+
+                    b.Property<int>("Category")
+                        .HasColumnType("integer");
+
+                    b.Property<Guid?>("CoverPhotoId")
                         .HasColumnType("uuid");
 
                     b.Property<DateTimeOffset>("CreatedAt")
@@ -167,17 +209,14 @@ namespace Steward.Infrastructure.Migrations
 
                     b.Property<string>("Discriminator")
                         .IsRequired()
-                        .HasMaxLength(21)
-                        .HasColumnType("character varying(21)");
+                        .HasMaxLength(13)
+                        .HasColumnType("character varying(13)");
 
                     b.Property<Guid>("HouseholdId")
                         .HasColumnType("uuid");
 
                     b.Property<string>("Name")
                         .IsRequired()
-                        .HasColumnType("text");
-
-                    b.Property<string>("PhotoUrl")
                         .HasColumnType("text");
 
                     b.Property<DateTimeOffset>("UpdatedAt")
@@ -190,6 +229,8 @@ namespace Steward.Infrastructure.Migrations
                         .HasColumnType("integer");
 
                     b.HasKey("Id");
+
+                    b.HasIndex("CoverPhotoId");
 
                     b.HasIndex("HouseholdId");
 
@@ -388,6 +429,9 @@ namespace Steward.Infrastructure.Migrations
                         .ValueGeneratedOnAdd()
                         .HasColumnType("uuid");
 
+                    b.Property<string>("Country")
+                        .HasColumnType("text");
+
                     b.Property<DateTimeOffset>("CreatedAt")
                         .HasColumnType("timestamp with time zone");
 
@@ -404,6 +448,15 @@ namespace Steward.Infrastructure.Migrations
                     b.Property<string>("PublicSlug")
                         .IsRequired()
                         .HasColumnType("text");
+
+                    b.Property<string>("Region")
+                        .HasColumnType("text");
+
+                    b.Property<long?>("StorageQuotaOverrideBytes")
+                        .HasColumnType("bigint");
+
+                    b.Property<long>("StorageUsedBytes")
+                        .HasColumnType("bigint");
 
                     b.HasKey("Id");
 
@@ -567,6 +620,44 @@ namespace Steward.Infrastructure.Migrations
                     b.ToTable("MileageLogs", "steward");
                 });
 
+            modelBuilder.Entity("Steward.Domain.Entities.RefreshToken", b =>
+                {
+                    b.Property<Guid>("Id")
+                        .ValueGeneratedOnAdd()
+                        .HasColumnType("uuid");
+
+                    b.Property<DateTimeOffset>("CreatedAt")
+                        .HasColumnType("timestamp with time zone");
+
+                    b.Property<DateTimeOffset>("ExpiresAt")
+                        .HasColumnType("timestamp with time zone");
+
+                    b.Property<bool>("RememberMe")
+                        .HasColumnType("boolean");
+
+                    b.Property<string>("ReplacedByTokenHash")
+                        .HasColumnType("text");
+
+                    b.Property<DateTimeOffset?>("RevokedAt")
+                        .HasColumnType("timestamp with time zone");
+
+                    b.Property<string>("TokenHash")
+                        .IsRequired()
+                        .HasColumnType("text");
+
+                    b.Property<Guid>("UserId")
+                        .HasColumnType("uuid");
+
+                    b.HasKey("Id");
+
+                    b.HasIndex("TokenHash")
+                        .IsUnique();
+
+                    b.HasIndex("UserId");
+
+                    b.ToTable("RefreshTokens", "steward");
+                });
+
             modelBuilder.Entity("Steward.Domain.Entities.Registration", b =>
                 {
                     b.Property<Guid>("Id")
@@ -588,14 +679,19 @@ namespace Steward.Infrastructure.Migrations
                     b.Property<string>("IssuingAuthority")
                         .HasColumnType("text");
 
+                    b.Property<int>("Kind")
+                        .HasColumnType("integer");
+
                     b.Property<string>("Notes")
                         .HasColumnType("text");
 
                     b.Property<string>("RegistrationNumber")
-                        .IsRequired()
                         .HasColumnType("text");
 
                     b.Property<DateOnly?>("RenewedOn")
+                        .HasColumnType("date");
+
+                    b.Property<DateOnly?>("ValidFrom")
                         .HasColumnType("date");
 
                     b.HasKey("Id");
@@ -767,8 +863,10 @@ namespace Steward.Infrastructure.Migrations
                         .HasColumnType("numeric");
 
                     b.Property<string>("Color")
-                        .ValueGeneratedOnUpdateSometimes()
                         .HasColumnType("text");
+
+                    b.Property<int?>("DriveType")
+                        .HasColumnType("integer");
 
                     b.Property<string>("Hin")
                         .HasColumnType("text");
@@ -776,63 +874,39 @@ namespace Steward.Infrastructure.Migrations
                     b.Property<string>("HullMaterial")
                         .HasColumnType("text");
 
+                    b.Property<int?>("HullType")
+                        .HasColumnType("integer");
+
+                    b.Property<string>("KeelType")
+                        .HasColumnType("text");
+
                     b.Property<decimal?>("LengthFt")
                         .HasColumnType("numeric");
 
                     b.Property<string>("Make")
-                        .ValueGeneratedOnUpdateSometimes()
                         .HasColumnType("text");
+
+                    b.Property<int?>("MastCount")
+                        .HasColumnType("integer");
+
+                    b.Property<decimal?>("MastHeightFt")
+                        .HasColumnType("numeric");
 
                     b.Property<string>("Model")
-                        .ValueGeneratedOnUpdateSometimes()
-                        .HasColumnType("text");
-
-                    b.Property<string>("Vin")
-                        .ValueGeneratedOnUpdateSometimes()
                         .HasColumnType("text");
 
                     b.HasDiscriminator().HasValue("Boat");
                 });
 
-            modelBuilder.Entity("Steward.Domain.Entities.Assets.Car", b =>
+            modelBuilder.Entity("Steward.Domain.Entities.Assets.Equipment", b =>
                 {
                     b.HasBaseType("Steward.Domain.Entities.Assets.Asset");
 
-                    b.Property<string>("Color")
-                        .ValueGeneratedOnUpdateSometimes()
-                        .HasColumnType("text");
-
-                    b.Property<string>("Make")
-                        .ValueGeneratedOnUpdateSometimes()
-                        .HasColumnType("text");
-
-                    b.Property<string>("Model")
-                        .ValueGeneratedOnUpdateSometimes()
-                        .HasColumnType("text");
-
-                    b.Property<string>("Vin")
-                        .ValueGeneratedOnUpdateSometimes()
-                        .HasColumnType("text");
-
-                    b.HasDiscriminator().HasValue("Car");
-                });
-
-            modelBuilder.Entity("Steward.Domain.Entities.Assets.EnclosedTrailer", b =>
-                {
-                    b.HasBaseType("Steward.Domain.Entities.Assets.Asset");
-
-                    b.Property<decimal?>("InteriorHeightFt")
+                    b.Property<decimal?>("CuttingWidthIn")
                         .HasColumnType("numeric");
 
-                    b.Property<decimal?>("InteriorLengthFt")
-                        .HasColumnType("numeric");
-
-                    b.HasDiscriminator().HasValue("EnclosedTrailer");
-                });
-
-            modelBuilder.Entity("Steward.Domain.Entities.Assets.PowerWasher", b =>
-                {
-                    b.HasBaseType("Steward.Domain.Entities.Assets.Asset");
+                    b.Property<string>("EquipmentDescription")
+                        .HasColumnType("text");
 
                     b.Property<decimal?>("MaxGpm")
                         .HasColumnType("numeric");
@@ -840,112 +914,69 @@ namespace Steward.Infrastructure.Migrations
                     b.Property<decimal?>("MaxPsi")
                         .HasColumnType("numeric");
 
-                    b.HasDiscriminator().HasValue("PowerWasher");
+                    b.HasDiscriminator().HasValue("Equipment");
                 });
 
-            modelBuilder.Entity("Steward.Domain.Entities.Assets.RidingMower", b =>
-                {
-                    b.HasBaseType("Steward.Domain.Entities.Assets.Asset");
-
-                    b.Property<decimal?>("CuttingWidthIn")
-                        .HasColumnType("numeric");
-
-                    b.HasDiscriminator().HasValue("RidingMower");
-                });
-
-            modelBuilder.Entity("Steward.Domain.Entities.Assets.SmallEngine", b =>
-                {
-                    b.HasBaseType("Steward.Domain.Entities.Assets.Asset");
-
-                    b.Property<string>("EquipmentDescription")
-                        .HasColumnType("text");
-
-                    b.HasDiscriminator().HasValue("SmallEngine");
-                });
-
-            modelBuilder.Entity("Steward.Domain.Entities.Assets.Snowmobile", b =>
-                {
-                    b.HasBaseType("Steward.Domain.Entities.Assets.Asset");
-
-                    b.Property<string>("Color")
-                        .ValueGeneratedOnUpdateSometimes()
-                        .HasColumnType("text");
-
-                    b.Property<string>("Make")
-                        .ValueGeneratedOnUpdateSometimes()
-                        .HasColumnType("text");
-
-                    b.Property<string>("Model")
-                        .ValueGeneratedOnUpdateSometimes()
-                        .HasColumnType("text");
-
-                    b.Property<decimal?>("TrackLengthIn")
-                        .HasColumnType("numeric");
-
-                    b.Property<string>("Vin")
-                        .ValueGeneratedOnUpdateSometimes()
-                        .HasColumnType("text");
-
-                    b.HasDiscriminator().HasValue("Snowmobile");
-                });
-
-            modelBuilder.Entity("Steward.Domain.Entities.Assets.SnowmobileTrailer", b =>
+            modelBuilder.Entity("Steward.Domain.Entities.Assets.Trailer", b =>
                 {
                     b.HasBaseType("Steward.Domain.Entities.Assets.Asset");
 
                     b.Property<decimal?>("BallSizeIn")
                         .HasColumnType("numeric");
 
+                    b.Property<decimal?>("InteriorHeightFt")
+                        .HasColumnType("numeric");
+
+                    b.Property<decimal?>("InteriorLengthFt")
+                        .HasColumnType("numeric");
+
+                    b.Property<string>("LicensePlate")
+                        .HasColumnType("text");
+
                     b.Property<decimal?>("MaxLoadLbs")
                         .HasColumnType("numeric");
 
-                    b.HasDiscriminator().HasValue("SnowmobileTrailer");
+                    b.HasDiscriminator().HasValue("Trailer");
                 });
 
-            modelBuilder.Entity("Steward.Domain.Entities.Assets.Truck", b =>
+            modelBuilder.Entity("Steward.Domain.Entities.Assets.Vehicle", b =>
                 {
                     b.HasBaseType("Steward.Domain.Entities.Assets.Asset");
 
                     b.Property<string>("Color")
-                        .ValueGeneratedOnUpdateSometimes()
+                        .HasColumnType("text");
+
+                    b.Property<string>("LicensePlate")
                         .HasColumnType("text");
 
                     b.Property<string>("Make")
-                        .ValueGeneratedOnUpdateSometimes()
                         .HasColumnType("text");
 
                     b.Property<string>("Model")
-                        .ValueGeneratedOnUpdateSometimes()
                         .HasColumnType("text");
+
+                    b.Property<decimal?>("TrackLengthIn")
+                        .HasColumnType("numeric");
 
                     b.Property<string>("Vin")
-                        .ValueGeneratedOnUpdateSometimes()
                         .HasColumnType("text");
 
-                    b.HasDiscriminator().HasValue("Truck");
-                });
+                    b.ToTable("Assets", "steward", t =>
+                        {
+                            t.Property("Color")
+                                .HasColumnName("Vehicle_Color");
 
-            modelBuilder.Entity("Steward.Domain.Entities.Assets.Utv", b =>
-                {
-                    b.HasBaseType("Steward.Domain.Entities.Assets.Asset");
+                            t.Property("LicensePlate")
+                                .HasColumnName("Vehicle_LicensePlate");
 
-                    b.Property<string>("Color")
-                        .ValueGeneratedOnUpdateSometimes()
-                        .HasColumnType("text");
+                            t.Property("Make")
+                                .HasColumnName("Vehicle_Make");
 
-                    b.Property<string>("Make")
-                        .ValueGeneratedOnUpdateSometimes()
-                        .HasColumnType("text");
+                            t.Property("Model")
+                                .HasColumnName("Vehicle_Model");
+                        });
 
-                    b.Property<string>("Model")
-                        .ValueGeneratedOnUpdateSometimes()
-                        .HasColumnType("text");
-
-                    b.Property<string>("Vin")
-                        .ValueGeneratedOnUpdateSometimes()
-                        .HasColumnType("text");
-
-                    b.HasDiscriminator().HasValue("Utv");
+                    b.HasDiscriminator().HasValue("Vehicle");
                 });
 
             modelBuilder.Entity("Microsoft.AspNetCore.Identity.IdentityRoleClaim<System.Guid>", b =>
@@ -997,6 +1028,23 @@ namespace Steward.Infrastructure.Migrations
                         .HasForeignKey("UserId")
                         .OnDelete(DeleteBehavior.Cascade)
                         .IsRequired();
+                });
+
+            modelBuilder.Entity("Steward.Domain.Entities.AssetPhoto", b =>
+                {
+                    b.HasOne("Steward.Domain.Entities.Assets.Asset", null)
+                        .WithMany()
+                        .HasForeignKey("AssetId")
+                        .OnDelete(DeleteBehavior.Cascade)
+                        .IsRequired();
+                });
+
+            modelBuilder.Entity("Steward.Domain.Entities.Assets.Asset", b =>
+                {
+                    b.HasOne("Steward.Domain.Entities.AssetPhoto", null)
+                        .WithMany()
+                        .HasForeignKey("CoverPhotoId")
+                        .OnDelete(DeleteBehavior.SetNull);
                 });
 
             modelBuilder.Entity("Steward.Domain.Entities.DashboardWidget", b =>
@@ -1106,6 +1154,15 @@ namespace Steward.Infrastructure.Migrations
                         .WithMany()
                         .HasForeignKey("AssetId")
                         .OnDelete(DeleteBehavior.Restrict)
+                        .IsRequired();
+                });
+
+            modelBuilder.Entity("Steward.Domain.Entities.RefreshToken", b =>
+                {
+                    b.HasOne("Steward.Infrastructure.Identity.ApplicationUser", null)
+                        .WithMany()
+                        .HasForeignKey("UserId")
+                        .OnDelete(DeleteBehavior.Cascade)
                         .IsRequired();
                 });
 

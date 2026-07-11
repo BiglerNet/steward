@@ -14,12 +14,13 @@ public interface IRegistrationService
         UpdateRegistrationRequest request,
         CancellationToken cancellationToken = default);
 
-    Task DeleteAsync(Guid assetId, Guid registrationId, CancellationToken cancellationToken = default);
+    Task DeleteAsync(Guid householdId, Guid assetId, Guid registrationId, CancellationToken cancellationToken = default);
 
     Task<RegistrationResponse> SetDocumentAsync(
-        Guid assetId, Guid registrationId, string storageKey, CancellationToken cancellationToken = default);
+        Guid householdId, Guid assetId, Guid registrationId, string storageKey, long sizeBytes, CancellationToken cancellationToken = default);
 
-    Task RemoveDocumentAsync(Guid assetId, Guid registrationId, CancellationToken cancellationToken = default);
+    Task RemoveDocumentAsync(
+        Guid householdId, Guid assetId, Guid registrationId, CancellationToken cancellationToken = default);
 
     Task<string?> GetDocumentStorageKeyAsync(
         Guid assetId, Guid registrationId, CancellationToken cancellationToken = default);

@@ -1,12 +1,12 @@
 import { apiClient } from "@/api/client";
-import type { AssetResponse, AssetType, CreateAssetRequest, UpdateAssetRequest } from "@/api/types";
+import type { AssetCategory, AssetResponse, CreateAssetRequest, UpdateAssetRequest } from "@/api/types";
 
 export async function listAssets(
   householdId: string,
-  assetType?: AssetType
+  category?: AssetCategory
 ): Promise<AssetResponse[]> {
   const { data } = await apiClient.get<AssetResponse[]>(`/api/households/${householdId}/assets`, {
-    params: assetType ? { assetType } : undefined,
+    params: category ? { category } : undefined,
   });
   return data;
 }

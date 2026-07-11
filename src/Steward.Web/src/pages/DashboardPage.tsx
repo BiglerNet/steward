@@ -1,13 +1,29 @@
 import { useState } from "react";
+import { Plus, Settings2 } from "lucide-react";
 import { useParams } from "react-router";
+import { toast } from "sonner";
+import { Button } from "@/components/ui/button";
+import {
+  DropdownMenu,
+  DropdownMenuContent,
+  DropdownMenuItem,
+  DropdownMenuTrigger,
+} from "@/components/ui/dropdown-menu";
 import { DashboardManagerBar } from "@/components/dashboard/DashboardManagerBar";
-import { WidgetCatalogSheet } from "@/components/dashboard/WidgetCatalogSheet";
 import { WidgetGrid } from "@/components/dashboard/WidgetGrid";
 import { useDashboard, useDashboards } from "@/hooks/useDashboards";
+import { useReplaceWidgetLayout } from "@/hooks/useDashboardMutations";
 import { useDashboardSnapshot } from "@/hooks/useDashboardSnapshot";
 import { readLastDashboardId, writeLastDashboardId } from "@/lib/dashboardStorage";
 import { useHouseholdRole } from "@/lib/permissions";
-import type { DashboardSummaryResponse } from "@/api/types";
+import { WIDGET_CATALOG } from "@/lib/widgetCatalog";
+import type { DashboardSummaryResponse, WidgetResponse, WidgetSize } from "@/api/types";
+
+const NEXT_SIZE: Record<WidgetSize, WidgetSize> = {
+  Small: "Wide",
+  Wide: "Full",
+  Full: "Small",
+};
 
 function pickInitialDashboard(
   householdId: string,
@@ -24,6 +40,8 @@ export function DashboardPage() {
   const { canEdit } = useHouseholdRole();
   const { data: dashboards, isLoading: dashboardsLoading } = useDashboards(householdId);
   const [activeDashboardId, setActiveDashboardId] = useState<string | null>(null);
+  const [isEditing, setIsEditing] = useState(false);
+  const [stagedWidgets, setStagedWidgets] = useState<WidgetResponse[]>([]);
 
   const resolvedId =
     activeDashboardId ?? (dashboards ? pickInitialDashboard(householdId, dashboards) : null);
@@ -33,6 +51,7 @@ export function DashboardPage() {
     householdId,
     resolvedId
   );
+  const replace = useReplaceWidgetLayout(householdId, resolvedId ?? "");
 
   if (dashboardsLoading) {
     return <div className="py-12 text-center text-muted-foreground">Loading dashboards…</div>;
@@ -47,6 +66,7 @@ export function DashboardPage() {
   function handleSelect(id: string) {
     writeLastDashboardId(householdId, id);
     setActiveDashboardId(id);
+    setIsEditing(false);
   }
 
   function handleDeleted(deletedId: string) {
@@ -55,6 +75,60 @@ export function DashboardPage() {
     const next = remaining.find((d) => d.isDefault) ?? remaining[0];
     if (next) handleSelect(next.id);
   }
+
+  function handleEnterEdit() {
+    setStagedWidgets(detail?.widgets ?? []);
+    setIsEditing(true);
+  }
+
+  function handleCancel() {
+    setIsEditing(false);
+    setStagedWidgets([]);
+  }
+
+  async function handleSave() {
+    try {
+      await replace.mutateAsync({
+        widgets: stagedWidgets.map((w) => ({
+          widgetType: w.widgetType,
+          widgetSize: w.widgetSize,
+          config: w.config ?? undefined,
+        })),
+      });
+      setIsEditing(false);
+      setStagedWidgets([]);
+      toast.success("Dashboard layout saved.");
+    } catch {
+      toast.error("Failed to save layout.");
+    }
+  }
+
+  function handleResizeWidget(widgetId: string) {
+    setStagedWidgets((prev) =>
+      prev.map((w) => (w.id === widgetId ? { ...w, widgetSize: NEXT_SIZE[w.widgetSize] } : w))
+    );
+  }
+
+  function handleRemoveWidget(widgetId: string) {
+    setStagedWidgets((prev) => prev.filter((w) => w.id !== widgetId));
+  }
+
+  function handleAddWidget(type: (typeof WIDGET_CATALOG)[number]) {
+    setStagedWidgets((prev) => [
+      ...prev,
+      {
+        id: crypto.randomUUID(),
+        widgetType: type.type,
+        widgetSize: type.defaultSize,
+        position: prev.length,
+        config: null,
+      },
+    ]);
+  }
+
+  const availableToAdd = WIDGET_CATALOG.filter(
+    (entry) => !stagedWidgets.some((w) => w.widgetType === entry.type)
+  );
 
   return (
     <div className="space-y-4">
@@ -68,14 +142,52 @@ export function DashboardPage() {
           onDeleted={handleDeleted}
         />
         {canEdit && (
-          <WidgetCatalogSheet householdId={householdId} dashboardId={currentId} />
+          <div className="flex items-center gap-2">
+            {isEditing ? (
+              <>
+                <DropdownMenu>
+                  <DropdownMenuTrigger asChild>
+                    <Button variant="outline" size="sm" disabled={availableToAdd.length === 0}>
+                      <Plus className="mr-2 h-4 w-4" />
+                      Add Widget
+                    </Button>
+                  </DropdownMenuTrigger>
+                  <DropdownMenuContent align="end">
+                    {availableToAdd.map((entry) => (
+                      <DropdownMenuItem key={entry.type} onSelect={() => handleAddWidget(entry)}>
+                        {entry.label}
+                      </DropdownMenuItem>
+                    ))}
+                  </DropdownMenuContent>
+                </DropdownMenu>
+                <Button variant="outline" size="sm" onClick={handleCancel} disabled={replace.isPending}>
+                  Cancel
+                </Button>
+                <Button size="sm" onClick={handleSave} disabled={replace.isPending}>
+                  {replace.isPending ? "Saving…" : "Save Layout"}
+                </Button>
+              </>
+            ) : (
+              <Button variant="outline" size="sm" onClick={handleEnterEdit}>
+                <Settings2 className="mr-2 h-4 w-4" />
+                Edit Dashboard
+              </Button>
+            )}
+          </div>
         )}
       </div>
 
       {detailLoading || snapshotLoading ? (
         <div className="py-8 text-center text-muted-foreground">Loading…</div>
       ) : (
-        <WidgetGrid widgets={detail?.widgets ?? []} snapshot={snapshot ?? {}} />
+        <WidgetGrid
+          widgets={isEditing ? stagedWidgets : (detail?.widgets ?? [])}
+          snapshot={snapshot ?? {}}
+          isEditing={isEditing}
+          onReorder={setStagedWidgets}
+          onResize={handleResizeWidget}
+          onRemove={handleRemoveWidget}
+        />
       )}
     </div>
   );

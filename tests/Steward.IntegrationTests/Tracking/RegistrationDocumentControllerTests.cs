@@ -126,8 +126,10 @@ public class RegistrationDocumentControllerTests(DatabaseFixture fixture) : Inte
         var createResponse = await client.PostAsJsonAsync(
             $"/api/households/{householdId}/assets/{assetId}/registrations",
             new CreateRegistrationRequest(
+                Kind: RegistrationKind.Registration,
                 RegistrationNumber: "ABC-1234",
                 IssuingAuthority: "DMV",
+                ValidFrom: new DateOnly(2026, 1, 15),
                 RenewedOn: new DateOnly(2026, 1, 15),
                 Cost: 120.00m,
                 ExpiresOn: new DateOnly(2027, 1, 15),

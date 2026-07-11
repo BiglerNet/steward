@@ -11,6 +11,7 @@ using Steward.Infrastructure.Persistence;
 using Steward.Infrastructure.Setup;
 using Steward.Infrastructure.Storage;
 using Steward.Infrastructure.Tracking;
+using Steward.Infrastructure.VinDecode;
 using Scalar.AspNetCore;
 
 var builder = WebApplication.CreateBuilder(args);
@@ -40,6 +41,7 @@ builder.Services.AddStewardAssets();
 builder.Services.AddStewardTracking();
 builder.Services.AddStewardDashboards();
 builder.Services.AddStewardStorage(builder.Configuration);
+builder.Services.AddStewardVinDecode();
 builder.Services.AddApplication();
 
 builder.Services

@@ -1,10 +1,14 @@
+using Steward.Domain.Enums;
+
 namespace Steward.Application.Tracking.Registrations;
 
 public record RegistrationResponse(
     Guid Id,
     Guid AssetId,
-    string RegistrationNumber,
+    RegistrationKind Kind,
+    string? RegistrationNumber,
     string? IssuingAuthority,
+    DateOnly? ValidFrom,
     DateOnly? RenewedOn,
     decimal? Cost,
     DateOnly? ExpiresOn,
@@ -13,16 +17,20 @@ public record RegistrationResponse(
     string? DocumentUrl);
 
 public record CreateRegistrationRequest(
-    string RegistrationNumber,
+    RegistrationKind? Kind,
+    string? RegistrationNumber,
     string? IssuingAuthority,
+    DateOnly? ValidFrom,
     DateOnly? RenewedOn,
     decimal? Cost,
     DateOnly? ExpiresOn,
     string? Notes);
 
 public record UpdateRegistrationRequest(
-    string RegistrationNumber,
+    RegistrationKind? Kind,
+    string? RegistrationNumber,
     string? IssuingAuthority,
+    DateOnly? ValidFrom,
     DateOnly? RenewedOn,
     decimal? Cost,
     DateOnly? ExpiresOn,

@@ -20,6 +20,7 @@ public class RegistrationsController(
     IAssetService assetService,
     IAuthorizationService authorizationService,
     IFileStorageService fileStorageService,
+    IStorageQuotaService storageQuotaService,
     IOptions<FileUploadOptions> uploadOptions,
     IValidator<CreateRegistrationRequest> createValidator,
     IValidator<UpdateRegistrationRequest> updateValidator) : ControllerBase
@@ -93,7 +94,7 @@ public class RegistrationsController(
             return authResult;
         }
 
-        await registrationService.DeleteAsync(assetId, registrationId, cancellationToken);
+        await registrationService.DeleteAsync(householdId, assetId, registrationId, cancellationToken);
         return NoContent();
     }
 
@@ -118,12 +119,14 @@ public class RegistrationsController(
             return BadRequest("File exceeds the maximum allowed size.");
         }
 
+        await storageQuotaService.EnsureCapacityAsync(householdId, file.Length, cancellationToken);
+
         await using var stream = file.OpenReadStream();
         var storageKey = await fileStorageService.SaveAsync(
             stream, file.ContentType, EntityType, registrationId, cancellationToken);
 
         var registration = await registrationService.SetDocumentAsync(
-            assetId, registrationId, storageKey, cancellationToken);
+            householdId, assetId, registrationId, storageKey, file.Length, cancellationToken);
 
         return Ok(WithDocumentUrl(householdId, assetId, registration));
     }
@@ -155,7 +158,7 @@ public class RegistrationsController(
             return authResult;
         }
 
-        await registrationService.RemoveDocumentAsync(assetId, registrationId, cancellationToken);
+        await registrationService.RemoveDocumentAsync(householdId, assetId, registrationId, cancellationToken);
         return NoContent();
     }
 

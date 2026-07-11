@@ -20,6 +20,7 @@ public class WarrantiesController(
     IAssetService assetService,
     IAuthorizationService authorizationService,
     IFileStorageService fileStorageService,
+    IStorageQuotaService storageQuotaService,
     IOptions<FileUploadOptions> uploadOptions,
     IValidator<CreateWarrantyRequest> createValidator,
     IValidator<UpdateWarrantyRequest> updateValidator) : ControllerBase
@@ -93,7 +94,7 @@ public class WarrantiesController(
             return authResult;
         }
 
-        await warrantyService.DeleteAsync(assetId, warrantyId, cancellationToken);
+        await warrantyService.DeleteAsync(householdId, assetId, warrantyId, cancellationToken);
         return NoContent();
     }
 
@@ -118,11 +119,14 @@ public class WarrantiesController(
             return BadRequest("File exceeds the maximum allowed size.");
         }
 
+        await storageQuotaService.EnsureCapacityAsync(householdId, file.Length, cancellationToken);
+
         await using var stream = file.OpenReadStream();
         var storageKey = await fileStorageService.SaveAsync(
             stream, file.ContentType, EntityType, warrantyId, cancellationToken);
 
-        var warranty = await warrantyService.SetDocumentAsync(assetId, warrantyId, storageKey, cancellationToken);
+        var warranty = await warrantyService.SetDocumentAsync(
+            householdId, assetId, warrantyId, storageKey, file.Length, cancellationToken);
 
         return Ok(WithDocumentUrl(householdId, assetId, warranty));
     }
@@ -154,7 +158,7 @@ public class WarrantiesController(
             return authResult;
         }
 
-        await warrantyService.RemoveDocumentAsync(assetId, warrantyId, cancellationToken);
+        await warrantyService.RemoveDocumentAsync(householdId, assetId, warrantyId, cancellationToken);
         return NoContent();
     }
 

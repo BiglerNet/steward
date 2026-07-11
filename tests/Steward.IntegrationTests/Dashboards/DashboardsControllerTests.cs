@@ -31,6 +31,30 @@ public class DashboardsControllerTests(DatabaseFixture fixture) : IntegrationTes
     }
 
     [Fact]
+    public async Task Autoseeded_Overview_Dashboard_Has_Expected_Widget_Composition_And_Order()
+    {
+        var (householdId, userId) = await CreateHouseholdWithMemberAsync(HouseholdMemberRole.Owner);
+        var client = CreateAuthenticatedClient(userId);
+
+        var listResponse = await client.GetAsync($"/api/households/{householdId}/dashboards", TestContext.Current.CancellationToken);
+        var dashboards = await listResponse.Content.ReadFromJsonAsync<List<DashboardSummaryResponse>>(TestJson.Options, cancellationToken: TestContext.Current.CancellationToken);
+        var dashboardId = dashboards!.Single(d => d.Name == "Overview").Id;
+
+        var detailResponse = await client.GetAsync($"/api/households/{householdId}/dashboards/{dashboardId}", TestContext.Current.CancellationToken);
+        var detail = await detailResponse.Content.ReadFromJsonAsync<DashboardDetailResponse>(TestJson.Options, cancellationToken: TestContext.Current.CancellationToken);
+
+        var widgets = detail!.Widgets.OrderBy(w => w.Position).ToList();
+        Assert.Equal(6, widgets.Count);
+        Assert.Equal(
+            [WidgetType.CylinderIndex, WidgetType.TotalDisplacement, WidgetType.TotalHorsepower, WidgetType.AssetCount, WidgetType.RecentActivity, WidgetType.DueSoon],
+            widgets.Select(w => w.WidgetType));
+        Assert.Equal(
+            [WidgetSize.Small, WidgetSize.Small, WidgetSize.Small, WidgetSize.Small, WidgetSize.Full, WidgetSize.Full],
+            widgets.Select(w => w.WidgetSize));
+        Assert.Equal([0, 1, 2, 3, 4, 5], widgets.Select(w => w.Position));
+    }
+
+    [Fact]
     public async Task Viewer_Can_List_Dashboards()
     {
         var (householdId, ownerId) = await CreateHouseholdWithMemberAsync(HouseholdMemberRole.Owner);

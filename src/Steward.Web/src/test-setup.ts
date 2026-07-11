@@ -19,6 +19,12 @@ if (typeof window.ResizeObserver === "undefined") {
 if (typeof window.PointerEvent === "undefined") {
   window.PointerEvent = window.MouseEvent as unknown as typeof PointerEvent;
 }
+if (typeof URL.createObjectURL === "undefined") {
+  URL.createObjectURL = () => "blob:mock-url";
+}
+if (typeof URL.revokeObjectURL === "undefined") {
+  URL.revokeObjectURL = () => {};
+}
 if (typeof window.matchMedia === "undefined") {
   window.matchMedia = (query: string) =>
     ({

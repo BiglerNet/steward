@@ -2,9 +2,12 @@ import { useMutation, useQuery, useQueryClient } from "@tanstack/react-query";
 import { NavLink, Outlet, useNavigate, useParams } from "react-router";
 import { toast } from "sonner";
 import { deleteAsset, getAsset } from "@/api/assets";
+import { AssetCoverThumbnail } from "@/components/assets/AssetCoverThumbnail";
 import { AssetFormDialog } from "@/components/assets/AssetFormDialog";
+import { PhotosSection } from "@/components/assets/PhotosSection";
 import { Button } from "@/components/ui/button";
-import { assetTypeFieldConfig, ASSET_TYPE_LABELS } from "@/lib/assetTypeFieldConfig";
+import { useAssetTypeRegistry } from "@/hooks/useAssetTypeRegistry";
+import { fieldsFor, findDefinition } from "@/lib/assetTypes";
 import { cn } from "@/lib/utils";
 import { useHouseholdRole } from "@/lib/permissions";
 
@@ -23,6 +26,7 @@ export function AssetDetailLayout() {
   const navigate = useNavigate();
   const queryClient = useQueryClient();
   const { canEdit, canDeleteStructural } = useHouseholdRole();
+  const { data: registry } = useAssetTypeRegistry();
 
   const { data: asset } = useQuery({
     queryKey: ["households", householdId, "assets", assetId],
@@ -44,23 +48,39 @@ export function AssetDetailLayout() {
     }
   }
 
-  if (!asset) {
+  if (!asset || !registry) {
     return null;
   }
 
-  const typeFields = assetTypeFieldConfig[asset.assetType].filter(
-    (typeField) => asset[typeField.key] !== null && asset[typeField.key] !== undefined
+  const definition = findDefinition(registry, asset.category);
+  const typeFields = (definition ? fieldsFor(definition) : []).filter(
+    (typeField) =>
+      typeField.key !== "licensePlate" &&
+      asset[typeField.key] !== null &&
+      asset[typeField.key] !== undefined
   );
 
   return (
     <div className="space-y-6">
       <div className="flex flex-wrap items-start justify-between gap-4">
-        <div>
-          <h1 className="text-h1">{asset.name}</h1>
-          <p className="text-body text-muted-foreground">
-            {ASSET_TYPE_LABELS[asset.assetType]}
-            {asset.year ? ` · ${asset.year}` : ""}
-          </p>
+        <div className="flex items-start gap-3">
+          {asset.coverPhotoId && (
+            <AssetCoverThumbnail
+              householdId={householdId}
+              assetId={assetId}
+              coverPhotoId={asset.coverPhotoId}
+              alt={asset.name}
+              className="h-16 w-16 shrink-0 rounded-lg object-cover"
+            />
+          )}
+          <div>
+            <h1 className="text-h1">{asset.name}</h1>
+            <p className="text-body text-muted-foreground">
+              {definition?.displayLabel ?? asset.category}
+              {asset.year ? ` · ${asset.year}` : ""}
+              {asset.licensePlate ? ` · ${asset.licensePlate}` : ""}
+            </p>
+          </div>
         </div>
         <div className="flex gap-2">
           {canEdit && (
@@ -101,6 +121,8 @@ export function AssetDetailLayout() {
           </div>
         </div>
       )}
+
+      <PhotosSection asset={asset} />
 
       <nav className="flex gap-0 overflow-x-auto border-b border-border">
         {TABS.map((tab) => (

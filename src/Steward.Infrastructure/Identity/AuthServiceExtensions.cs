@@ -42,6 +42,7 @@ public static class AuthServiceExtensions
 
         services.AddMemoryCache();
         services.AddSingleton<IOAuthExchangeService, MemoryCacheOAuthExchangeService>();
+        services.AddScoped<IRefreshTokenService, RefreshTokenService>();
 
         services.AddSingleton<InvitationExpiryService>();
         services.AddSingleton<IInvitationExpiryService>(sp => sp.GetRequiredService<InvitationExpiryService>());
@@ -75,6 +76,7 @@ public static class AuthServiceExtensions
                     ValidAudience = configuration["Jwt:Audience"],
                     IssuerSigningKey = new SymmetricSecurityKey(Encoding.UTF8.GetBytes(jwtKey)),
                     ClockSkew = TimeSpan.FromSeconds(30),
+                    RoleClaimType = "role",
                 };
             });
 

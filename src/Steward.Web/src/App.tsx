@@ -7,6 +7,7 @@ import { AuthProvider } from "@/context/AuthContext";
 import { ThemeProvider } from "@/context/ThemeContext";
 import { queryClient } from "@/lib/queryClient";
 import { AuthCallbackPage } from "@/pages/AuthCallbackPage";
+import { AssetCreateWizardPage } from "@/pages/assets/AssetCreateWizardPage";
 import { AssetDetailLayout } from "@/pages/assets/AssetDetailLayout";
 import { AssetListPage } from "@/pages/assets/AssetListPage";
 import { EngineHoursLogsPage } from "@/pages/assets/EngineHoursLogsPage";
@@ -46,6 +47,10 @@ function App() {
                     element={<HouseholdSettingsPage />}
                   />
                   <Route path="/households/:householdId/assets" element={<AssetListPage />} />
+                  <Route
+                    path="/households/:householdId/assets/new"
+                    element={<AssetCreateWizardPage />}
+                  />
                   <Route
                     path="/households/:householdId/assets/:assetId"
                     element={<AssetDetailLayout />}

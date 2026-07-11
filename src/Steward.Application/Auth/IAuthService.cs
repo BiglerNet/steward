@@ -10,4 +10,8 @@ public interface IAuthService
         string provider, string providerKey, string email, string? displayName, CancellationToken cancellationToken = default);
 
     Task<AuthResponse> ExchangeOAuthCodeAsync(string code, CancellationToken cancellationToken = default);
+
+    Task<AuthResponse> RefreshAsync(RefreshRequest request, CancellationToken cancellationToken = default);
+
+    Task LogoutAsync(LogoutRequest request, CancellationToken cancellationToken = default);
 }

@@ -11,6 +11,20 @@
         "focus": true
       },
       "problemMatcher": []
+    },
+    {
+      "label": "web: generate api schema",
+      "type": "shell",
+      "command": "npm run generate:api",
+      "options": {
+        "cwd": "${workspaceFolder}/src/Steward.Web"
+      },
+      "presentation": {
+        "reveal": "always",
+        "panel": "shared",
+        "focus": true
+      },
+      "problemMatcher": []
     }
   ]
 }

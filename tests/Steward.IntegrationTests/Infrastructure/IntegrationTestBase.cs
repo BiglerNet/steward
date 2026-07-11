@@ -99,10 +99,11 @@ public abstract class IntegrationTestBase(DatabaseFixture fixture)
         var dbContext = scope.ServiceProvider.GetRequiredService<StewardDbContext>();
 
         var now = DateTimeOffset.UtcNow;
-        var asset = new Snowmobile
+        var asset = new Vehicle
         {
             Id = Guid.NewGuid(),
             HouseholdId = householdId,
+            Category = AssetCategory.Snowmobile,
             Name = name,
             UsageTrackingMode = UsageTrackingMode.Hours,
             CreatedAt = now,
@@ -113,6 +114,27 @@ public abstract class IntegrationTestBase(DatabaseFixture fixture)
         await dbContext.SaveChangesAsync();
 
         return asset.Id;
+    }
+
+    protected async Task<long> GetHouseholdStorageUsedBytesAsync(Guid householdId)
+    {
+        using var scope = Factory.Services.CreateScope();
+        var dbContext = scope.ServiceProvider.GetRequiredService<StewardDbContext>();
+
+        return await dbContext.Households.AsNoTracking()
+            .Where(h => h.Id == householdId)
+            .Select(h => h.StorageUsedBytes)
+            .FirstAsync();
+    }
+
+    protected async Task SetHouseholdStorageQuotaOverrideAsync(Guid householdId, long? quotaBytes)
+    {
+        using var scope = Factory.Services.CreateScope();
+        var dbContext = scope.ServiceProvider.GetRequiredService<StewardDbContext>();
+
+        var household = await dbContext.Households.FirstAsync(h => h.Id == householdId);
+        household.StorageQuotaOverrideBytes = quotaBytes;
+        await dbContext.SaveChangesAsync();
     }
 
     protected async Task<Guid> CreateEngineAsync(Guid assetId, string label = "Test Engine")

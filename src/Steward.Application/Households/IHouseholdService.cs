@@ -23,4 +23,6 @@ public interface IHouseholdService
     Task RevokeMemberAsync(Guid householdId, Guid actingUserId, Guid targetUserId, CancellationToken cancellationToken = default);
 
     Task<HouseholdMembersResponse> ListMembersAsync(Guid householdId, CancellationToken cancellationToken = default);
+
+    Task SetStorageQuotaOverrideAsync(Guid householdId, long? quotaBytes, CancellationToken cancellationToken = default);
 }
