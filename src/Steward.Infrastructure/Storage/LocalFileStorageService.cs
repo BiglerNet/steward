@@ -16,8 +16,16 @@ public class LocalFileStorageService(IConfiguration configuration) : IFileStorag
     private static readonly Dictionary<string, string> ExtensionToContentType =
         ContentTypeToExtension.ToDictionary(kvp => kvp.Value, kvp => kvp.Key);
 
-    private string RootPath => configuration["Storage:RootPath"]
-        ?? throw new InvalidOperationException("Storage:RootPath is required.");
+    private string RootPath
+    {
+        get
+        {
+            var rootPath = configuration["Storage:RootPath"];
+            return string.IsNullOrEmpty(rootPath)
+                ? throw new InvalidOperationException("Storage:RootPath is required.")
+                : rootPath;
+        }
+    }
 
     public async Task<string> SaveAsync(
         Stream content, string contentType, string entityType, Guid entityId, CancellationToken cancellationToken = default)
