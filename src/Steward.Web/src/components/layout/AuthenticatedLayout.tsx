@@ -11,7 +11,7 @@ export function AuthenticatedLayout() {
   const navLinks = householdId
     ? [
         { to: `/households/${householdId}`, label: "Dashboard", icon: LayoutDashboard },
-        { to: `/households/${householdId}/assets`, label: "My Gear", icon: Package },
+        { to: `/households/${householdId}/assets`, label: "My Equipment", icon: Package },
         { to: `/households/${householdId}/settings`, label: "Household Settings", icon: Settings },
       ]
     : [];
@@ -26,7 +26,7 @@ export function AuthenticatedLayout() {
             className="flex items-center gap-2 text-h3 font-semibold tracking-tight"
           >
             <Wrench className="h-5 w-5 text-primary" />
-            <span className="hidden md:inline">Maintenance Tracker</span>
+            <span className="hidden md:inline">Steward</span>
           </Link>
           <HouseholdSwitcher />
           {navLinks.length > 0 && (
