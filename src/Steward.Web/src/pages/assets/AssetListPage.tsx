@@ -46,7 +46,7 @@ export function AssetListPage() {
   return (
     <div className="space-y-5">
       <div className="flex flex-wrap items-center justify-between gap-3">
-        <h1 className="text-h1">My Gear</h1>
+        <h1 className="text-h1">My Equipment</h1>
         {canEdit && (
           <Button asChild>
             <Link to={`/households/${householdId}/assets/new`}>Add asset</Link>

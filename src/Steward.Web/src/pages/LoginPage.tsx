@@ -50,7 +50,7 @@ export function LoginPage() {
         <div className="mx-auto mb-4 flex h-12 w-12 items-center justify-center rounded-xl bg-primary text-primary-foreground">
           <Wrench className="h-6 w-6" />
         </div>
-        <h1 className="text-h2">Maintenance Tracker</h1>
+        <h1 className="text-h2">Steward</h1>
         <p className="mt-1 text-small text-muted-foreground">Keep everything running smoothly</p>
       </div>
 
