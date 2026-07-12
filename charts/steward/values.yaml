@@ -15,6 +15,9 @@ api:
       cpu: 500m
       memory: 512Mi
   nodeSelector: {}
+  storage:
+    size: 5Gi
+    storageClassName: nfs-csi-slow
   env:
     - name: ASPNETCORE_ENVIRONMENT
       value: Production

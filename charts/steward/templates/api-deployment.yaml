@@ -23,6 +23,10 @@ spec:
       {{- end }}
       initContainers:
         {{- include "steward.initContainers.waitForDatabase" . | nindent 8 }}
+      volumes:
+        - name: storage
+          persistentVolumeClaim:
+            claimName: {{ include "steward.api.name" . }}-storage
       containers:
         - name: api
           image: "{{ .Values.api.image.repository }}:{{ .Values.api.image.tag }}"
@@ -43,6 +47,11 @@ spec:
             {{- end }}
             - name: PlatformAdmin__Email
               value: {{ .Values.platformAdmin.email | quote }}
+            - name: Storage__RootPath
+              value: /app/storage
+          volumeMounts:
+            - name: storage
+              mountPath: /app/storage
           resources:
             {{- toYaml .Values.api.resources | nindent 12 }}
           livenessProbe:

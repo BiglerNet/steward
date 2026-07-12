@@ -71,6 +71,19 @@ public class LocalFileStorageServiceTests : IDisposable
             () => _service.OpenReadAsync("registrations/missing/missing.pdf", TestContext.Current.CancellationToken));
     }
 
+    [Fact]
+    public async Task SaveAsync_Throws_InvalidOperationException_When_RootPath_Is_Empty()
+    {
+        var configuration = new ConfigurationBuilder()
+            .AddInMemoryCollection(new Dictionary<string, string?> { ["Storage:RootPath"] = string.Empty })
+            .Build();
+        var service = new LocalFileStorageService(configuration);
+        using var content = new MemoryStream("hello"u8.ToArray());
+
+        await Assert.ThrowsAsync<InvalidOperationException>(
+            () => service.SaveAsync(content, "application/pdf", "registrations", Guid.NewGuid(), TestContext.Current.CancellationToken));
+    }
+
     public void Dispose()
     {
         if (Directory.Exists(_rootPath))
