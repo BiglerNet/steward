@@ -1,3 +1,9 @@
+# engine-hours-tracking Specification
+
+## Purpose
+Defines engine hours log CRUD endpoints for tracking equipment usage by hours.
+
+## Requirements
 ### Requirement: Create engine hours log entry
 The system SHALL provide `POST /api/households/{householdId}/assets/{assetId}/engines/{engineId}/hours-logs` (Contributor or Owner only) accepting `{ date, hoursReading, tripHours, notes }` with `date` required and at least one of `hoursReading`/`tripHours` required. On success it SHALL return HTTP 201 with the created `EngineHoursLogResponse`.
 

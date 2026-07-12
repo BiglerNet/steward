@@ -1,3 +1,9 @@
+# local-containerized-stack Specification
+
+## Purpose
+Defines the Docker Compose-based local development stack.
+
+## Requirements
 ### Requirement: Containerized API service
 The system SHALL provide a `Dockerfile` for `Steward.Api` that produces a runnable container image via a multi-stage build (.NET SDK build stage, ASP.NET runtime final stage). The image SHALL read all configuration (connection string, JWT key, OAuth secrets, CORS origins, frontend base URL, storage root path) from environment variables using ASP.NET Core's double-underscore naming convention, requiring no `appsettings.Development.json` changes to run.
 

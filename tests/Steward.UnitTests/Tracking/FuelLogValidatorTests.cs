@@ -26,19 +26,27 @@ public class FuelLogValidatorTests
     }
 
     [Fact]
-    public void Unknown_VolumeUnit_Fails()
+    public void Unknown_Unit_Fails()
     {
-        var result = _createValidator.TestValidate(NewCreate() with { VolumeUnit = (VolumeUnit)999 });
+        var result = _createValidator.TestValidate(NewCreate() with { Unit = (VolumeUnit)999 });
 
-        result.ShouldHaveValidationErrorFor(x => x.VolumeUnit);
+        result.ShouldHaveValidationErrorFor(x => x.Unit);
     }
 
     [Fact]
-    public void Negative_Volume_Fails()
+    public void Kwh_Unit_Passes()
     {
-        var result = _createValidator.TestValidate(NewCreate() with { Volume = -1m });
+        var result = _createValidator.TestValidate(NewCreate() with { Unit = VolumeUnit.Kwh });
 
-        result.ShouldHaveValidationErrorFor(x => x.Volume);
+        result.ShouldNotHaveAnyValidationErrors();
+    }
+
+    [Fact]
+    public void Negative_Quantity_Fails()
+    {
+        var result = _createValidator.TestValidate(NewCreate() with { Quantity = -1m });
+
+        result.ShouldHaveValidationErrorFor(x => x.Quantity);
     }
 
     [Fact]
@@ -60,8 +68,8 @@ public class FuelLogValidatorTests
     private static CreateFuelLogRequest NewCreate() => new(
         LogType: FuelLogType.Fillup,
         Date: new DateOnly(2026, 6, 1),
-        Volume: 12.5m,
-        VolumeUnit: VolumeUnit.Gallons,
+        Quantity: 12.5m,
+        Unit: VolumeUnit.Gallons,
         FuelGrade: null,
         PricePerUnit: null,
         TotalCost: 48.75m,
@@ -73,8 +81,8 @@ public class FuelLogValidatorTests
     private static UpdateFuelLogRequest NewUpdate() => new(
         LogType: FuelLogType.Fillup,
         Date: new DateOnly(2026, 6, 1),
-        Volume: 12.5m,
-        VolumeUnit: VolumeUnit.Gallons,
+        Quantity: 12.5m,
+        Unit: VolumeUnit.Gallons,
         FuelGrade: null,
         PricePerUnit: null,
         TotalCost: 48.75m,

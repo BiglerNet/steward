@@ -1,3 +1,9 @@
+# platform-admin Specification
+
+## Purpose
+Defines the PlatformAdmin role and its bootstrap/authorization behavior.
+
+## Requirements
 ### Requirement: PlatformAdmin role seeded on startup
 The system SHALL ensure the `PlatformAdmin` Identity role exists in the database on every application startup. If the role does not exist it SHALL be created. This operation SHALL be idempotent.
 

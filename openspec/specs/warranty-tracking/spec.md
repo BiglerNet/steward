@@ -1,3 +1,9 @@
+# warranty-tracking Specification
+
+## Purpose
+Defines warranty record CRUD endpoints.
+
+## Requirements
 ### Requirement: Create warranty record
 The system SHALL provide `POST /api/households/{householdId}/assets/{assetId}/warranties` (Contributor or Owner only) accepting `{ provider, description, startsOn, expiresOn, notes }` with `provider` required. On success it SHALL return HTTP 201 with the created `WarrantyResponse` (including `hasDocument: false`).
 

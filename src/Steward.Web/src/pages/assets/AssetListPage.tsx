@@ -3,6 +3,7 @@ import { useState } from "react";
 import { Link, useParams } from "react-router";
 import { AssetCoverThumbnail } from "@/components/assets/AssetCoverThumbnail";
 import { AssetTypeIcon } from "@/components/assets/AssetTypeIcon";
+import { PowertrainBadge } from "@/components/assets/PowertrainBadge";
 import { Button } from "@/components/ui/button";
 import { useAssets } from "@/hooks/useAssets";
 import { useAssetTypeRegistry } from "@/hooks/useAssetTypeRegistry";
@@ -102,7 +103,10 @@ export function AssetListPage() {
                 <div className="mb-3.5 flex items-start gap-3">
                   {definition && <AssetTypeIcon icon={definition.icon} group={definition.group} />}
                   <div>
-                    <p className="text-h3">{asset.name}</p>
+                    <div className="flex items-center gap-2">
+                      <p className="text-h3">{asset.name}</p>
+                      {asset.powertrain && <PowertrainBadge powertrain={asset.powertrain} />}
+                    </div>
                     <p className="text-small text-muted-foreground">
                       {label}
                       {asset.year ? ` · ${asset.year}` : ""}

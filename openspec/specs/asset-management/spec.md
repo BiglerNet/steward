@@ -1,3 +1,9 @@
+# asset-management Specification
+
+## Purpose
+Defines asset CRUD endpoints and lifecycle (create, list, get, update, delete) across all household asset categories.
+
+## Requirements
 ### Requirement: Create asset
 The system SHALL provide `POST /api/households/{householdId}/assets` (Contributor or Owner only) accepting a `CreateAssetRequest` with a required `category` (an `AssetCategory` value), required `name`, optional `usageTrackingMode`, and optional shared/type-specific fields. The server SHALL derive the structural class (Vehicle | Boat | Trailer | Equipment) from the asset type registry entry for the category. On success it SHALL create the asset scoped to `householdId` and return HTTP 201 with the created `AssetResponse`. An unknown `category` value SHALL return HTTP 400.
 
@@ -100,3 +106,28 @@ The system SHALL provide `DELETE /api/households/{householdId}/assets/{assetId}`
 #### Scenario: Contributor cannot delete an asset
 - **WHEN** a Contributor calls the delete endpoint
 - **THEN** HTTP 403 is returned
+
+---
+
+### Requirement: Derived powertrain summary on asset responses
+`AssetResponse` (and any list/summary projection used for asset cards or dashboard display) SHALL include a derived, non-persisted `powertrain` field computed from the asset's `Active`-status engines only: `null`/absent when the asset has only `Ice` engines or no engines, `"Electric"` when it has only `Electric` engines, `"Hybrid"` when it has at least one `Active` `Ice` engine and at least one `Active` `Electric` engine with `IsExternallyChargeable = false`, and `"Plug-in Hybrid"` when it has at least one `Active` `Ice` engine and at least one `Active` `Electric` engine with `IsExternallyChargeable = true`. This value SHALL NOT be stored on the `Asset` entity; it is computed at read time from the asset's current engines.
+
+#### Scenario: Ice-only asset has no powertrain badge
+- **WHEN** an asset has a single `Active` `Ice` engine and its `AssetResponse` is fetched
+- **THEN** `powertrain` is absent or `null`
+
+#### Scenario: Pure EV asset shows Electric
+- **WHEN** an asset has a single `Active` `Electric` engine and its `AssetResponse` is fetched
+- **THEN** `powertrain` is `"Electric"`
+
+#### Scenario: Conventional hybrid shows Hybrid
+- **WHEN** an asset has an `Active` `Ice` engine and an `Active` `Electric` engine with `IsExternallyChargeable = false`, and its `AssetResponse` is fetched
+- **THEN** `powertrain` is `"Hybrid"`
+
+#### Scenario: Plug-in hybrid shows Plug-in Hybrid
+- **WHEN** an asset has an `Active` `Ice` engine and an `Active` `Electric` engine with `IsExternallyChargeable = true`, and its `AssetResponse` is fetched
+- **THEN** `powertrain` is `"Plug-in Hybrid"`
+
+#### Scenario: Retired engine does not count toward the powertrain badge
+- **WHEN** an asset has an `Active` `Ice` engine and a `Retired` `Electric` engine (e.g. a discontinued EV conversion), and its `AssetResponse` is fetched
+- **THEN** `powertrain` is absent or `null` (the retired electric engine is excluded)

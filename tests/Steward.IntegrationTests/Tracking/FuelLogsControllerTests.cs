@@ -57,8 +57,8 @@ public class FuelLogsControllerTests(DatabaseFixture fixture) : IntegrationTestB
         {
             logType = "Refund",
             date = "2026-06-01",
-            volume = 12.5m,
-            volumeUnit = "Gallons",
+            quantity = 12.5m,
+            unit = "Gallons",
         };
 
         var response = await client.PostAsJsonAsync($"/api/households/{householdId}/assets/{assetId}/fuel-logs", payload, TestJson.Options, cancellationToken: TestContext.Current.CancellationToken);
@@ -112,11 +112,47 @@ public class FuelLogsControllerTests(DatabaseFixture fixture) : IntegrationTestB
         Assert.Equal(new DateOnly(2026, 1, 15), logs![0].Date);
     }
 
+    [Fact]
+    public async Task Contributor_Logs_An_Ev_Charging_Event()
+    {
+        var (householdId, userId) = await CreateHouseholdWithMemberAsync(HouseholdMemberRole.Contributor);
+        var assetId = await CreateAssetAsync(householdId);
+        var client = CreateAuthenticatedClient(userId);
+
+        var request = NewLog(new DateOnly(2026, 6, 1)) with { Quantity = 62m, Unit = VolumeUnit.Kwh, TotalCost = 9.30m };
+        var response = await client.PostAsJsonAsync($"/api/households/{householdId}/assets/{assetId}/fuel-logs", request, TestJson.Options, cancellationToken: TestContext.Current.CancellationToken);
+
+        Assert.Equal(HttpStatusCode.Created, response.StatusCode);
+        var created = await response.Content.ReadFromJsonAsync<FuelLogResponse>(TestJson.Options, cancellationToken: TestContext.Current.CancellationToken);
+        Assert.Equal(VolumeUnit.Kwh, created!.Unit);
+        Assert.Equal(62m, created.Quantity);
+    }
+
+    [Fact]
+    public async Task Unknown_Unit_Returns_BadRequest()
+    {
+        var (householdId, userId) = await CreateHouseholdWithMemberAsync(HouseholdMemberRole.Owner);
+        var assetId = await CreateAssetAsync(householdId);
+        var client = CreateAuthenticatedClient(userId);
+
+        var payload = new
+        {
+            logType = "Fillup",
+            date = "2026-06-01",
+            quantity = 12.5m,
+            unit = "Amps",
+        };
+
+        var response = await client.PostAsJsonAsync($"/api/households/{householdId}/assets/{assetId}/fuel-logs", payload, TestJson.Options, cancellationToken: TestContext.Current.CancellationToken);
+
+        Assert.Equal(HttpStatusCode.BadRequest, response.StatusCode);
+    }
+
     private static CreateFuelLogRequest NewLog(DateOnly date) => new(
         LogType: FuelLogType.Fillup,
         Date: date,
-        Volume: 12.5m,
-        VolumeUnit: VolumeUnit.Gallons,
+        Quantity: 12.5m,
+        Unit: VolumeUnit.Gallons,
         FuelGrade: null,
         PricePerUnit: null,
         TotalCost: 48.75m,

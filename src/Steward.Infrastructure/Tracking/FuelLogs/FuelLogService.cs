@@ -23,8 +23,8 @@ public class FuelLogService(StewardDbContext dbContext) : IFuelLogService
             EngineId = request.EngineId,
             LogType = request.LogType,
             Date = request.Date,
-            Volume = request.Volume,
-            VolumeUnit = request.VolumeUnit,
+            Quantity = request.Quantity,
+            Unit = request.Unit,
             FuelGrade = request.FuelGrade,
             PricePerUnit = request.PricePerUnit,
             TotalCost = request.TotalCost,
@@ -70,8 +70,8 @@ public class FuelLogService(StewardDbContext dbContext) : IFuelLogService
 
         fuelLog.LogType = request.LogType;
         fuelLog.Date = request.Date;
-        fuelLog.Volume = request.Volume;
-        fuelLog.VolumeUnit = request.VolumeUnit;
+        fuelLog.Quantity = request.Quantity;
+        fuelLog.Unit = request.Unit;
         fuelLog.FuelGrade = request.FuelGrade;
         fuelLog.PricePerUnit = request.PricePerUnit;
         fuelLog.TotalCost = request.TotalCost;
@@ -117,8 +117,8 @@ public class FuelLogService(StewardDbContext dbContext) : IFuelLogService
         fuelLog.EngineId,
         fuelLog.LogType,
         fuelLog.Date,
-        fuelLog.Volume,
-        fuelLog.VolumeUnit,
+        fuelLog.Quantity,
+        fuelLog.Unit,
         fuelLog.FuelGrade,
         fuelLog.PricePerUnit,
         fuelLog.TotalCost,

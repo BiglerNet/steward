@@ -1,3 +1,9 @@
+# identity-and-auth Specification
+
+## Purpose
+Defines ASP.NET Core Identity setup and the extended application user.
+
+## Requirements
 ### Requirement: ASP.NET Core Identity with extended user
 The system SHALL use ASP.NET Core Identity for user management. The `ApplicationUser` class SHALL extend `IdentityUser` and add: `DisplayName` (string, nullable), `AvatarUrl` (string, nullable), and `ThemePreference` (nullable, one of `Light`/`Dark`/`System`; `null` means no explicit preference has been set and the client SHALL fall back to the OS `prefers-color-scheme` setting). Identity tables SHALL be created by the initial EF Core migration; `ThemePreference` SHALL be added by a subsequent migration with a `NULL` default for existing rows.
 

@@ -337,6 +337,124 @@ public class EnginesControllerTests(DatabaseFixture fixture) : IntegrationTestBa
         Assert.Equal(HttpStatusCode.BadRequest, response.StatusCode);
     }
 
+    [Fact]
+    public async Task Contributor_Adds_TwoStroke_Snowmobile_Engine_With_Oil_Injection_Details()
+    {
+        var (householdId, userId) = await CreateHouseholdWithMemberAsync(HouseholdMemberRole.Contributor);
+        var assetId = await CreateAssetAsync(householdId);
+        var client = CreateAuthenticatedClient(userId);
+
+        var request = NewEngine("Engine") with
+        {
+            Mechanism = Mechanism.TwoStroke,
+            FuelType = FuelType.Gasoline,
+            TwoStrokeOilDelivery = TwoStrokeOilDelivery.OilInjected,
+            TwoStrokeMixRatio = "50:1",
+        };
+
+        var response = await client.PostAsJsonAsync($"/api/households/{householdId}/assets/{assetId}/engines", request, TestJson.Options, cancellationToken: TestContext.Current.CancellationToken);
+
+        Assert.Equal(HttpStatusCode.Created, response.StatusCode);
+        var engine = await response.Content.ReadFromJsonAsync<EngineResponse>(TestJson.Options, cancellationToken: TestContext.Current.CancellationToken);
+        Assert.Equal(Mechanism.TwoStroke, engine!.Mechanism);
+        Assert.Equal(TwoStrokeOilDelivery.OilInjected, engine.TwoStrokeOilDelivery);
+        Assert.Equal("50:1", engine.TwoStrokeMixRatio);
+    }
+
+    [Fact]
+    public async Task Contributor_Adds_Externally_Chargeable_Electric_Motor()
+    {
+        var (householdId, userId) = await CreateHouseholdWithMemberAsync(HouseholdMemberRole.Contributor);
+        var assetId = await CreateAssetAsync(householdId);
+        var client = CreateAuthenticatedClient(userId);
+
+        var request = NewEngine("Electric motor") with
+        {
+            EngineType = EngineType.Electric,
+            FuelType = null,
+            IsExternallyChargeable = true,
+        };
+
+        var response = await client.PostAsJsonAsync($"/api/households/{householdId}/assets/{assetId}/engines", request, TestJson.Options, cancellationToken: TestContext.Current.CancellationToken);
+
+        Assert.Equal(HttpStatusCode.Created, response.StatusCode);
+        var engine = await response.Content.ReadFromJsonAsync<EngineResponse>(TestJson.Options, cancellationToken: TestContext.Current.CancellationToken);
+        Assert.True(engine!.IsExternallyChargeable);
+    }
+
+    [Fact]
+    public async Task Mechanism_Rejected_On_Electric_Engine()
+    {
+        var (householdId, userId) = await CreateHouseholdWithMemberAsync(HouseholdMemberRole.Contributor);
+        var assetId = await CreateAssetAsync(householdId);
+        var client = CreateAuthenticatedClient(userId);
+
+        var request = NewEngine("Motor") with { EngineType = EngineType.Electric, FuelType = null, Mechanism = Mechanism.FourStroke };
+        var response = await client.PostAsJsonAsync($"/api/households/{householdId}/assets/{assetId}/engines", request, TestJson.Options, cancellationToken: TestContext.Current.CancellationToken);
+
+        Assert.Equal(HttpStatusCode.BadRequest, response.StatusCode);
+    }
+
+    [Fact]
+    public async Task FuelType_Rejected_On_Electric_Engine()
+    {
+        var (householdId, userId) = await CreateHouseholdWithMemberAsync(HouseholdMemberRole.Contributor);
+        var assetId = await CreateAssetAsync(householdId);
+        var client = CreateAuthenticatedClient(userId);
+
+        var request = NewEngine("Motor") with { EngineType = EngineType.Electric };
+        var response = await client.PostAsJsonAsync($"/api/households/{householdId}/assets/{assetId}/engines", request, TestJson.Options, cancellationToken: TestContext.Current.CancellationToken);
+
+        Assert.Equal(HttpStatusCode.BadRequest, response.StatusCode);
+    }
+
+    [Fact]
+    public async Task IsExternallyChargeable_Rejected_On_Ice_Engine()
+    {
+        var (householdId, userId) = await CreateHouseholdWithMemberAsync(HouseholdMemberRole.Contributor);
+        var assetId = await CreateAssetAsync(householdId);
+        var client = CreateAuthenticatedClient(userId);
+
+        var request = NewEngine("Port") with { IsExternallyChargeable = true };
+        var response = await client.PostAsJsonAsync($"/api/households/{householdId}/assets/{assetId}/engines", request, TestJson.Options, cancellationToken: TestContext.Current.CancellationToken);
+
+        Assert.Equal(HttpStatusCode.BadRequest, response.StatusCode);
+    }
+
+    [Fact]
+    public async Task TwoStrokeOilFields_Rejected_Without_TwoStroke_Mechanism()
+    {
+        var (householdId, userId) = await CreateHouseholdWithMemberAsync(HouseholdMemberRole.Contributor);
+        var assetId = await CreateAssetAsync(householdId);
+        var client = CreateAuthenticatedClient(userId);
+
+        var request = NewEngine("Port") with { Mechanism = Mechanism.FourStroke, TwoStrokeMixRatio = "50:1" };
+        var response = await client.PostAsJsonAsync($"/api/households/{householdId}/assets/{assetId}/engines", request, TestJson.Options, cancellationToken: TestContext.Current.CancellationToken);
+
+        Assert.Equal(HttpStatusCode.BadRequest, response.StatusCode);
+    }
+
+    [Fact]
+    public async Task Changing_Mechanism_Away_From_TwoStroke_Clears_MixRatio()
+    {
+        var (householdId, userId) = await CreateHouseholdWithMemberAsync(HouseholdMemberRole.Contributor);
+        var assetId = await CreateAssetAsync(householdId);
+        var client = CreateAuthenticatedClient(userId);
+        var engine = await CreateEngineAsync(client, householdId, assetId, NewEngine("Port") with
+        {
+            Mechanism = Mechanism.TwoStroke,
+            TwoStrokeOilDelivery = TwoStrokeOilDelivery.Premix,
+            TwoStrokeMixRatio = "50:1",
+        });
+
+        var updateRequest = NewEngineUpdate("Port") with { Mechanism = Mechanism.FourStroke };
+        var response = await client.PutAsJsonAsync($"/api/households/{householdId}/assets/{assetId}/engines/{engine.Id}", updateRequest, TestJson.Options, cancellationToken: TestContext.Current.CancellationToken);
+
+        Assert.Equal(HttpStatusCode.OK, response.StatusCode);
+        var updated = await response.Content.ReadFromJsonAsync<EngineResponse>(TestJson.Options, cancellationToken: TestContext.Current.CancellationToken);
+        Assert.Null(updated!.TwoStrokeMixRatio);
+    }
+
     private static CreateEngineRequest NewEngine(string label) => new(
         Label: label,
         Make: null,
@@ -344,7 +462,11 @@ public class EnginesControllerTests(DatabaseFixture fixture) : IntegrationTestBa
         SerialNumber: null,
         Year: null,
         EngineType: EngineType.Ice,
+        Mechanism: null,
         FuelType: FuelType.Gasoline,
+        IsExternallyChargeable: null,
+        TwoStrokeOilDelivery: null,
+        TwoStrokeMixRatio: null,
         Cylinders: null,
         DisplacementCc: null,
         InstalledDate: null,
@@ -364,7 +486,11 @@ public class EnginesControllerTests(DatabaseFixture fixture) : IntegrationTestBa
         SerialNumber: null,
         Year: null,
         EngineType: EngineType.Ice,
+        Mechanism: null,
         FuelType: FuelType.Gasoline,
+        IsExternallyChargeable: null,
+        TwoStrokeOilDelivery: null,
+        TwoStrokeMixRatio: null,
         Cylinders: null,
         DisplacementCc: null,
         InstalledDate: null,

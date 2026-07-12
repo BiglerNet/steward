@@ -555,8 +555,8 @@ public class DashboardsControllerTests(DatabaseFixture fixture) : IntegrationTes
             Id = Guid.NewGuid(),
             AssetId = assetId,
             Date = date,
-            Volume = 10m,
-            VolumeUnit = VolumeUnit.Gallons,
+            Quantity = 10m,
+            Unit = VolumeUnit.Gallons,
             TotalCost = totalCost,
         });
         await db.SaveChangesAsync();

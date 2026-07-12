@@ -1,3 +1,9 @@
+# frontend-household-management Specification
+
+## Purpose
+Defines the frontend household creation, membership, and settings UX.
+
+## Requirements
 ### Requirement: Create household
 The frontend SHALL provide a "Create household" flow calling `POST /api/households`, after which the new household becomes the active one.
 

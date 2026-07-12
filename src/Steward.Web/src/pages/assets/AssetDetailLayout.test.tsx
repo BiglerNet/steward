@@ -47,6 +47,7 @@ const car = {
   licensePlate: null,
   createdAt: "2026-01-01T00:00:00Z",
   updatedAt: "2026-01-01T00:00:00Z",
+  powertrain: null,
 };
 
 function mockRole(userRole: "Owner" | "Contributor" | "Viewer") {
@@ -134,5 +135,24 @@ describe("AssetDetailLayout", () => {
 
     await screen.findByText("Family Car");
     expect(screen.getByText("Car · 2018")).toBeInTheDocument();
+  });
+
+  it("shows the powertrain badge when the asset has one", async () => {
+    mockRole("Owner");
+    vi.mocked(assetsApi.getAsset).mockResolvedValue({ ...car, powertrain: "Plug-in Hybrid" });
+
+    renderLayout();
+
+    expect(await screen.findByText("Plug-in Hybrid")).toBeInTheDocument();
+  });
+
+  it("shows no powertrain badge for an Ice-only asset", async () => {
+    mockRole("Owner");
+
+    renderLayout();
+
+    await screen.findByText("Family Car");
+    expect(screen.queryByText("Electric")).not.toBeInTheDocument();
+    expect(screen.queryByText("Hybrid")).not.toBeInTheDocument();
   });
 });

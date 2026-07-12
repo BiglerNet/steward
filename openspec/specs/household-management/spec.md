@@ -1,3 +1,9 @@
+# household-management Specification
+
+## Purpose
+Defines household CRUD endpoints.
+
+## Requirements
 ### Requirement: Create household
 The system SHALL provide `POST /api/households` (requires authentication) accepting `{ name, publicSlug, isPublicVisible, country, region }` where `country` and `region` are optional. On success it SHALL create the `Household` and an `Owner` membership for the calling user in a single transaction, returning HTTP 201 with the created household. `publicSlug` SHALL be validated as URL-safe (lowercase alphanumeric and hyphens only) and unique; duplicate slug SHALL return HTTP 409.
 

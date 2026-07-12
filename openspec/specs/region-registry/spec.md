@@ -1,3 +1,9 @@
+# region-registry Specification
+
+## Purpose
+Defines the backend-owned region registry used for locale-aware fields.
+
+## Requirements
 ### Requirement: Backend-owned region registry
 The system SHALL define a static region registry in the Application layer covering exactly two countries: United States (`US`) and Canada (`CA`). Each country entry SHALL contain its ISO 3166-1 alpha-2 `code`, a display `name`, and a list of regions; each region SHALL contain its full ISO 3166-2 `code` (e.g. `US-WI`, `CA-ON`) and display `name`. The US entry SHALL contain the 50 states plus the District of Columbia; the CA entry SHALL contain the 10 provinces and 3 territories.
 

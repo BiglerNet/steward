@@ -23,7 +23,12 @@ import {
   clearInapplicableFields,
   findDefinition,
 } from "@/lib/assetTypes";
-import { defaultEngineFieldsValues, engineFieldsSchema, type EngineFieldsFormValues } from "@/lib/engineFields";
+import {
+  defaultEngineFieldsValues,
+  engineFieldsSchema,
+  isHybridChoice,
+  type EngineFieldsFormValues,
+} from "@/lib/engineFields";
 import { parseOptionalNumber, parseOptionalText } from "@/lib/formHelpers";
 import { canEditWithRole } from "@/lib/permissions";
 import { ftLbsToNm } from "@/lib/units";
@@ -73,6 +78,8 @@ export function AssetCreateWizardPage() {
   const [decodeFailed, setDecodeFailed] = useState(false);
   const [createdAsset, setCreatedAsset] = useState<AssetResponse | null>(null);
   const [engineError, setEngineError] = useState<string | null>(null);
+  const [createdIceEngineId, setCreatedIceEngineId] = useState<string | null>(null);
+  const [createdElectricEngineId, setCreatedElectricEngineId] = useState<string | null>(null);
 
   const definition = findDefinition(registry, category);
   const steps = stepsForDefinition(definition);
@@ -201,35 +208,110 @@ export function AssetCreateWizardPage() {
     }
   }
 
+  function buildIceEnginePayload(values: EngineFieldsFormValues): CreateEngineRequest {
+    const torqueFtLbs = parseOptionalNumber(values.torqueFtLbs);
+    return {
+      label: values.label,
+      make: null,
+      model: null,
+      serialNumber: null,
+      year: null,
+      engineType: "Ice",
+      mechanism: values.mechanism ? values.mechanism : null,
+      fuelType: values.fuelType ? values.fuelType : null,
+      isExternallyChargeable: null,
+      twoStrokeOilDelivery: null,
+      twoStrokeMixRatio: null,
+      cylinders: parseOptionalNumber(values.cylinders),
+      displacementCc: parseOptionalNumber(values.displacementCc),
+      installedDate: null,
+      installedAtAssetMiles: null,
+      installedAtAssetHours: null,
+      horsepowerHp: parseOptionalNumber(values.horsepowerHp),
+      torqueNm: torqueFtLbs != null ? parseFloat(ftLbsToNm(torqueFtLbs).toFixed(2)) : null,
+      oilCapacityL: null,
+      recommendedOilType: null,
+      coolantCapacityL: null,
+      recommendedOctane: null,
+    };
+  }
+
+  function buildElectricEnginePayload(
+    label: string,
+    horsepowerHp: string,
+    torqueFtLbsInput: string,
+    isExternallyChargeable: boolean
+  ): CreateEngineRequest {
+    const torqueFtLbs = parseOptionalNumber(torqueFtLbsInput);
+    return {
+      label: label || "Electric motor",
+      make: null,
+      model: null,
+      serialNumber: null,
+      year: null,
+      engineType: "Electric",
+      mechanism: null,
+      fuelType: null,
+      isExternallyChargeable,
+      twoStrokeOilDelivery: null,
+      twoStrokeMixRatio: null,
+      cylinders: null,
+      displacementCc: null,
+      installedDate: null,
+      installedAtAssetMiles: null,
+      installedAtAssetHours: null,
+      horsepowerHp: parseOptionalNumber(horsepowerHp),
+      torqueNm: torqueFtLbs != null ? parseFloat(ftLbsToNm(torqueFtLbs).toFixed(2)) : null,
+      oilCapacityL: null,
+      recommendedOilType: null,
+      coolantCapacityL: null,
+      recommendedOctane: null,
+    };
+  }
+
   async function handleEngineSubmit(values: EngineFieldsFormValues) {
     setEngineError(null);
     try {
       const asset = await createAssetIfNeeded();
       try {
-        const torqueFtLbs = parseOptionalNumber(values.torqueFtLbs);
-        await createEngineMutation.mutateAsync({
-          assetId: asset.id,
-          payload: {
-            label: values.label,
-            make: null,
-            model: null,
-            serialNumber: null,
-            year: null,
-            engineType: values.engineType,
-            fuelType: values.fuelType,
-            cylinders: parseOptionalNumber(values.cylinders),
-            displacementCc: parseOptionalNumber(values.displacementCc),
-            installedDate: null,
-            installedAtAssetMiles: null,
-            installedAtAssetHours: null,
-            horsepowerHp: parseOptionalNumber(values.horsepowerHp),
-            torqueNm: torqueFtLbs != null ? parseFloat(ftLbsToNm(torqueFtLbs).toFixed(2)) : null,
-            oilCapacityL: null,
-            recommendedOilType: null,
-            coolantCapacityL: null,
-            recommendedOctane: null,
-          },
-        });
+        const isHybrid = isHybridChoice(values.wizardEngineType);
+        if (isHybrid) {
+          if (!createdIceEngineId) {
+            const iceEngine = await createEngineMutation.mutateAsync({
+              assetId: asset.id,
+              payload: buildIceEnginePayload(values),
+            });
+            setCreatedIceEngineId(iceEngine.id);
+          }
+          if (!createdElectricEngineId) {
+            const electricEngine = await createEngineMutation.mutateAsync({
+              assetId: asset.id,
+              payload: buildElectricEnginePayload(
+                values.electricLabel ?? "",
+                values.electricHorsepowerHp,
+                values.electricTorqueFtLbs,
+                values.wizardEngineType === "Plug-in Hybrid"
+              ),
+            });
+            setCreatedElectricEngineId(electricEngine.id);
+          }
+        } else if (values.wizardEngineType === "Ice") {
+          if (!createdIceEngineId) {
+            const engine = await createEngineMutation.mutateAsync({
+              assetId: asset.id,
+              payload: buildIceEnginePayload(values),
+            });
+            setCreatedIceEngineId(engine.id);
+          }
+        } else {
+          if (!createdElectricEngineId) {
+            const engine = await createEngineMutation.mutateAsync({
+              assetId: asset.id,
+              payload: buildElectricEnginePayload(values.label, values.horsepowerHp, values.torqueFtLbs, true),
+            });
+            setCreatedElectricEngineId(engine.id);
+          }
+        }
         goToStep("photos");
       } catch {
         setEngineError("Couldn't add this engine. The asset was created — you can retry or skip.");

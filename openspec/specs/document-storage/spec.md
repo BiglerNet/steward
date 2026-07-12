@@ -1,3 +1,9 @@
+# document-storage Specification
+
+## Purpose
+Defines uploading, storing, and retrieving documents attached to registration and warranty records.
+
+## Requirements
 ### Requirement: Upload a document to a registration or warranty record
 The system SHALL provide `POST /api/households/{householdId}/assets/{assetId}/registrations/{id}/document` and the equivalent `.../warranties/{id}/document` endpoint (Contributor or Owner only) accepting a single multipart file upload. Allowed content types SHALL be `application/pdf`, `image/jpeg`, `image/png`. Files exceeding the configured maximum size SHALL be rejected. Uploads SHALL be subject to the household storage quota: an upload that would exceed the household's effective quota SHALL return HTTP 400 with a quota-exceeded message and store nothing, and successful uploads SHALL increase the household's `storageUsedBytes` by the stored size (a replacement adjusts by the difference from the file it replaces). Uploading a new document SHALL replace any existing one for that record. On success it SHALL return HTTP 200 with the updated response (`hasDocument: true`).
 

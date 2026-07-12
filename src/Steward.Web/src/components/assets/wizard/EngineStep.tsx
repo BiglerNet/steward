@@ -1,13 +1,14 @@
+import { useEffect } from "react";
 import type { UseFormReturn } from "react-hook-form";
-import type { EngineType, FuelType } from "@/api/types";
+import type { FuelType, Mechanism } from "@/api/types";
 import { Button } from "@/components/ui/button";
 import { Form, FormControl, FormField, FormItem, FormLabel, FormMessage } from "@/components/ui/form";
 import { Input } from "@/components/ui/input";
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
-import type { EngineFieldsFormValues } from "@/lib/engineFields";
+import { isHybridChoice, WIZARD_ENGINE_TYPES, type EngineFieldsFormValues } from "@/lib/engineFields";
 
-const ENGINE_TYPES: EngineType[] = ["Ice", "Electric", "Hybrid"];
-const FUEL_TYPES: FuelType[] = ["Gasoline", "Diesel", "TwoStroke", "FourStroke", "Electric", "None"];
+const MECHANISMS: Mechanism[] = ["TwoStroke", "FourStroke", "Diesel", "Rotary"];
+const FUEL_TYPES: FuelType[] = ["Gasoline", "Diesel", "Propane"];
 
 interface EngineStepProps {
   form: UseFormReturn<EngineFieldsFormValues>;
@@ -30,12 +31,51 @@ export function EngineStep({
   onSubmit,
   onRetry,
 }: EngineStepProps) {
+  const wizardEngineType = form.watch("wizardEngineType");
+  const isHybrid = isHybridChoice(wizardEngineType);
+  const showIceFields = wizardEngineType === "Ice" || isHybrid;
+
+  useEffect(() => {
+    if (!isHybrid) {
+      form.setValue("electricLabel", "");
+      form.setValue("electricHorsepowerHp", "");
+      form.setValue("electricTorqueFtLbs", "");
+    }
+  }, [isHybrid, form]);
+
   return (
     <Form {...form}>
       <form onSubmit={form.handleSubmit(onSubmit)} className="space-y-4">
         {prefilledFromVin && (
           <p className="text-small text-muted-foreground">Some fields were prefilled from the VIN decode.</p>
         )}
+
+        <FormField
+          control={form.control}
+          name="wizardEngineType"
+          render={({ field }) => (
+            <FormItem>
+              <FormLabel>Engine type</FormLabel>
+              <Select value={field.value} onValueChange={field.onChange}>
+                <FormControl>
+                  <SelectTrigger>
+                    <SelectValue />
+                  </SelectTrigger>
+                </FormControl>
+                <SelectContent>
+                  {WIZARD_ENGINE_TYPES.map((type) => (
+                    <SelectItem key={type} value={type}>
+                      {type}
+                    </SelectItem>
+                  ))}
+                </SelectContent>
+              </Select>
+              <FormMessage />
+            </FormItem>
+          )}
+        />
+
+        {isHybrid && <h3 className="text-h3">Gas engine</h3>}
 
         <FormField
           control={form.control}
@@ -50,80 +90,90 @@ export function EngineStep({
             </FormItem>
           )}
         />
-        <FormField
-          control={form.control}
-          name="engineType"
-          render={({ field }) => (
-            <FormItem>
-              <FormLabel>Engine type</FormLabel>
-              <Select value={field.value} onValueChange={field.onChange}>
+        {showIceFields && (
+          <FormField
+            control={form.control}
+            name="mechanism"
+            render={({ field }) => (
+              <FormItem>
+                <FormLabel>Mechanism</FormLabel>
+                <Select value={field.value ?? ""} onValueChange={field.onChange}>
+                  <FormControl>
+                    <SelectTrigger>
+                      <SelectValue placeholder="Select mechanism" />
+                    </SelectTrigger>
+                  </FormControl>
+                  <SelectContent>
+                    <SelectItem value="">—</SelectItem>
+                    {MECHANISMS.map((type) => (
+                      <SelectItem key={type} value={type}>
+                        {type}
+                      </SelectItem>
+                    ))}
+                  </SelectContent>
+                </Select>
+                <FormMessage />
+              </FormItem>
+            )}
+          />
+        )}
+        {showIceFields && (
+          <FormField
+            control={form.control}
+            name="fuelType"
+            render={({ field }) => (
+              <FormItem>
+                <FormLabel>Fuel type</FormLabel>
+                <Select value={field.value ?? ""} onValueChange={field.onChange}>
+                  <FormControl>
+                    <SelectTrigger>
+                      <SelectValue placeholder="Select fuel type" />
+                    </SelectTrigger>
+                  </FormControl>
+                  <SelectContent>
+                    <SelectItem value="">—</SelectItem>
+                    {FUEL_TYPES.map((type) => (
+                      <SelectItem key={type} value={type}>
+                        {type}
+                      </SelectItem>
+                    ))}
+                  </SelectContent>
+                </Select>
+                <FormMessage />
+              </FormItem>
+            )}
+          />
+        )}
+        {showIceFields && (
+          <FormField
+            control={form.control}
+            name="cylinders"
+            render={({ field }) => (
+              <FormItem>
+                <FormLabel>Cylinders</FormLabel>
                 <FormControl>
-                  <SelectTrigger>
-                    <SelectValue />
-                  </SelectTrigger>
+                  <Input type="number" {...field} />
                 </FormControl>
-                <SelectContent>
-                  {ENGINE_TYPES.map((type) => (
-                    <SelectItem key={type} value={type}>
-                      {type}
-                    </SelectItem>
-                  ))}
-                </SelectContent>
-              </Select>
-              <FormMessage />
-            </FormItem>
-          )}
-        />
-        <FormField
-          control={form.control}
-          name="fuelType"
-          render={({ field }) => (
-            <FormItem>
-              <FormLabel>Fuel type</FormLabel>
-              <Select value={field.value} onValueChange={field.onChange}>
+                <FormMessage />
+              </FormItem>
+            )}
+          />
+        )}
+        {showIceFields && (
+          <FormField
+            control={form.control}
+            name="displacementCc"
+            render={({ field }) => (
+              <FormItem>
+                <FormLabel>Displacement (cc)</FormLabel>
                 <FormControl>
-                  <SelectTrigger>
-                    <SelectValue />
-                  </SelectTrigger>
+                  <Input type="number" step="0.1" {...field} />
                 </FormControl>
-                <SelectContent>
-                  {FUEL_TYPES.map((type) => (
-                    <SelectItem key={type} value={type}>
-                      {type}
-                    </SelectItem>
-                  ))}
-                </SelectContent>
-              </Select>
-              <FormMessage />
-            </FormItem>
-          )}
-        />
-        <FormField
-          control={form.control}
-          name="cylinders"
-          render={({ field }) => (
-            <FormItem>
-              <FormLabel>Cylinders</FormLabel>
-              <FormControl>
-                <Input type="number" {...field} />
-              </FormControl>
-              <FormMessage />
-            </FormItem>
-          )}
-        />
-        <FormField
-          control={form.control}
-          name="displacementCc"
-          render={({ field }) => (
-            <FormItem>
-              <FormLabel>Displacement (cc)</FormLabel>
-              <FormControl>
-                <Input type="number" step="0.1" {...field} />
-              </FormControl>
-              <FormMessage />
-            </FormItem>
-          )}
-        />
+                <FormMessage />
+              </FormItem>
+            )}
+          />
+        )}
         <FormField
           control={form.control}
           name="horsepowerHp"
@@ -150,6 +200,51 @@ export function EngineStep({
             </FormItem>
           )}
         />
+
+        {isHybrid && (
+          <>
+            <h3 className="text-h3">Electric motor</h3>
+            <FormField
+              control={form.control}
+              name="electricLabel"
+              render={({ field }) => (
+                <FormItem>
+                  <FormLabel>Label</FormLabel>
+                  <FormControl>
+                    <Input placeholder="e.g. Electric motor" {...field} />
+                  </FormControl>
+                  <FormMessage />
+                </FormItem>
+              )}
+            />
+            <FormField
+              control={form.control}
+              name="electricHorsepowerHp"
+              render={({ field }) => (
+                <FormItem>
+                  <FormLabel>HP</FormLabel>
+                  <FormControl>
+                    <Input type="number" step="1" {...field} />
+                  </FormControl>
+                  <FormMessage />
+                </FormItem>
+              )}
+            />
+            <FormField
+              control={form.control}
+              name="electricTorqueFtLbs"
+              render={({ field }) => (
+                <FormItem>
+                  <FormLabel>Torque (ft-lbs)</FormLabel>
+                  <FormControl>
+                    <Input type="number" step="1" {...field} />
+                  </FormControl>
+                  <FormMessage />
+                </FormItem>
+              )}
+            />
+          </>
+        )}
 
         {errorMessage && (
           <div className="space-y-2 rounded-md border border-destructive/50 bg-destructive/5 px-3 py-2">

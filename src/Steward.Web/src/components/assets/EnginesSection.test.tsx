@@ -19,7 +19,11 @@ const engine = {
   serialNumber: null,
   year: 2020,
   engineType: "Ice" as const,
+  mechanism: null,
   fuelType: "Gasoline" as const,
+  isExternallyChargeable: null,
+  twoStrokeOilDelivery: null,
+  twoStrokeMixRatio: null,
   cylinders: null,
   displacementCc: null,
   status: "Active" as const,
@@ -124,5 +128,71 @@ describe("EnginesSection", () => {
     expect(screen.queryByRole("button", { name: "Add engine" })).not.toBeInTheDocument();
     expect(screen.queryByRole("button", { name: "Edit" })).not.toBeInTheDocument();
     expect(screen.queryByRole("button", { name: "Delete" })).not.toBeInTheDocument();
+  });
+
+  it("shows Mechanism and Fuel type fields only when engine type is Ice", async () => {
+    mockRole("Contributor");
+
+    renderSection();
+    const user = userEvent.setup();
+
+    await screen.findByText("Main engine");
+    await user.click(screen.getByRole("button", { name: "Add engine" }));
+
+    expect(screen.getByRole("combobox", { name: "Mechanism" })).toBeInTheDocument();
+    expect(screen.getByRole("combobox", { name: "Fuel type" })).toBeInTheDocument();
+    expect(screen.queryByLabelText("Externally chargeable")).not.toBeInTheDocument();
+
+    await user.click(screen.getByRole("combobox", { name: "Engine type" }));
+    await user.click(await screen.findByRole("option", { name: "Electric" }));
+
+    expect(screen.queryByRole("combobox", { name: "Mechanism" })).not.toBeInTheDocument();
+    expect(screen.queryByRole("combobox", { name: "Fuel type" })).not.toBeInTheDocument();
+    expect(screen.getByLabelText("Externally chargeable")).toBeInTheDocument();
+  });
+
+  it("shows two-stroke oil fields only when mechanism is TwoStroke", async () => {
+    mockRole("Contributor");
+
+    renderSection();
+    const user = userEvent.setup();
+
+    await screen.findByText("Main engine");
+    await user.click(screen.getByRole("button", { name: "Add engine" }));
+
+    expect(screen.queryByRole("combobox", { name: "Two-stroke oil delivery" })).not.toBeInTheDocument();
+    expect(screen.queryByLabelText("Mix ratio")).not.toBeInTheDocument();
+
+    await user.click(screen.getByRole("combobox", { name: "Mechanism" }));
+    await user.click(await screen.findByRole("option", { name: "TwoStroke" }));
+
+    expect(screen.getByRole("combobox", { name: "Two-stroke oil delivery" })).toBeInTheDocument();
+    expect(screen.getByLabelText("Mix ratio")).toBeInTheDocument();
+  });
+
+  it("retires an Active engine via the Retire action", async () => {
+    mockRole("Contributor");
+    vi.mocked(enginesApi.retireEngine).mockResolvedValue({ ...engine, status: "Retired" });
+
+    renderSection();
+    const user = userEvent.setup();
+
+    await screen.findByText("Main engine");
+    expect(screen.queryByRole("button", { name: "Reactivate" })).not.toBeInTheDocument();
+    await user.click(screen.getByRole("button", { name: "Retire" }));
+
+    await waitFor(() => expect(enginesApi.retireEngine).toHaveBeenCalledWith("house-1", "asset-1", "engine-1"));
+  });
+
+  it("only offers Reactivate on a Retired engine", async () => {
+    mockRole("Contributor");
+    vi.mocked(enginesApi.listEngines).mockResolvedValue([{ ...engine, status: "Retired" }]);
+
+    renderSection();
+
+    await screen.findByText("Main engine");
+    expect(screen.getByRole("button", { name: "Reactivate" })).toBeInTheDocument();
+    expect(screen.queryByRole("button", { name: "Retire" })).not.toBeInTheDocument();
+    expect(screen.queryByRole("button", { name: "Mark broken" })).not.toBeInTheDocument();
   });
 });

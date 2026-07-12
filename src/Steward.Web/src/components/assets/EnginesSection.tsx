@@ -5,10 +5,11 @@ import { useForm } from "react-hook-form";
 import { useParams } from "react-router";
 import { toast } from "sonner";
 import { z } from "zod";
-import { createEngine, deleteEngine, updateEngine } from "@/api/engines";
-import type { EngineResponse, EngineType, FuelType } from "@/api/types";
+import { createEngine, deleteEngine, markEngineBroken, reactivateEngine, retireEngine, updateEngine } from "@/api/engines";
+import type { EngineResponse, EngineType, FuelType, Mechanism, TwoStrokeOilDelivery } from "@/api/types";
 import { ftLbsToNm, formatTorque, formatVolume, litresToQt, nmToFtLbs, qtToLitres } from "@/lib/units";
 import { Button } from "@/components/ui/button";
+import { Checkbox } from "@/components/ui/checkbox";
 import {
   Dialog,
   DialogContent,
@@ -25,8 +26,10 @@ import { useEngines } from "@/hooks/useEngines";
 import { numberToInputValue, optionalNumberString, parseOptionalNumber, parseOptionalText, textToInputValue } from "@/lib/formHelpers";
 import { useHouseholdRole } from "@/lib/permissions";
 
-const ENGINE_TYPES: EngineType[] = ["Ice", "Electric", "Hybrid"];
-const FUEL_TYPES: FuelType[] = ["Gasoline", "Diesel", "TwoStroke", "FourStroke", "Electric", "None"];
+const ENGINE_TYPES: EngineType[] = ["Ice", "Electric"];
+const MECHANISMS: Mechanism[] = ["TwoStroke", "FourStroke", "Diesel", "Rotary"];
+const FUEL_TYPES: FuelType[] = ["Gasoline", "Diesel", "Propane"];
+const TWO_STROKE_OIL_DELIVERIES: TwoStrokeOilDelivery[] = ["Premix", "OilInjected"];
 
 const OCTANE_VALUES = ["87", "89", "91", "93"] as const;
 
@@ -36,8 +39,12 @@ const schema = z.object({
   model: z.string().optional(),
   serialNumber: z.string().optional(),
   year: optionalNumberString,
-  engineType: z.enum(["Ice", "Electric", "Hybrid"]),
-  fuelType: z.enum(["Gasoline", "Diesel", "TwoStroke", "FourStroke", "Electric", "None"]),
+  engineType: z.enum(["Ice", "Electric"]),
+  mechanism: z.enum(["", "TwoStroke", "FourStroke", "Diesel", "Rotary"]).optional(),
+  fuelType: z.enum(["", "Gasoline", "Diesel", "Propane"]).optional(),
+  isExternallyChargeable: z.boolean().optional(),
+  twoStrokeOilDelivery: z.enum(["", "Premix", "OilInjected"]).optional(),
+  twoStrokeMixRatio: z.string().optional(),
   cylinders: optionalNumberString,
   displacementCc: optionalNumberString,
   installedDate: z.string().optional(),
@@ -60,7 +67,11 @@ const defaultValues: FormValues = {
   serialNumber: "",
   year: "",
   engineType: "Ice",
+  mechanism: "",
   fuelType: "Gasoline",
+  isExternallyChargeable: false,
+  twoStrokeOilDelivery: "",
+  twoStrokeMixRatio: "",
   cylinders: "",
   displacementCc: "",
   installedDate: "",
@@ -83,6 +94,8 @@ export function EnginesSection() {
   const [editing, setEditing] = useState<EngineResponse | null>(null);
 
   const form = useForm<FormValues>({ resolver: zodResolver(schema), defaultValues });
+  const engineType = form.watch("engineType");
+  const mechanism = form.watch("mechanism");
 
   function invalidate() {
     queryClient.invalidateQueries({ queryKey: ["households", householdId, "assets", assetId, "engines"] });
@@ -94,6 +107,9 @@ export function EnginesSection() {
       const oilQt = parseOptionalNumber(values.oilCapacityQt);
       const coolantQt = parseOptionalNumber(values.coolantCapacityQt);
       const octane = values.recommendedOctane ? parseInt(values.recommendedOctane) : null;
+      const isIce = values.engineType === "Ice";
+      const isElectric = values.engineType === "Electric";
+      const isTwoStroke = isIce && values.mechanism === "TwoStroke";
       const payload = {
         label: values.label,
         make: parseOptionalText(values.make),
@@ -101,7 +117,11 @@ export function EnginesSection() {
         serialNumber: parseOptionalText(values.serialNumber),
         year: parseOptionalNumber(values.year),
         engineType: values.engineType,
-        fuelType: values.fuelType,
+        mechanism: isIce && values.mechanism ? values.mechanism : null,
+        fuelType: isIce && values.fuelType ? values.fuelType : null,
+        isExternallyChargeable: isElectric ? (values.isExternallyChargeable ?? false) : null,
+        twoStrokeOilDelivery: isTwoStroke && values.twoStrokeOilDelivery ? values.twoStrokeOilDelivery : null,
+        twoStrokeMixRatio: isTwoStroke ? parseOptionalText(values.twoStrokeMixRatio) : null,
         cylinders: parseOptionalNumber(values.cylinders),
         displacementCc: parseOptionalNumber(values.displacementCc),
         installedDate: parseOptionalText(values.installedDate),
@@ -134,6 +154,24 @@ export function EnginesSection() {
     onError: () => toast.error("Couldn't delete this engine."),
   });
 
+  const retireMutation = useMutation({
+    mutationFn: (engine: EngineResponse) => retireEngine(householdId, assetId, engine.id),
+    onSuccess: invalidate,
+    onError: () => toast.error("Couldn't retire this engine."),
+  });
+
+  const reactivateMutation = useMutation({
+    mutationFn: (engine: EngineResponse) => reactivateEngine(householdId, assetId, engine.id),
+    onSuccess: invalidate,
+    onError: () => toast.error("Couldn't reactivate this engine."),
+  });
+
+  const markBrokenMutation = useMutation({
+    mutationFn: (engine: EngineResponse) => markEngineBroken(householdId, assetId, engine.id),
+    onSuccess: invalidate,
+    onError: () => toast.error("Couldn't mark this engine broken."),
+  });
+
   function openCreate() {
     setEditing(null);
     form.reset(defaultValues);
@@ -149,7 +187,11 @@ export function EnginesSection() {
       serialNumber: textToInputValue(engine.serialNumber),
       year: numberToInputValue(engine.year),
       engineType: engine.engineType,
-      fuelType: engine.fuelType,
+      mechanism: engine.mechanism ?? "",
+      fuelType: engine.fuelType ?? "",
+      isExternallyChargeable: engine.isExternallyChargeable ?? false,
+      twoStrokeOilDelivery: engine.twoStrokeOilDelivery ?? "",
+      twoStrokeMixRatio: textToInputValue(engine.twoStrokeMixRatio),
       cylinders: numberToInputValue(engine.cylinders),
       displacementCc: numberToInputValue(engine.displacementCc),
       installedDate: textToInputValue(engine.installedDate),
@@ -286,30 +328,119 @@ export function EnginesSection() {
                       </FormItem>
                     )}
                   />
-                  <FormField
-                    control={form.control}
-                    name="fuelType"
-                    render={({ field }) => (
-                      <FormItem>
-                        <FormLabel>Fuel type</FormLabel>
-                        <Select value={field.value} onValueChange={field.onChange}>
+                  {engineType === "Ice" && (
+                    <FormField
+                      control={form.control}
+                      name="mechanism"
+                      render={({ field }) => (
+                        <FormItem>
+                          <FormLabel>Mechanism</FormLabel>
+                          <Select value={field.value ?? ""} onValueChange={field.onChange}>
+                            <FormControl>
+                              <SelectTrigger>
+                                <SelectValue placeholder="Select mechanism" />
+                              </SelectTrigger>
+                            </FormControl>
+                            <SelectContent>
+                              <SelectItem value="">—</SelectItem>
+                              {MECHANISMS.map((type) => (
+                                <SelectItem key={type} value={type}>
+                                  {type}
+                                </SelectItem>
+                              ))}
+                            </SelectContent>
+                          </Select>
+                          <FormMessage />
+                        </FormItem>
+                      )}
+                    />
+                  )}
+                  {engineType === "Ice" && (
+                    <FormField
+                      control={form.control}
+                      name="fuelType"
+                      render={({ field }) => (
+                        <FormItem>
+                          <FormLabel>Fuel type</FormLabel>
+                          <Select value={field.value ?? ""} onValueChange={field.onChange}>
+                            <FormControl>
+                              <SelectTrigger>
+                                <SelectValue placeholder="Select fuel type" />
+                              </SelectTrigger>
+                            </FormControl>
+                            <SelectContent>
+                              <SelectItem value="">—</SelectItem>
+                              {FUEL_TYPES.map((type) => (
+                                <SelectItem key={type} value={type}>
+                                  {type}
+                                </SelectItem>
+                              ))}
+                            </SelectContent>
+                          </Select>
+                          <FormMessage />
+                        </FormItem>
+                      )}
+                    />
+                  )}
+                  {engineType === "Ice" && mechanism === "TwoStroke" && (
+                    <FormField
+                      control={form.control}
+                      name="twoStrokeOilDelivery"
+                      render={({ field }) => (
+                        <FormItem>
+                          <FormLabel>Two-stroke oil delivery</FormLabel>
+                          <Select value={field.value ?? ""} onValueChange={field.onChange}>
+                            <FormControl>
+                              <SelectTrigger>
+                                <SelectValue placeholder="Select oil delivery" />
+                              </SelectTrigger>
+                            </FormControl>
+                            <SelectContent>
+                              <SelectItem value="">—</SelectItem>
+                              {TWO_STROKE_OIL_DELIVERIES.map((type) => (
+                                <SelectItem key={type} value={type}>
+                                  {type === "OilInjected" ? "Oil-injected" : "Premix"}
+                                </SelectItem>
+                              ))}
+                            </SelectContent>
+                          </Select>
+                          <FormMessage />
+                        </FormItem>
+                      )}
+                    />
+                  )}
+                  {engineType === "Ice" && mechanism === "TwoStroke" && (
+                    <FormField
+                      control={form.control}
+                      name="twoStrokeMixRatio"
+                      render={({ field }) => (
+                        <FormItem>
+                          <FormLabel>Mix ratio</FormLabel>
                           <FormControl>
-                            <SelectTrigger>
-                              <SelectValue />
-                            </SelectTrigger>
+                            <Input placeholder="e.g. 50:1" {...field} />
                           </FormControl>
-                          <SelectContent>
-                            {FUEL_TYPES.map((type) => (
-                              <SelectItem key={type} value={type}>
-                                {type}
-                              </SelectItem>
-                            ))}
-                          </SelectContent>
-                        </Select>
-                        <FormMessage />
-                      </FormItem>
-                    )}
-                  />
+                          <FormMessage />
+                        </FormItem>
+                      )}
+                    />
+                  )}
+                  {engineType === "Electric" && (
+                    <FormField
+                      control={form.control}
+                      name="isExternallyChargeable"
+                      render={({ field }) => (
+                        <FormItem className="flex flex-row items-center gap-2 space-y-0">
+                          <FormControl>
+                            <Checkbox
+                              checked={field.value}
+                              onChange={(e) => field.onChange(e.target.checked)}
+                            />
+                          </FormControl>
+                          <FormLabel className="font-normal">Externally chargeable</FormLabel>
+                        </FormItem>
+                      )}
+                    />
+                  )}
                   <FormField
                     control={form.control}
                     name="cylinders"
@@ -419,7 +550,9 @@ export function EnginesSection() {
                     name="recommendedOilType"
                     render={({ field }) => (
                       <FormItem>
-                        <FormLabel>Recommended oil type</FormLabel>
+                        <FormLabel>
+                          {mechanism === "TwoStroke" ? "Recommended 2-stroke oil" : "Recommended oil type"}
+                        </FormLabel>
                         <FormControl>
                           <Input placeholder="e.g. 5W-30 Full Synthetic" {...field} />
                         </FormControl>
@@ -501,6 +634,36 @@ export function EnginesSection() {
                 <TableCell>{engine.oilCapacityL != null ? formatVolume(engine.oilCapacityL) : "—"}</TableCell>
                 {(canEdit || canDeleteStructural) && (
                   <TableCell className="text-right space-x-2">
+                    {canEdit && engine.status === "Active" && (
+                      <Button
+                        size="sm"
+                        variant="outline"
+                        disabled={retireMutation.isPending}
+                        onClick={() => retireMutation.mutate(engine)}
+                      >
+                        Retire
+                      </Button>
+                    )}
+                    {canEdit && engine.status === "Active" && (
+                      <Button
+                        size="sm"
+                        variant="outline"
+                        disabled={markBrokenMutation.isPending}
+                        onClick={() => markBrokenMutation.mutate(engine)}
+                      >
+                        Mark broken
+                      </Button>
+                    )}
+                    {canEdit && engine.status !== "Active" && (
+                      <Button
+                        size="sm"
+                        variant="outline"
+                        disabled={reactivateMutation.isPending}
+                        onClick={() => reactivateMutation.mutate(engine)}
+                      >
+                        Reactivate
+                      </Button>
+                    )}
                     {canEdit && (
                       <Button size="sm" variant="outline" onClick={() => openEdit(engine)}>
                         Edit

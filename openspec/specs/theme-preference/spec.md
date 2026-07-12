@@ -1,3 +1,9 @@
+# theme-preference Specification
+
+## Purpose
+Defines the Light/Dark/System theme preference model.
+
+## Requirements
 ### Requirement: Three-state theme preference
 The system SHALL support a `Light` / `Dark` / `System` theme preference per user, where `System` means the theme follows the OS `prefers-color-scheme` setting rather than a fixed choice.
 

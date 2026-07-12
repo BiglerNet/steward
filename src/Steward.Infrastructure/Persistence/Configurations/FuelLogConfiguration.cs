@@ -10,6 +10,7 @@ public class FuelLogConfiguration : IEntityTypeConfiguration<FuelLog>
     public void Configure(EntityTypeBuilder<FuelLog> builder)
     {
         builder.HasKey(f => f.Id);
+        builder.Property(f => f.Unit).HasConversion<string>();
 
         builder.HasOne<Asset>()
             .WithMany()

@@ -12,6 +12,10 @@ public class EngineConfiguration : IEntityTypeConfiguration<Engine>
         builder.HasKey(e => e.Id);
         builder.Property(e => e.Label).IsRequired();
         builder.Property(e => e.Status).HasConversion<int>();
+        builder.Property(e => e.EngineType).HasConversion<string>();
+        builder.Property(e => e.Mechanism).HasConversion<string>();
+        builder.Property(e => e.FuelType).HasConversion<string>();
+        builder.Property(e => e.TwoStrokeOilDelivery).HasConversion<string>();
 
         builder.Property(e => e.HorsepowerHp).HasColumnType("decimal(8,2)");
         builder.Property(e => e.TorqueNm).HasColumnType("decimal(8,2)");

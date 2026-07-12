@@ -12,7 +12,11 @@ public class Engine
     public string? SerialNumber { get; set; }
     public int? Year { get; set; }
     public EngineType EngineType { get; set; }
-    public FuelType FuelType { get; set; }
+    public Mechanism? Mechanism { get; set; }
+    public FuelType? FuelType { get; set; }
+    public bool? IsExternallyChargeable { get; set; }
+    public TwoStrokeOilDelivery? TwoStrokeOilDelivery { get; set; }
+    public string? TwoStrokeMixRatio { get; set; }
     public int? Cylinders { get; set; }
     public decimal? DisplacementCC { get; set; }
     public EngineStatus Status { get; set; }

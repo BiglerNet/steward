@@ -60,6 +60,7 @@ const asset: AssetResponse = {
   licensePlate: null,
   createdAt: "2026-01-01T00:00:00Z",
   updatedAt: "2026-01-01T00:00:00Z",
+  powertrain: null,
 };
 
 const photo1: AssetPhotoResponse = {

@@ -1,3 +1,9 @@
+# frontend-shell Specification
+
+## Purpose
+Defines the frontend's protected routing and application shell.
+
+## Requirements
 ### Requirement: Protected routing
 The frontend SHALL gate all routes other than `/login`, `/register`, and `/auth/callback` behind an authentication check, redirecting unauthenticated visitors to `/login`.
 
