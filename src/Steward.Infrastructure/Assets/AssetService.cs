@@ -1,6 +1,7 @@
 using Steward.Application.Assets;
 using Steward.Application.AssetTypes;
 using Steward.Domain.Common.Exceptions;
+using Steward.Domain.Entities;
 using Steward.Domain.Entities.Assets;
 using Steward.Domain.Enums;
 using Steward.Infrastructure.Persistence;
@@ -41,14 +42,21 @@ public class AssetService(StewardDbContext dbContext) : IAssetService
         }
 
         var assets = await query.ToListAsync(cancellationToken);
-        return assets.Select(AssetMapper.ToResponse).ToList();
+        var assetIds = assets.Select(a => a.Id).ToList();
+        var activeEnginesByAsset = await dbContext.Engines.AsNoTracking()
+            .Where(e => assetIds.Contains(e.AssetId) && e.Status == EngineStatus.Active)
+            .ToListAsync(cancellationToken);
+        var enginesLookup = activeEnginesByAsset.ToLookup(e => e.AssetId);
+
+        return assets.Select(a => AssetMapper.ToResponse(a, enginesLookup[a.Id].ToList())).ToList();
     }
 
     public async Task<AssetResponse> GetByIdAsync(
         Guid householdId, Guid assetId, CancellationToken cancellationToken = default)
     {
         var asset = await FindAssetAsync(householdId, assetId, cancellationToken);
-        return AssetMapper.ToResponse(asset);
+        var activeEngines = await GetActiveEnginesAsync(assetId, cancellationToken);
+        return AssetMapper.ToResponse(asset, activeEngines);
     }
 
     public async Task<AssetResponse> UpdateAsync(
@@ -72,7 +80,8 @@ public class AssetService(StewardDbContext dbContext) : IAssetService
 
         await dbContext.SaveChangesAsync(cancellationToken);
 
-        return AssetMapper.ToResponse(asset);
+        var activeEngines = await GetActiveEnginesAsync(assetId, cancellationToken);
+        return AssetMapper.ToResponse(asset, activeEngines);
     }
 
     public async Task DeleteAsync(Guid householdId, Guid assetId, CancellationToken cancellationToken = default)
@@ -96,5 +105,12 @@ public class AssetService(StewardDbContext dbContext) : IAssetService
         return await dbContext.Assets
             .FirstOrDefaultAsync(a => a.Id == assetId && a.HouseholdId == householdId, cancellationToken)
             ?? throw new NotFoundException("Asset not found.");
+    }
+
+    private async Task<List<Engine>> GetActiveEnginesAsync(Guid assetId, CancellationToken cancellationToken)
+    {
+        return await dbContext.Engines.AsNoTracking()
+            .Where(e => e.AssetId == assetId && e.Status == EngineStatus.Active)
+            .ToListAsync(cancellationToken);
     }
 }

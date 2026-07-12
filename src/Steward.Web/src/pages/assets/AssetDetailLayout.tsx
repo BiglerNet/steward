@@ -5,6 +5,7 @@ import { deleteAsset, getAsset } from "@/api/assets";
 import { AssetCoverThumbnail } from "@/components/assets/AssetCoverThumbnail";
 import { AssetFormDialog } from "@/components/assets/AssetFormDialog";
 import { PhotosSection } from "@/components/assets/PhotosSection";
+import { PowertrainBadge } from "@/components/assets/PowertrainBadge";
 import { Button } from "@/components/ui/button";
 import { useAssetTypeRegistry } from "@/hooks/useAssetTypeRegistry";
 import { fieldsFor, findDefinition } from "@/lib/assetTypes";
@@ -74,7 +75,10 @@ export function AssetDetailLayout() {
             />
           )}
           <div>
-            <h1 className="text-h1">{asset.name}</h1>
+            <div className="flex items-center gap-2">
+              <h1 className="text-h1">{asset.name}</h1>
+              {asset.powertrain && <PowertrainBadge powertrain={asset.powertrain} />}
+            </div>
             <p className="text-body text-muted-foreground">
               {definition?.displayLabel ?? asset.category}
               {asset.year ? ` · ${asset.year}` : ""}

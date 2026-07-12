@@ -1,3 +1,9 @@
+# registration-tracking Specification
+
+## Purpose
+Defines registration/permit renewal record CRUD endpoints.
+
+## Requirements
 ### Requirement: Create registration renewal record
 The system SHALL provide `POST /api/households/{householdId}/assets/{assetId}/registrations` (Contributor or Owner only) accepting `{ kind, registrationNumber, issuingAuthority, renewedOn, validFrom, cost, expiresOn, notes }`. `kind` SHALL be required and one of `Registration | TrailPass | Permit`; all other fields SHALL be optional (`registrationNumber` is no longer required — short-lived passes may not carry a meaningful number). Each record represents one registration/pass/permit period; multiple records per asset SHALL be allowed to accumulate as history. On success it SHALL return HTTP 201 with the created `RegistrationResponse` (including `kind`, `validFrom`, and `hasDocument: false`).
 

@@ -22,7 +22,11 @@ public class EngineService(StewardDbContext dbContext) : IEngineService
             SerialNumber = request.SerialNumber,
             Year = request.Year,
             EngineType = request.EngineType,
+            Mechanism = request.Mechanism,
             FuelType = request.FuelType,
+            IsExternallyChargeable = request.IsExternallyChargeable,
+            TwoStrokeOilDelivery = request.TwoStrokeOilDelivery,
+            TwoStrokeMixRatio = request.TwoStrokeMixRatio,
             Cylinders = request.Cylinders,
             DisplacementCC = request.DisplacementCc,
             Status = EngineStatus.Active,
@@ -64,7 +68,11 @@ public class EngineService(StewardDbContext dbContext) : IEngineService
         engine.SerialNumber = request.SerialNumber;
         engine.Year = request.Year;
         engine.EngineType = request.EngineType;
+        engine.Mechanism = request.Mechanism;
         engine.FuelType = request.FuelType;
+        engine.IsExternallyChargeable = request.IsExternallyChargeable;
+        engine.TwoStrokeOilDelivery = request.TwoStrokeOilDelivery;
+        engine.TwoStrokeMixRatio = request.TwoStrokeMixRatio;
         engine.Cylinders = request.Cylinders;
         engine.DisplacementCC = request.DisplacementCc;
         engine.InstalledDate = request.InstalledDate;
@@ -162,7 +170,11 @@ public class EngineService(StewardDbContext dbContext) : IEngineService
         engine.SerialNumber,
         engine.Year,
         engine.EngineType,
+        engine.Mechanism,
         engine.FuelType,
+        engine.IsExternallyChargeable,
+        engine.TwoStrokeOilDelivery,
+        engine.TwoStrokeMixRatio,
         engine.Cylinders,
         engine.DisplacementCC,
         engine.Status,

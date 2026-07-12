@@ -2933,7 +2933,11 @@ export interface components {
             /** Format: int32 */
             year: null | number | string;
             engineType: components["schemas"]["EngineType"];
-            fuelType: components["schemas"]["FuelType"];
+            mechanism: null | components["schemas"]["Mechanism"];
+            fuelType: null | components["schemas"]["FuelType"];
+            isExternallyChargeable: null | boolean;
+            twoStrokeOilDelivery: null | components["schemas"]["TwoStrokeOilDelivery"];
+            twoStrokeMixRatio: null | string;
             /** Format: int32 */
             cylinders: null | number | string;
             /** Format: double */
@@ -2961,8 +2965,8 @@ export interface components {
             /** Format: date */
             date: string;
             /** Format: double */
-            volume: number | string;
-            volumeUnit: components["schemas"]["VolumeUnit"];
+            quantity: number | string;
+            unit: components["schemas"]["VolumeUnit"];
             fuelGrade: null | string;
             /** Format: double */
             pricePerUnit: null | number | string;
@@ -3033,11 +3037,11 @@ export interface components {
         /** @enum {unknown} */
         DriveType: "Inboard" | "Outboard" | "SternDrive" | "JetDrive" | null;
         /** @enum {unknown} */
-        EngineType: "Ice" | "Electric" | "Hybrid";
+        EngineType: "Ice" | "Electric";
         /** @enum {unknown} */
         FuelLogType: "Fillup" | "Consumption";
         /** @enum {unknown} */
-        FuelType: "Gasoline" | "Diesel" | "TwoStroke" | "FourStroke" | "Electric" | "None";
+        FuelType: "Gasoline" | "Diesel" | "Propane" | null;
         /** @enum {unknown} */
         HouseholdMemberRole: "Owner" | "Contributor" | "Viewer";
         /** @enum {unknown} */
@@ -3057,6 +3061,8 @@ export interface components {
         LogoutRequest: {
             refreshToken: string;
         };
+        /** @enum {unknown} */
+        Mechanism: "TwoStroke" | "FourStroke" | "Diesel" | "Rotary" | null;
         OAuthExchangeRequest: {
             code: string;
         };
@@ -3087,6 +3093,8 @@ export interface components {
         };
         /** @enum {unknown} */
         ThemePreference: "Light" | "Dark" | "System";
+        /** @enum {unknown} */
+        TwoStrokeOilDelivery: "Premix" | "OilInjected" | null;
         UpdateAssetRequest: {
             category: null | components["schemas"]["AssetCategory"];
             name: string;
@@ -3153,7 +3161,11 @@ export interface components {
             /** Format: int32 */
             year: null | number | string;
             engineType: components["schemas"]["EngineType"];
-            fuelType: components["schemas"]["FuelType"];
+            mechanism: null | components["schemas"]["Mechanism"];
+            fuelType: null | components["schemas"]["FuelType"];
+            isExternallyChargeable: null | boolean;
+            twoStrokeOilDelivery: null | components["schemas"]["TwoStrokeOilDelivery"];
+            twoStrokeMixRatio: null | string;
             /** Format: int32 */
             cylinders: null | number | string;
             /** Format: double */
@@ -3181,8 +3193,8 @@ export interface components {
             /** Format: date */
             date: string;
             /** Format: double */
-            volume: number | string;
-            volumeUnit: components["schemas"]["VolumeUnit"];
+            quantity: number | string;
+            unit: components["schemas"]["VolumeUnit"];
             fuelGrade: null | string;
             /** Format: double */
             pricePerUnit: null | number | string;
@@ -3272,7 +3284,7 @@ export interface components {
         /** @enum {unknown} */
         VinDecodeSupport: "None" | "BestEffort" | "Supported";
         /** @enum {unknown} */
-        VolumeUnit: "Gallons" | "Liters";
+        VolumeUnit: "Gallons" | "Liters" | "Kwh";
         WidgetDefinition: {
             widgetType: components["schemas"]["WidgetType"];
             widgetSize: components["schemas"]["WidgetSize"];

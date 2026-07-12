@@ -205,6 +205,32 @@ namespace Steward.Infrastructure.Migrations
                 });
 
             migrationBuilder.CreateTable(
+                name: "RefreshTokens",
+                schema: "steward",
+                columns: table => new
+                {
+                    Id = table.Column<Guid>(type: "uuid", nullable: false),
+                    UserId = table.Column<Guid>(type: "uuid", nullable: false),
+                    TokenHash = table.Column<string>(type: "text", nullable: false),
+                    ExpiresAt = table.Column<DateTimeOffset>(type: "timestamp with time zone", nullable: false),
+                    RememberMe = table.Column<bool>(type: "boolean", nullable: false),
+                    CreatedAt = table.Column<DateTimeOffset>(type: "timestamp with time zone", nullable: false),
+                    RevokedAt = table.Column<DateTimeOffset>(type: "timestamp with time zone", nullable: true),
+                    ReplacedByTokenHash = table.Column<string>(type: "text", nullable: true)
+                },
+                constraints: table =>
+                {
+                    table.PrimaryKey("PK_RefreshTokens", x => x.Id);
+                    table.ForeignKey(
+                        name: "FK_RefreshTokens_AspNetUsers_UserId",
+                        column: x => x.UserId,
+                        principalSchema: "steward",
+                        principalTable: "AspNetUsers",
+                        principalColumn: "Id",
+                        onDelete: ReferentialAction.Cascade);
+                });
+
+            migrationBuilder.CreateTable(
                 name: "HouseholdDashboards",
                 schema: "steward",
                 columns: table => new
@@ -421,8 +447,12 @@ namespace Steward.Infrastructure.Migrations
                     Model = table.Column<string>(type: "text", nullable: true),
                     SerialNumber = table.Column<string>(type: "text", nullable: true),
                     Year = table.Column<int>(type: "integer", nullable: true),
-                    EngineType = table.Column<int>(type: "integer", nullable: false),
-                    FuelType = table.Column<int>(type: "integer", nullable: false),
+                    EngineType = table.Column<string>(type: "text", nullable: false),
+                    Mechanism = table.Column<string>(type: "text", nullable: true),
+                    FuelType = table.Column<string>(type: "text", nullable: true),
+                    IsExternallyChargeable = table.Column<bool>(type: "boolean", nullable: true),
+                    TwoStrokeOilDelivery = table.Column<string>(type: "text", nullable: true),
+                    TwoStrokeMixRatio = table.Column<string>(type: "text", nullable: true),
                     Cylinders = table.Column<int>(type: "integer", nullable: true),
                     DisplacementCC = table.Column<decimal>(type: "numeric", nullable: true),
                     Status = table.Column<int>(type: "integer", nullable: false),
@@ -561,8 +591,8 @@ namespace Steward.Infrastructure.Migrations
                     EngineId = table.Column<Guid>(type: "uuid", nullable: true),
                     LogType = table.Column<int>(type: "integer", nullable: false),
                     Date = table.Column<DateOnly>(type: "date", nullable: false),
-                    Volume = table.Column<decimal>(type: "numeric", nullable: false),
-                    VolumeUnit = table.Column<int>(type: "integer", nullable: false),
+                    Quantity = table.Column<decimal>(type: "numeric", nullable: false),
+                    Unit = table.Column<string>(type: "text", nullable: false),
                     FuelGrade = table.Column<string>(type: "text", nullable: true),
                     PricePerUnit = table.Column<decimal>(type: "numeric", nullable: true),
                     TotalCost = table.Column<decimal>(type: "numeric", nullable: true),
@@ -799,6 +829,19 @@ namespace Steward.Infrastructure.Migrations
                 column: "AssetId");
 
             migrationBuilder.CreateIndex(
+                name: "IX_RefreshTokens_TokenHash",
+                schema: "steward",
+                table: "RefreshTokens",
+                column: "TokenHash",
+                unique: true);
+
+            migrationBuilder.CreateIndex(
+                name: "IX_RefreshTokens_UserId",
+                schema: "steward",
+                table: "RefreshTokens",
+                column: "UserId");
+
+            migrationBuilder.CreateIndex(
                 name: "IX_Registrations_AssetId",
                 schema: "steward",
                 table: "Registrations",
@@ -889,6 +932,10 @@ namespace Steward.Infrastructure.Migrations
 
             migrationBuilder.DropTable(
                 name: "MileageLogs",
+                schema: "steward");
+
+            migrationBuilder.DropTable(
+                name: "RefreshTokens",
                 schema: "steward");
 
             migrationBuilder.DropTable(

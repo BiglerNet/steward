@@ -1,3 +1,9 @@
+# design-system Specification
+
+## Purpose
+Defines the frontend's centralized design tokens and visual system.
+
+## Requirements
 ### Requirement: Centralized design tokens
 The frontend SHALL define its color palette, corner radii, and type scale as CSS variables in `index.css`, sourced from the `biglernet-design-system` package's OKLCH tokens (`tokens/light.css` / `tokens/dark.css`) rather than hand-authored hex values, and components SHALL consume them through Tailwind's theme mapping rather than hardcoded color or radius values.
 

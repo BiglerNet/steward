@@ -9,7 +9,6 @@ export function isValidVinFormat(vin: string): boolean {
 const FUEL_TYPE_LOOKUP: Record<string, FuelType> = {
   gasoline: "Gasoline",
   diesel: "Diesel",
-  electric: "Electric",
 };
 
 /// vPIC's FuelTypePrimary is a free-text string; anything not recognized is left unset

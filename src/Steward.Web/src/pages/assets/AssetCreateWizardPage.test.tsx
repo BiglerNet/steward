@@ -74,6 +74,7 @@ function makeAsset(overrides: Partial<AssetResponse> = {}): AssetResponse {
     licensePlate: null,
     createdAt: "2026-01-01T00:00:00Z",
     updatedAt: "2026-01-01T00:00:00Z",
+    powertrain: null,
     ...overrides,
   };
 }
@@ -88,7 +89,11 @@ function makeEngine(overrides: Partial<EngineResponse> = {}): EngineResponse {
     serialNumber: null,
     year: null,
     engineType: "Ice",
+    mechanism: null,
     fuelType: "Gasoline",
+    isExternallyChargeable: null,
+    twoStrokeOilDelivery: null,
+    twoStrokeMixRatio: null,
     cylinders: null,
     displacementCc: null,
     status: "Active",
@@ -269,6 +274,77 @@ describe("AssetCreateWizardPage", () => {
     expect(payload.displacementCc).toBe(2400);
     expect(payload.horsepowerHp).toBe(355);
     expect(payload.torqueNm).toBeCloseTo(474.47, 1);
+  });
+
+  it("creates two engines when Hybrid is selected on the Engine step", async () => {
+    mockRole("Contributor");
+    vi.mocked(assetsApi.createAsset).mockResolvedValue(makeAsset());
+    vi.mocked(enginesApi.createEngine)
+      .mockResolvedValueOnce(makeEngine({ id: "engine-ice", engineType: "Ice" }))
+      .mockResolvedValueOnce(
+        makeEngine({ id: "engine-electric", engineType: "Electric", isExternallyChargeable: false })
+      );
+    const user = userEvent.setup();
+
+    renderWizard();
+
+    await user.click(await screen.findByRole("radio", { name: /^Car$/ }));
+    await user.click(screen.getByRole("button", { name: "Continue" }));
+    await user.click(screen.getByRole("button", { name: "Continue" })); // skip VIN decode
+
+    await user.type(await screen.findByLabelText("Name"), "Test Car");
+    await user.click(screen.getByRole("button", { name: "Continue" }));
+
+    await user.click(await screen.findByRole("combobox", { name: "Engine type" }));
+    await user.click(await screen.findByRole("option", { name: "Hybrid" }));
+
+    const labelFields = screen.getAllByLabelText("Label");
+    await user.type(labelFields[0], "Gas engine");
+    await user.type(labelFields[1], "Electric motor");
+    await user.click(screen.getByRole("button", { name: "Continue" }));
+
+    await waitFor(() => expect(enginesApi.createEngine).toHaveBeenCalledTimes(2));
+    const [, iceAssetId, icePayload] = vi.mocked(enginesApi.createEngine).mock.calls[0];
+    const [, , electricPayload] = vi.mocked(enginesApi.createEngine).mock.calls[1];
+    expect(iceAssetId).toBe("new-asset-1");
+    expect(icePayload.engineType).toBe("Ice");
+    expect(icePayload.label).toBe("Gas engine");
+    expect(electricPayload.engineType).toBe("Electric");
+    expect(electricPayload.label).toBe("Electric motor");
+    expect(electricPayload.isExternallyChargeable).toBe(false);
+    expect(await screen.findByRole("button", { name: "Finish" })).toBeInTheDocument();
+  });
+
+  it("marks the electric engine externally chargeable for Plug-in Hybrid", async () => {
+    mockRole("Contributor");
+    vi.mocked(assetsApi.createAsset).mockResolvedValue(makeAsset());
+    vi.mocked(enginesApi.createEngine)
+      .mockResolvedValueOnce(makeEngine({ id: "engine-ice", engineType: "Ice" }))
+      .mockResolvedValueOnce(
+        makeEngine({ id: "engine-electric", engineType: "Electric", isExternallyChargeable: true })
+      );
+    const user = userEvent.setup();
+
+    renderWizard();
+
+    await user.click(await screen.findByRole("radio", { name: /^Car$/ }));
+    await user.click(screen.getByRole("button", { name: "Continue" }));
+    await user.click(screen.getByRole("button", { name: "Continue" })); // skip VIN decode
+
+    await user.type(await screen.findByLabelText("Name"), "Test Car");
+    await user.click(screen.getByRole("button", { name: "Continue" }));
+
+    await user.click(await screen.findByRole("combobox", { name: "Engine type" }));
+    await user.click(await screen.findByRole("option", { name: "Plug-in Hybrid" }));
+
+    const labelFields = screen.getAllByLabelText("Label");
+    await user.type(labelFields[0], "Gas engine");
+    await user.type(labelFields[1], "Electric motor");
+    await user.click(screen.getByRole("button", { name: "Continue" }));
+
+    await waitFor(() => expect(enginesApi.createEngine).toHaveBeenCalledTimes(2));
+    const [, , electricPayload] = vi.mocked(enginesApi.createEngine).mock.calls[1];
+    expect(electricPayload.isExternallyChargeable).toBe(true);
   });
 
   it("shows a couldn't-decode notice and still advances to Details when decode fails (502)", async () => {

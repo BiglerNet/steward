@@ -1,3 +1,9 @@
+# household-multitenancy Specification
+
+## Purpose
+Defines the Household entity and multi-tenant scoping model.
+
+## Requirements
 ### Requirement: Household entity
 A `Household` SHALL represent a named group of assets (a "garage") owned and shared by one or more users. A Household SHALL have: `Id` (Guid), `Name` (string, required), `PublicSlug` (string, unique, URL-safe), `IsPublicVisible` (bool, default false), `Country` (string, nullable — ISO 3166-1 alpha-2, e.g. `US`), `Region` (string, nullable — full ISO 3166-2, e.g. `US-WI`), `StorageUsedBytes` (long, default 0), `StorageQuotaOverrideBytes` (long, nullable — null means the configured default quota applies), `CreatedAt` (DateTimeOffset), `CreatedByUserId` (FK → ApplicationUser).
 

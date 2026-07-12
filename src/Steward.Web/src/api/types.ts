@@ -228,11 +228,14 @@ export interface AssetResponse {
   licensePlate: string | null;
   createdAt: string;
   updatedAt: string;
+  powertrain: Powertrain | null;
 }
+
+export type Powertrain = "Electric" | "Hybrid" | "Plug-in Hybrid";
 
 export type AssetFields = Omit<
   AssetResponse,
-  "id" | "householdId" | "structuralType" | "coverPhotoId" | "createdAt" | "updatedAt"
+  "id" | "householdId" | "structuralType" | "coverPhotoId" | "createdAt" | "updatedAt" | "powertrain"
 >;
 
 export type CreateAssetRequest = Omit<AssetFields, "usageTrackingMode"> & {
@@ -255,8 +258,10 @@ export interface SetCoverPhotoRequest {
 
 export type PhotoVariant = "thumb" | "display";
 
-export type EngineType = "Ice" | "Electric" | "Hybrid";
-export type FuelType = "Gasoline" | "Diesel" | "TwoStroke" | "FourStroke" | "Electric" | "None";
+export type EngineType = "Ice" | "Electric";
+export type Mechanism = "TwoStroke" | "FourStroke" | "Diesel" | "Rotary";
+export type FuelType = "Gasoline" | "Diesel" | "Propane";
+export type TwoStrokeOilDelivery = "Premix" | "OilInjected";
 export type EngineStatus = "Active" | "Retired" | "Broken";
 
 export interface EngineResponse {
@@ -268,7 +273,11 @@ export interface EngineResponse {
   serialNumber: string | null;
   year: number | null;
   engineType: EngineType;
-  fuelType: FuelType;
+  mechanism: Mechanism | null;
+  fuelType: FuelType | null;
+  isExternallyChargeable: boolean | null;
+  twoStrokeOilDelivery: TwoStrokeOilDelivery | null;
+  twoStrokeMixRatio: string | null;
   cylinders: number | null;
   displacementCc: number | null;
   status: EngineStatus;
@@ -290,7 +299,11 @@ export interface CreateEngineRequest {
   serialNumber: string | null;
   year: number | null;
   engineType: EngineType;
-  fuelType: FuelType;
+  mechanism: Mechanism | null;
+  fuelType: FuelType | null;
+  isExternallyChargeable: boolean | null;
+  twoStrokeOilDelivery: TwoStrokeOilDelivery | null;
+  twoStrokeMixRatio: string | null;
   cylinders: number | null;
   displacementCc: number | null;
   installedDate: string | null;
@@ -369,7 +382,7 @@ export interface CreateEngineHoursLogRequest {
 export type UpdateEngineHoursLogRequest = CreateEngineHoursLogRequest;
 
 export type FuelLogType = "Fillup" | "Consumption";
-export type VolumeUnit = "Gallons" | "Liters";
+export type VolumeUnit = "Gallons" | "Liters" | "Kwh";
 
 export interface FuelLogResponse {
   id: string;
@@ -377,8 +390,8 @@ export interface FuelLogResponse {
   engineId: string | null;
   logType: FuelLogType;
   date: string;
-  volume: number;
-  volumeUnit: VolumeUnit;
+  quantity: number;
+  unit: VolumeUnit;
   fuelGrade: string | null;
   pricePerUnit: number | null;
   totalCost: number | null;
@@ -390,8 +403,8 @@ export interface FuelLogResponse {
 export interface CreateFuelLogRequest {
   logType: FuelLogType;
   date: string;
-  volume: number;
-  volumeUnit: VolumeUnit;
+  quantity: number;
+  unit: VolumeUnit;
   fuelGrade: string | null;
   pricePerUnit: number | null;
   totalCost: number | null;

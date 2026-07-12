@@ -1,5 +1,9 @@
-## ADDED Requirements
+# k8s-deployment Specification
 
+## Purpose
+Defines the Helm chart and Kubernetes deployment topology for the API and Web UI.
+
+## Requirements
 ### Requirement: Helm chart deploys API and Web UI to Kubernetes
 The system SHALL provide a Helm chart (`charts/steward/`) that deploys the API and Web UI as separate Kubernetes Deployments, each backed by a ClusterIP Service, to a target namespace. The chart SHALL use the image repositories `ghcr.io/biglernet/steward/api` and `ghcr.io/biglernet/steward/web` with the image tag configurable via `api.image.tag` and `web.image.tag` values.
 

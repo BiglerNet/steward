@@ -1,5 +1,9 @@
-## ADDED Requirements
+# db-migrations Specification
 
+## Purpose
+Defines how EF Core migrations are applied via the SetupHostedService at startup/deploy time.
+
+## Requirements
 ### Requirement: SetupHostedService applies EF Core migrations when invoked with --setup
 The system SHALL include a `SetupHostedService : IHostedService` in `Steward.Infrastructure/Setup/`. When the application is started with `--setup` as a command-line argument, this service SHALL call `database.Database.MigrateAsync()` to apply all pending EF Core migrations, then stop the application via `IHostApplicationLifetime.StopApplication()`. The normal application startup (without `--setup`) SHALL be unaffected.
 

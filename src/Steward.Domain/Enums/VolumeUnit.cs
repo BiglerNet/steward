@@ -4,4 +4,5 @@ public enum VolumeUnit
 {
     Gallons,
     Liters,
+    Kwh,
 }

@@ -50,6 +50,7 @@ const car = {
   licensePlate: null,
   createdAt: "2026-01-01T00:00:00Z",
   updatedAt: "2026-01-01T00:00:00Z",
+  powertrain: null,
 };
 
 const boat = {
@@ -194,5 +195,15 @@ describe("AssetListPage", () => {
 
     expect(carCard?.querySelector("img")).not.toBeInTheDocument();
     await waitFor(() => expect(boatCard?.querySelector("img")).toBeInTheDocument());
+  });
+
+  it("shows the powertrain badge on a card when the asset has one", async () => {
+    mockRole("Contributor");
+    vi.mocked(assetsApi.listAssets).mockResolvedValue([{ ...car, powertrain: "Electric" }]);
+
+    renderPage();
+
+    await screen.findByText("Family Car");
+    expect(screen.getByText("Electric")).toBeInTheDocument();
   });
 });

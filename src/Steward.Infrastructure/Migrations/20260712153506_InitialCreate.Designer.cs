@@ -12,7 +12,7 @@ using Steward.Infrastructure.Persistence;
 namespace Steward.Infrastructure.Migrations
 {
     [DbContext(typeof(StewardDbContext))]
-    [Migration("20260711192529_InitialCreate")]
+    [Migration("20260712153506_InitialCreate")]
     partial class InitialCreate
     {
         /// <inheritdoc />
@@ -291,11 +291,12 @@ namespace Steward.Infrastructure.Migrations
                     b.Property<decimal?>("DisplacementCC")
                         .HasColumnType("numeric");
 
-                    b.Property<int>("EngineType")
-                        .HasColumnType("integer");
+                    b.Property<string>("EngineType")
+                        .IsRequired()
+                        .HasColumnType("text");
 
-                    b.Property<int>("FuelType")
-                        .HasColumnType("integer");
+                    b.Property<string>("FuelType")
+                        .HasColumnType("text");
 
                     b.Property<decimal?>("HorsepowerHp")
                         .HasColumnType("decimal(8,2)");
@@ -309,11 +310,17 @@ namespace Steward.Infrastructure.Migrations
                     b.Property<DateOnly?>("InstalledDate")
                         .HasColumnType("date");
 
+                    b.Property<bool?>("IsExternallyChargeable")
+                        .HasColumnType("boolean");
+
                     b.Property<string>("Label")
                         .IsRequired()
                         .HasColumnType("text");
 
                     b.Property<string>("Make")
+                        .HasColumnType("text");
+
+                    b.Property<string>("Mechanism")
                         .HasColumnType("text");
 
                     b.Property<string>("Model")
@@ -336,6 +343,12 @@ namespace Steward.Infrastructure.Migrations
 
                     b.Property<decimal?>("TorqueNm")
                         .HasColumnType("decimal(8,2)");
+
+                    b.Property<string>("TwoStrokeMixRatio")
+                        .HasColumnType("text");
+
+                    b.Property<string>("TwoStrokeOilDelivery")
+                        .HasColumnType("text");
 
                     b.Property<int?>("Year")
                         .HasColumnType("integer");
@@ -408,14 +421,15 @@ namespace Steward.Infrastructure.Migrations
                     b.Property<decimal?>("PricePerUnit")
                         .HasColumnType("numeric");
 
+                    b.Property<decimal>("Quantity")
+                        .HasColumnType("numeric");
+
                     b.Property<decimal?>("TotalCost")
                         .HasColumnType("numeric");
 
-                    b.Property<decimal>("Volume")
-                        .HasColumnType("numeric");
-
-                    b.Property<int>("VolumeUnit")
-                        .HasColumnType("integer");
+                    b.Property<string>("Unit")
+                        .IsRequired()
+                        .HasColumnType("text");
 
                     b.HasKey("Id");
 
@@ -621,6 +635,44 @@ namespace Steward.Infrastructure.Migrations
                     b.HasIndex("AssetId");
 
                     b.ToTable("MileageLogs", "steward");
+                });
+
+            modelBuilder.Entity("Steward.Domain.Entities.RefreshToken", b =>
+                {
+                    b.Property<Guid>("Id")
+                        .ValueGeneratedOnAdd()
+                        .HasColumnType("uuid");
+
+                    b.Property<DateTimeOffset>("CreatedAt")
+                        .HasColumnType("timestamp with time zone");
+
+                    b.Property<DateTimeOffset>("ExpiresAt")
+                        .HasColumnType("timestamp with time zone");
+
+                    b.Property<bool>("RememberMe")
+                        .HasColumnType("boolean");
+
+                    b.Property<string>("ReplacedByTokenHash")
+                        .HasColumnType("text");
+
+                    b.Property<DateTimeOffset?>("RevokedAt")
+                        .HasColumnType("timestamp with time zone");
+
+                    b.Property<string>("TokenHash")
+                        .IsRequired()
+                        .HasColumnType("text");
+
+                    b.Property<Guid>("UserId")
+                        .HasColumnType("uuid");
+
+                    b.HasKey("Id");
+
+                    b.HasIndex("TokenHash")
+                        .IsUnique();
+
+                    b.HasIndex("UserId");
+
+                    b.ToTable("RefreshTokens", "steward");
                 });
 
             modelBuilder.Entity("Steward.Domain.Entities.Registration", b =>
@@ -1119,6 +1171,15 @@ namespace Steward.Infrastructure.Migrations
                         .WithMany()
                         .HasForeignKey("AssetId")
                         .OnDelete(DeleteBehavior.Restrict)
+                        .IsRequired();
+                });
+
+            modelBuilder.Entity("Steward.Domain.Entities.RefreshToken", b =>
+                {
+                    b.HasOne("Steward.Infrastructure.Identity.ApplicationUser", null)
+                        .WithMany()
+                        .HasForeignKey("UserId")
+                        .OnDelete(DeleteBehavior.Cascade)
                         .IsRequired();
                 });
 

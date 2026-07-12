@@ -346,6 +346,81 @@ public class AssetsControllerTests(DatabaseFixture fixture) : IntegrationTestBas
         Assert.Equal(HttpStatusCode.Forbidden, response.StatusCode);
     }
 
+    [Fact]
+    public async Task Ice_Only_Asset_Has_No_Powertrain_Badge()
+    {
+        var (householdId, userId) = await CreateHouseholdWithMemberAsync(HouseholdMemberRole.Owner);
+        var client = CreateAuthenticatedClient(userId);
+        var assetId = await CreateAssetAsync(householdId);
+        await CreateEngineAsync(assetId, engineType: EngineType.Ice);
+
+        var response = await client.GetAsync($"/api/households/{householdId}/assets/{assetId}", TestContext.Current.CancellationToken);
+
+        var asset = await response.Content.ReadFromJsonAsync<AssetResponse>(TestJson.Options, cancellationToken: TestContext.Current.CancellationToken);
+        Assert.Null(asset!.Powertrain);
+    }
+
+    [Fact]
+    public async Task Pure_Ev_Asset_Shows_Electric()
+    {
+        var (householdId, userId) = await CreateHouseholdWithMemberAsync(HouseholdMemberRole.Owner);
+        var client = CreateAuthenticatedClient(userId);
+        var assetId = await CreateAssetAsync(householdId);
+        await CreateEngineAsync(assetId, engineType: EngineType.Electric, isExternallyChargeable: true);
+
+        var response = await client.GetAsync($"/api/households/{householdId}/assets/{assetId}", TestContext.Current.CancellationToken);
+
+        var asset = await response.Content.ReadFromJsonAsync<AssetResponse>(TestJson.Options, cancellationToken: TestContext.Current.CancellationToken);
+        Assert.Equal("Electric", asset!.Powertrain);
+    }
+
+    [Fact]
+    public async Task Conventional_Hybrid_Shows_Hybrid()
+    {
+        var (householdId, userId) = await CreateHouseholdWithMemberAsync(HouseholdMemberRole.Owner);
+        var client = CreateAuthenticatedClient(userId);
+        var assetId = await CreateAssetAsync(householdId);
+        await CreateEngineAsync(assetId, label: "Gas", engineType: EngineType.Ice);
+        await CreateEngineAsync(assetId, label: "Motor", engineType: EngineType.Electric, isExternallyChargeable: false);
+
+        var response = await client.GetAsync($"/api/households/{householdId}/assets/{assetId}", TestContext.Current.CancellationToken);
+
+        var asset = await response.Content.ReadFromJsonAsync<AssetResponse>(TestJson.Options, cancellationToken: TestContext.Current.CancellationToken);
+        Assert.Equal("Hybrid", asset!.Powertrain);
+    }
+
+    [Fact]
+    public async Task Plug_In_Hybrid_Shows_Plug_In_Hybrid()
+    {
+        var (householdId, userId) = await CreateHouseholdWithMemberAsync(HouseholdMemberRole.Owner);
+        var client = CreateAuthenticatedClient(userId);
+        var assetId = await CreateAssetAsync(householdId);
+        await CreateEngineAsync(assetId, label: "Gas", engineType: EngineType.Ice);
+        await CreateEngineAsync(assetId, label: "Motor", engineType: EngineType.Electric, isExternallyChargeable: true);
+
+        var response = await client.GetAsync($"/api/households/{householdId}/assets/{assetId}", TestContext.Current.CancellationToken);
+
+        var asset = await response.Content.ReadFromJsonAsync<AssetResponse>(TestJson.Options, cancellationToken: TestContext.Current.CancellationToken);
+        Assert.Equal("Plug-in Hybrid", asset!.Powertrain);
+    }
+
+    [Fact]
+    public async Task Retired_Engine_Does_Not_Count_Toward_Powertrain_Badge()
+    {
+        var (householdId, userId) = await CreateHouseholdWithMemberAsync(HouseholdMemberRole.Owner);
+        var client = CreateAuthenticatedClient(userId);
+        var assetId = await CreateAssetAsync(householdId);
+        await CreateEngineAsync(assetId, label: "Gas", engineType: EngineType.Ice);
+        await CreateEngineAsync(
+            assetId, label: "Old EV conversion", engineType: EngineType.Electric,
+            status: EngineStatus.Retired, isExternallyChargeable: true);
+
+        var response = await client.GetAsync($"/api/households/{householdId}/assets/{assetId}", TestContext.Current.CancellationToken);
+
+        var asset = await response.Content.ReadFromJsonAsync<AssetResponse>(TestJson.Options, cancellationToken: TestContext.Current.CancellationToken);
+        Assert.Null(asset!.Powertrain);
+    }
+
     private static CreateAssetRequest NewAsset(AssetCategory category, string name) => new(
         Category: category,
         Name: name,

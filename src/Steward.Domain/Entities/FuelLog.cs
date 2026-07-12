@@ -9,8 +9,8 @@ public class FuelLog
     public Guid? EngineId { get; set; }
     public FuelLogType LogType { get; set; }
     public DateOnly Date { get; set; }
-    public decimal Volume { get; set; }
-    public VolumeUnit VolumeUnit { get; set; }
+    public decimal Quantity { get; set; }
+    public VolumeUnit Unit { get; set; }
     public string? FuelGrade { get; set; }
     public decimal? PricePerUnit { get; set; }
     public decimal? TotalCost { get; set; }

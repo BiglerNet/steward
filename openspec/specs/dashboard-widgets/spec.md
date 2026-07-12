@@ -1,3 +1,9 @@
+# dashboard-widgets Specification
+
+## Purpose
+Defines the household dashboard snapshot API and configurable widget system.
+
+## Requirements
 ### Requirement: List household dashboards
 The system SHALL provide `GET /api/v1/households/{householdId}/dashboards` (any Active member or PlatformAdmin) returning a lightweight list of all dashboards for the household. Each item includes `id`, `name`, `isDefault`, and `position`. If no dashboards exist, the system SHALL auto-create a default "Overview" dashboard before returning it, with widgets in this order: CylinderIndex (Small), TotalDisplacement (Small), TotalHorsepower (Small), AssetCount (Small), RecentActivity (Full, 5-item limit), DueSoon (Full, 30-day window).
 

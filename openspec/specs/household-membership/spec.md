@@ -1,3 +1,9 @@
+# household-membership Specification
+
+## Purpose
+Defines household member invitation, role, and membership management endpoints.
+
+## Requirements
 ### Requirement: Invite member by email (pre-registration safe)
 The system SHALL provide `POST /api/households/{id}/members/invite` (Owner only) accepting `{ email, role }` where `role` is `Contributor` or `Viewer`. The endpoint SHALL create a `HouseholdInvitation` with `Status = Pending`, a unique `InviteCode`, and `ExpiresAt` set to 7 days from now. The invited user does NOT need to have an existing account. The response SHALL include the `inviteCode` so the owner can share it. If a Pending, non-expired invitation already exists for that email in this household, HTTP 409 SHALL be returned. Owner role SHALL NOT be assignable via invite.
 

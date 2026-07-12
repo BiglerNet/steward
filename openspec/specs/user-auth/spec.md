@@ -1,3 +1,9 @@
+# user-auth Specification
+
+## Purpose
+Defines backend email/password and OAuth authentication endpoints.
+
+## Requirements
 ### Requirement: Email/password registration
 The system SHALL provide `POST /api/auth/register` accepting `{ email, password, displayName }`. On success it SHALL create an `ApplicationUser`, issue a JWT access token and a refresh token, and return HTTP 201 with an `AuthResponse` containing both tokens and basic user info. Duplicate email SHALL return HTTP 409. Registration SHALL always issue a refresh token with the "remembered" (long) expiry — there is no remember-me choice at registration time.
 

@@ -137,7 +137,12 @@ public abstract class IntegrationTestBase(DatabaseFixture fixture)
         await dbContext.SaveChangesAsync();
     }
 
-    protected async Task<Guid> CreateEngineAsync(Guid assetId, string label = "Test Engine")
+    protected async Task<Guid> CreateEngineAsync(
+        Guid assetId,
+        string label = "Test Engine",
+        EngineType engineType = EngineType.Ice,
+        EngineStatus status = EngineStatus.Active,
+        bool? isExternallyChargeable = null)
     {
         using var scope = Factory.Services.CreateScope();
         var dbContext = scope.ServiceProvider.GetRequiredService<StewardDbContext>();
@@ -147,9 +152,10 @@ public abstract class IntegrationTestBase(DatabaseFixture fixture)
             Id = Guid.NewGuid(),
             AssetId = assetId,
             Label = label,
-            EngineType = EngineType.Ice,
-            FuelType = FuelType.Gasoline,
-            Status = EngineStatus.Active,
+            EngineType = engineType,
+            FuelType = engineType == EngineType.Ice ? FuelType.Gasoline : null,
+            IsExternallyChargeable = isExternallyChargeable,
+            Status = status,
         };
 
         dbContext.Engines.Add(engine);

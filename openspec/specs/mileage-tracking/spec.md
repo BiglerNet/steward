@@ -1,3 +1,9 @@
+# mileage-tracking Specification
+
+## Purpose
+Defines mileage log CRUD endpoints for tracking vehicle odometer/trip mileage.
+
+## Requirements
 ### Requirement: Create mileage log entry
 The system SHALL provide `POST /api/households/{householdId}/assets/{assetId}/mileage-logs` (Contributor or Owner only) accepting `{ date, odometerReading, tripMiles, notes }` with `date` required and at least one of `odometerReading`/`tripMiles` required. On success it SHALL return HTTP 201 with the created `MileageLogResponse`.
 

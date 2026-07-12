@@ -1,3 +1,9 @@
+# service-record-tracking Specification
+
+## Purpose
+Defines service record CRUD endpoints for logging maintenance history.
+
+## Requirements
 ### Requirement: Create service record
 The system SHALL provide `POST /api/households/{householdId}/assets/{assetId}/service-records` (Contributor or Owner only) accepting `{ date, description, providerName, cost, odometerMiles, engineHours, engineId, notes }` with `date` and `description` required. If `engineId` is provided it SHALL belong to the same asset. On success it SHALL return HTTP 201 with the created `ServiceRecordResponse`.
 

@@ -4,5 +4,4 @@ public enum EngineType
 {
     Ice,
     Electric,
-    Hybrid,
 }

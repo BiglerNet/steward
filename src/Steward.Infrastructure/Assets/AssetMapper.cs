@@ -1,6 +1,8 @@
 using Steward.Application.Assets;
 using Steward.Application.AssetTypes;
+using Steward.Domain.Entities;
 using Steward.Domain.Entities.Assets;
+using Steward.Domain.Enums;
 
 namespace Steward.Infrastructure.Assets;
 
@@ -42,7 +44,7 @@ internal static class AssetMapper
         ApplyTypeFields(asset, request);
     }
 
-    public static AssetResponse ToResponse(Asset asset)
+    public static AssetResponse ToResponse(Asset asset, IReadOnlyCollection<Engine>? activeEngines = null)
     {
         var vehicle = asset as Vehicle;
         var boat = asset as Boat;
@@ -83,7 +85,31 @@ internal static class AssetMapper
             equipment?.EquipmentDescription,
             vehicle?.LicensePlate ?? trailer?.LicensePlate,
             asset.CreatedAt,
-            asset.UpdatedAt);
+            asset.UpdatedAt,
+            ComputePowertrain(activeEngines));
+    }
+
+    public static string? ComputePowertrain(IReadOnlyCollection<Engine>? activeEngines)
+    {
+        if (activeEngines is null || activeEngines.Count == 0)
+        {
+            return null;
+        }
+
+        var hasIce = activeEngines.Any(e => e.EngineType == EngineType.Ice);
+        var electricEngines = activeEngines.Where(e => e.EngineType == EngineType.Electric).ToList();
+
+        if (!hasIce)
+        {
+            return electricEngines.Count > 0 ? "Electric" : null;
+        }
+
+        if (electricEngines.Count == 0)
+        {
+            return null;
+        }
+
+        return electricEngines.Any(e => e.IsExternallyChargeable == true) ? "Plug-in Hybrid" : "Hybrid";
     }
 
     private static void ApplyTypeFields(Asset asset, IAssetTypeFields fields)

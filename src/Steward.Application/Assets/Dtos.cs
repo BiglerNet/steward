@@ -67,7 +67,8 @@ public record AssetResponse(
     string? EquipmentDescription,
     string? LicensePlate,
     DateTimeOffset CreatedAt,
-    DateTimeOffset UpdatedAt);
+    DateTimeOffset UpdatedAt,
+    string? Powertrain);
 
 public record CreateAssetRequest(
     AssetCategory Category,

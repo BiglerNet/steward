@@ -288,11 +288,12 @@ namespace Steward.Infrastructure.Migrations
                     b.Property<decimal?>("DisplacementCC")
                         .HasColumnType("numeric");
 
-                    b.Property<int>("EngineType")
-                        .HasColumnType("integer");
+                    b.Property<string>("EngineType")
+                        .IsRequired()
+                        .HasColumnType("text");
 
-                    b.Property<int>("FuelType")
-                        .HasColumnType("integer");
+                    b.Property<string>("FuelType")
+                        .HasColumnType("text");
 
                     b.Property<decimal?>("HorsepowerHp")
                         .HasColumnType("decimal(8,2)");
@@ -306,11 +307,17 @@ namespace Steward.Infrastructure.Migrations
                     b.Property<DateOnly?>("InstalledDate")
                         .HasColumnType("date");
 
+                    b.Property<bool?>("IsExternallyChargeable")
+                        .HasColumnType("boolean");
+
                     b.Property<string>("Label")
                         .IsRequired()
                         .HasColumnType("text");
 
                     b.Property<string>("Make")
+                        .HasColumnType("text");
+
+                    b.Property<string>("Mechanism")
                         .HasColumnType("text");
 
                     b.Property<string>("Model")
@@ -333,6 +340,12 @@ namespace Steward.Infrastructure.Migrations
 
                     b.Property<decimal?>("TorqueNm")
                         .HasColumnType("decimal(8,2)");
+
+                    b.Property<string>("TwoStrokeMixRatio")
+                        .HasColumnType("text");
+
+                    b.Property<string>("TwoStrokeOilDelivery")
+                        .HasColumnType("text");
 
                     b.Property<int?>("Year")
                         .HasColumnType("integer");
@@ -405,14 +418,15 @@ namespace Steward.Infrastructure.Migrations
                     b.Property<decimal?>("PricePerUnit")
                         .HasColumnType("numeric");
 
+                    b.Property<decimal>("Quantity")
+                        .HasColumnType("numeric");
+
                     b.Property<decimal?>("TotalCost")
                         .HasColumnType("numeric");
 
-                    b.Property<decimal>("Volume")
-                        .HasColumnType("numeric");
-
-                    b.Property<int>("VolumeUnit")
-                        .HasColumnType("integer");
+                    b.Property<string>("Unit")
+                        .IsRequired()
+                        .HasColumnType("text");
 
                     b.HasKey("Id");
 

@@ -1,5 +1,9 @@
-## ADDED Requirements
+# ci-cd-pipeline Specification
 
+## Purpose
+Defines the GitHub Actions CI/CD workflow that builds, tests, and deploys the application on push.
+
+## Requirements
 ### Requirement: CI workflow builds and tests on every push
 The system SHALL provide a GitHub Actions workflow (`.github/workflows/ci.yml`) that triggers on push to any branch and on pull requests to `main`. It SHALL run `dotnet build`, `dotnet test` (unit tests only — no external database required), `npm ci`, `npm run build`, and `npm test` in sequence. The workflow SHALL fail fast if any step fails.
 

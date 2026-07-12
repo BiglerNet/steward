@@ -1,3 +1,9 @@
+# solution-structure Specification
+
+## Purpose
+Defines the monorepo layout and Clean Architecture project structure.
+
+## Requirements
 ### Requirement: Monorepo solution layout
 The solution SHALL be organized as a monorepo with backend projects under `src/`, test projects under `tests/`, and the React frontend under `src/Steward.Web/`. A single `.sln` file at the repo root SHALL reference all backend and test projects.
 

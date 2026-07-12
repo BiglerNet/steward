@@ -1,3 +1,9 @@
+# frontend-auth Specification
+
+## Purpose
+Defines the frontend registration, login, and session UX.
+
+## Requirements
 ### Requirement: Email/password registration
 The frontend SHALL provide a registration form (email, password, password confirmation, display name) that calls `POST /api/auth/register`, stores the returned session, and navigates the user into the app on success.
 
