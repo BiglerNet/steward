@@ -1,5 +1,6 @@
 using System.Text.Json;
 using Steward.Application.Dashboards;
+using Steward.Application.Tracking.MaintenanceRecurrence;
 using Steward.Domain.Common.Exceptions;
 using Steward.Domain.Entities;
 using Steward.Domain.Enums;
@@ -8,7 +9,7 @@ using Microsoft.EntityFrameworkCore;
 
 namespace Steward.Infrastructure.Dashboards;
 
-public class DashboardService(StewardDbContext dbContext) : IDashboardService
+public class DashboardService(StewardDbContext dbContext, IMaintenanceScheduleService maintenanceScheduleService) : IDashboardService
 {
     public async Task<IReadOnlyList<DashboardSummaryResponse>> ListAsync(
         Guid householdId, CancellationToken cancellationToken = default)
@@ -305,9 +306,31 @@ public class DashboardService(StewardDbContext dbContext) : IDashboardService
                     ClassifyUrgency(x.w.ExpiresOn!.Value, today)))
                 .ToListAsync(cancellationToken);
 
+            var householdAssets = await dbContext.Assets.AsNoTracking()
+                .Where(a => a.HouseholdId == householdId)
+                .Select(a => new { a.Id, a.Name })
+                .ToListAsync(cancellationToken);
+
+            var maintenanceItems = new List<DueItem>();
+            foreach (var asset in householdAssets)
+            {
+                var scheduleEntries = await maintenanceScheduleService.GetScheduleAsync(asset.Id, cancellationToken);
+                maintenanceItems.AddRange(scheduleEntries
+                    .Where(e => e.DueStatus is MaintenanceDueStatus.Overdue or MaintenanceDueStatus.DueSoon or MaintenanceDueStatus.Upcoming)
+                    .Select(e => new DueItem(
+                        asset.Id,
+                        asset.Name,
+                        "MaintenanceRecurrence",
+                        null,
+                        e.DueStatus.ToString(),
+                        e.StepText,
+                        e.EngineLabel)));
+            }
+
             var allItems = registrationItems
                 .Concat(warrantyItems)
-                .OrderBy(i => i.ExpiresOn)
+                .Concat(maintenanceItems)
+                .OrderBy(i => i.ExpiresOn ?? DateOnly.MaxValue)
                 .ToList();
 
             result["DueSoon"] = new DueSoonData(allItems);
@@ -318,17 +341,19 @@ public class DashboardService(StewardDbContext dbContext) : IDashboardService
             var widget = widgetTypes.First(w => w.WidgetType == WidgetType.RecentActivity);
             var limit = ParseRecentActivityConfig(widget.Config);
 
-            var items = await dbContext.ServiceRecords.AsNoTracking()
-                .Join(dbContext.Assets.AsNoTracking(), sr => sr.AssetId, a => a.Id, (sr, a) => new { sr, a })
-                .Where(x => x.a.HouseholdId == householdId)
-                .OrderByDescending(x => x.sr.Date)
+            var items = await dbContext.MaintenanceItems.AsNoTracking()
+                .Join(dbContext.Assets.AsNoTracking(), mi => mi.AssetId, a => a.Id, (mi, a) => new { mi, a })
+                .Where(x => x.a.HouseholdId == householdId
+                    && x.mi.Status == MaintenanceItemStatus.Done
+                    && x.mi.Date != null)
+                .OrderByDescending(x => x.mi.Date)
                 .Take(limit)
                 .Select(x => new ActivityItem(
                     x.a.Id,
                     x.a.Name,
-                    x.sr.Description,
-                    x.sr.Date,
-                    x.sr.Cost))
+                    x.mi.Title,
+                    x.mi.Date!.Value,
+                    x.mi.Cost))
                 .ToListAsync(cancellationToken);
 
             result["RecentActivity"] = new RecentActivityData(items);

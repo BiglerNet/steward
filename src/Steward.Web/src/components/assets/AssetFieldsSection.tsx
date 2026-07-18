@@ -1,5 +1,6 @@
 import type { Control, FieldPath } from "react-hook-form";
 import type { AssetTypeDefinition } from "@/api/types";
+import { MarkdownEditor } from "@/components/markdown/MarkdownEditor";
 import { FormControl, FormField, FormItem, FormLabel, FormMessage } from "@/components/ui/form";
 import { Input } from "@/components/ui/input";
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
@@ -46,7 +47,7 @@ export function AssetFieldsSection<TFieldValues extends AssetFieldsFormValues>({
           <FormItem>
             <FormLabel>Description</FormLabel>
             <FormControl>
-              <Input {...field} />
+              <MarkdownEditor value={field.value ?? ""} onChange={field.onChange} onBlur={field.onBlur} />
             </FormControl>
             <FormMessage />
           </FormItem>

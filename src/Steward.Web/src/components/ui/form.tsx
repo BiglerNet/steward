@@ -51,6 +51,7 @@ function useFormField() {
     id,
     name: fieldContext.name,
     formItemId: `${id}-form-item`,
+    formLabelId: `${id}-form-item-label`,
     formDescriptionId: `${id}-form-item-description`,
     formMessageId: `${id}-form-item-message`,
     ...fieldState,
@@ -73,9 +74,10 @@ function FormItem({ className, ...props }: React.ComponentProps<"div">) {
 }
 
 function FormLabel({ className, ...props }: React.ComponentProps<typeof Label>) {
-  const { error, formItemId } = useFormField();
+  const { error, formItemId, formLabelId } = useFormField();
   return (
     <Label
+      id={formLabelId}
       className={cn(error && "text-destructive", className)}
       htmlFor={formItemId}
       {...props}
@@ -84,10 +86,11 @@ function FormLabel({ className, ...props }: React.ComponentProps<typeof Label>) 
 }
 
 function FormControl({ ...props }: React.ComponentProps<typeof Slot>) {
-  const { error, formItemId, formDescriptionId, formMessageId } = useFormField();
+  const { error, formItemId, formLabelId, formDescriptionId, formMessageId } = useFormField();
   return (
     <Slot
       id={formItemId}
+      aria-labelledby={formLabelId}
       aria-describedby={error ? `${formDescriptionId} ${formMessageId}` : formDescriptionId}
       aria-invalid={!!error}
       {...props}

@@ -127,15 +127,14 @@ The system SHALL provide `GET /api/v1/households/{householdId}/dashboards/{dashb
 - `TotalDisplacement`: `{ "totalCc": <decimal>, "engineCount": <int> }`
 - `TotalHorsepower`: `{ "totalHp": <decimal>, "engineCount": <int> }`
 - `TotalTorque`: `{ "totalNm": <decimal>, "engineCount": <int> }`
-- `DueSoon`: `{ "items": [{ "assetId", "assetName", "recordType": "Registration"|"Warranty", "expiresOn", "urgency": "Overdue"|"DueSoon"|"Upcoming" }] }`
-- `RecentActivity`: `{ "items": [{ "assetId", "assetName", "description", "performedOn", "cost" }] }`
+- `DueSoon`: `{ "items": [{ "assetId", "assetName", "recordType": "Registration"|"Warranty"|"MaintenanceRecurrence", "expiresOn"?, "urgency": "Overdue"|"DueSoon"|"Upcoming", "stepText"?, "engineLabel"? }] }` — `MaintenanceRecurrence` entries come from the `maintenance-recurrence` capability's per-asset schedule computation, filtered to entries whose `dueStatus` is `Overdue`, `DueSoon`, or `Upcoming` (entries at `OK` or `Unknown` are excluded); for these entries `expiresOn` is omitted and `stepText`/`engineLabel?` are populated instead.
+- `RecentActivity`: `{ "items": [{ "assetId", "assetName", "description", "performedOn", "cost" }] }` — sourced from `MaintenanceItem` rows with `Status = Done`, where `description` is the item's `Title` and `performedOn` is its `Date`.
 - `FuelCostYtd`: `{ "totalCost": <decimal>, "logCount": <int> }`
 - `MileageMtd`: `{ "totalMiles": <decimal>, "logCount": <int> }`
 
 **DueSoon urgency thresholds (server-side, not configurable per widget instance):**
-- `Overdue`: `expiresOn < today`
-- `DueSoon`: `expiresOn` is within 7 days from today
-- `Upcoming`: `expiresOn` is within `daysAhead` days from today (from widget config, default 30), excluding Overdue and DueSoon
+- For `Registration`/`Warranty`: `Overdue` if `expiresOn < today`; `DueSoon` if within 7 days; `Upcoming` if within `daysAhead` days (from widget config, default 30), excluding Overdue and DueSoon.
+- For `MaintenanceRecurrence`: urgency is taken directly from the schedule entry's `dueStatus` (`Overdue`/`DueSoon`/`Upcoming`), computed per the `maintenance-recurrence` capability's calendar/usage-interval logic.
 
 **DueSoon widget config schema:** `{ "daysAhead": <int, default 30> }`
 **RecentActivity widget config schema:** `{ "limit": <int, default 5, max 20> }`
@@ -146,15 +145,27 @@ The system SHALL provide `GET /api/v1/households/{householdId}/dashboards/{dashb
 
 #### Scenario: DueSoon widget returns items sorted by expiry date ascending
 - **WHEN** the dashboard contains a DueSoon widget and the household has registrations and warranties with upcoming expiry dates
-- **THEN** the snapshot's `DueSoon.items` are ordered by `expiresOn` ascending
+- **THEN** the snapshot's `DueSoon.items` for those record types are ordered by `expiresOn` ascending
 
-#### Scenario: DueSoon urgency classification
+#### Scenario: DueSoon urgency classification for registrations/warranties
 - **WHEN** a household has a registration expired yesterday, a warranty expiring in 3 days, and a registration expiring in 20 days (with default 30-day window)
 - **THEN** the snapshot DueSoon items have urgency `Overdue`, `DueSoon`, and `Upcoming` respectively
 
+#### Scenario: DueSoon includes overdue recurring maintenance
+- **WHEN** a household has an asset with a "Change oil" recurrence entry at `dueStatus: "Overdue"`
+- **THEN** the snapshot's `DueSoon.items` includes an entry with `recordType: "MaintenanceRecurrence"`, `urgency: "Overdue"`, and the step's `stepText`
+
+#### Scenario: DueSoon excludes maintenance recurrence entries that are not due
+- **WHEN** a household's only recurrence entry is at `dueStatus: "OK"`
+- **THEN** no `MaintenanceRecurrence` item appears in `DueSoon.items` for it
+
 #### Scenario: RecentActivity respects the limit config
-- **WHEN** a dashboard has a RecentActivity widget with `config: { "limit": 3 }` and the household has 10 service records
-- **THEN** the snapshot returns exactly 3 items in `RecentActivity.items`
+- **WHEN** a dashboard has a RecentActivity widget with `config: { "limit": 3 }` and the household has 10 `Done` maintenance items across its assets
+- **THEN** the snapshot returns exactly 3 items in `RecentActivity.items`, ordered by `Date` descending
+
+#### Scenario: RecentActivity excludes non-Done maintenance items
+- **WHEN** a household has maintenance items in `Planned`, `InProgress`, and `Done` status
+- **THEN** the snapshot's `RecentActivity.items` includes only the `Done` ones
 
 #### Scenario: FuelCostYtd covers calendar year to date only
 - **WHEN** the household has fuel logs from the current calendar year and from previous years

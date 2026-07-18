@@ -4,14 +4,10 @@
 TBD - created by archiving change frontend-assets-and-tracking. Update Purpose after archive.
 ## Requirements
 ### Requirement: List tracking records for an asset
-The frontend SHALL list an asset's records for each of the four tracking-log types (service records, mileage logs, engine hours logs, fuel logs), newest first, each on its own routed URL segment under the asset's detail page.
-
-#### Scenario: Viewing service records
-- **WHEN** any household member opens `/households/:householdId/assets/:assetId/service-records`
-- **THEN** the app lists that asset's service records ordered by date descending
+The frontend SHALL list an asset's records for each of the three tracking-log types (mileage logs, engine hours logs, fuel logs), newest first, each on its own routed URL segment under the asset's detail page. Maintenance work is listed separately via the `frontend-maintenance-items` capability, not through this generic tracking-log UI.
 
 #### Scenario: Viewing each log type independently
-- **WHEN** a user navigates between the service records, mileage, engine hours, and fuel log tabs on an asset
+- **WHEN** a user navigates between the mileage, engine hours, and fuel log tabs on an asset
 - **THEN** each tab loads and displays only its own record type at its own URL
 
 #### Scenario: No entries yet
@@ -19,11 +15,7 @@ The frontend SHALL list an asset's records for each of the four tracking-log typ
 - **THEN** the app shows an empty state prompting the first entry
 
 ### Requirement: Create tracking record
-The frontend SHALL provide a create form for each tracking-log type, submitting to that log's `POST` endpoint scoped to the asset, available to Contributors and Owners.
-
-#### Scenario: Logging a service record
-- **WHEN** a Contributor/Owner submits a service record (date, description, provider, cost, odometer/engine hours, optional engine)
-- **THEN** the app creates it and it appears at the top of the service records list
+The frontend SHALL provide a create form for each of the three tracking-log types (mileage logs, engine hours logs, fuel logs), submitting to that log's `POST` endpoint scoped to the asset, available to Contributors and Owners.
 
 #### Scenario: Logging a fuel entry
 - **WHEN** a Contributor/Owner submits a fuel log entry
@@ -43,15 +35,15 @@ The frontend SHALL provide an edit form for an existing tracking-log entry, avai
 ### Requirement: Delete tracking record
 The frontend SHALL allow Contributors and Owners (not just Owners) to delete a tracking-log entry, consistent with the backend's `HouseholdOperations.Edit`-gated delete for tracking records.
 
-#### Scenario: Contributor deletes a service record
-- **WHEN** a Contributor confirms deletion of a service record
+#### Scenario: Contributor deletes a fuel log entry
+- **WHEN** a Contributor confirms deletion of a fuel log entry
 - **THEN** the app calls the delete endpoint and the entry is removed from the list without affecting other entries
 
 ### Requirement: Optional engine association for applicable log types
-The frontend SHALL offer an optional engine selector on the create/edit form for tracking-log types that support an `engineId` (service records, engine hours logs), populated from the asset's engine list, and omit the selector for log types that don't (mileage logs). Fuel log entries SHALL follow the auto-select/require-selection behavior described in the "Fuel log engine and unit selection" requirement instead of this generic optional-selector behavior.
+The frontend SHALL offer an optional engine selector on the create/edit form for tracking-log types that support an `engineId` (engine hours logs), populated from the asset's engine list, and omit the selector for log types that don't (mileage logs). Fuel log entries SHALL follow the auto-select/require-selection behavior described in the "Fuel log engine and unit selection" requirement instead of this generic optional-selector behavior.
 
-#### Scenario: Associating a service record with an engine
-- **WHEN** a Contributor/Owner selects one of the asset's engines while logging a service record
+#### Scenario: Associating an engine hours log with an engine
+- **WHEN** a Contributor/Owner selects one of the asset's engines while logging an engine hours entry
 - **THEN** the submitted record includes that `engineId`
 
 #### Scenario: Mileage log has no engine selector
@@ -91,4 +83,15 @@ The engine list on an asset's detail page SHALL provide Retire, Reactivate, and 
 #### Scenario: Retire action hidden on an already-retired engine
 - **WHEN** a Contributor views a `Retired` engine's row
 - **THEN** no Retire action is shown, only Reactivate (and Delete, if permitted)
+
+### Requirement: Notes and description fields use the shared markdown editor
+The create/edit forms for service records, mileage logs, engine hours logs, fuel logs, registrations, and warranties SHALL render their free-text field (`description` for service records, `notes` for the others) using the shared `MarkdownEditor` component instead of a plain textarea. List and detail views displaying these fields SHALL render the stored value through the shared read-only markdown renderer instead of as raw text.
+
+#### Scenario: Logging a service record with formatted notes
+- **WHEN** a Contributor/Owner creates a service record and enters a description containing a bulleted list of work performed
+- **THEN** the create form presents the `MarkdownEditor` for that field, and the saved record's description list appears in the service records list as formatted markdown, not raw markdown syntax
+
+#### Scenario: Editing an existing entry's notes
+- **WHEN** a Contributor/Owner opens the edit form for an existing mileage log entry with a `notes` value
+- **THEN** the `MarkdownEditor` loads that value already rendered in its WYSIWYG form, ready for further editing
 

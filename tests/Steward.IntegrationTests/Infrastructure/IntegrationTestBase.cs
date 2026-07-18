@@ -163,4 +163,32 @@ public abstract class IntegrationTestBase(DatabaseFixture fixture)
 
         return engine.Id;
     }
+
+    protected async Task<(Guid TemplateId, Guid StepId)> CreateTemplateStepAsync(
+        bool engineScoped = false,
+        int? intervalMonths = null,
+        decimal? intervalMiles = null,
+        decimal? intervalHours = null)
+    {
+        using var scope = Factory.Services.CreateScope();
+        var dbContext = scope.ServiceProvider.GetRequiredService<StewardDbContext>();
+
+        var template = new Template { Id = Guid.NewGuid(), Title = $"Test Template {Guid.NewGuid():N}" };
+        var step = new TemplateStep
+        {
+            Id = Guid.NewGuid(),
+            TemplateId = template.Id,
+            Text = "Change oil",
+            EngineScoped = engineScoped,
+            RecurrenceIntervalMonths = intervalMonths,
+            RecurrenceIntervalMiles = intervalMiles,
+            RecurrenceIntervalHours = intervalHours,
+        };
+        template.Steps.Add(step);
+
+        dbContext.Templates.Add(template);
+        await dbContext.SaveChangesAsync();
+
+        return (template.Id, step.Id);
+    }
 }

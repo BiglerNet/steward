@@ -9,6 +9,8 @@ import { createWarranty, deleteWarranty, listWarranties, updateWarranty } from "
 import type { WarrantyResponse } from "@/api/types";
 import { DocumentAttachment } from "@/components/documents/DocumentAttachment";
 import { ExpiryBadge } from "@/components/documents/ExpiryBadge";
+import { MarkdownContent } from "@/components/markdown/MarkdownContent";
+import { MarkdownEditor } from "@/components/markdown/MarkdownEditor";
 import { Button } from "@/components/ui/button";
 import {
   Dialog,
@@ -167,7 +169,7 @@ export function WarrantiesSection() {
                       <FormItem>
                         <FormLabel>Description</FormLabel>
                         <FormControl>
-                          <Input {...field} />
+                          <MarkdownEditor value={field.value} onChange={field.onChange} onBlur={field.onBlur} />
                         </FormControl>
                         <FormMessage />
                       </FormItem>
@@ -242,7 +244,9 @@ export function WarrantiesSection() {
             {sorted.map((warranty) => (
               <TableRow key={warranty.id}>
                 <TableCell>{warranty.provider}</TableCell>
-                <TableCell>{warranty.description ?? "—"}</TableCell>
+                <TableCell>
+                  {warranty.description ? <MarkdownContent>{warranty.description}</MarkdownContent> : "—"}
+                </TableCell>
                 <TableCell>{warranty.startsOn ?? "—"}</TableCell>
                 <TableCell className="space-x-2">
                   <span>{warranty.expiresOn ?? "—"}</span>

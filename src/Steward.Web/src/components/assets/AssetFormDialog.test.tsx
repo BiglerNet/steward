@@ -211,6 +211,17 @@ describe("AssetFormDialog", () => {
     expect(screen.queryByLabelText("Mast count")).not.toBeInTheDocument();
   });
 
+  it("edits the description through the WYSIWYG markdown editor, loading existing markdown", async () => {
+    renderDialog({ ...carAsset, description: "# Notes\n\nGaraged in winter." });
+    const user = userEvent.setup();
+
+    await user.click(screen.getByText("Edit"));
+
+    expect(await screen.findByRole("heading", { level: 1, name: "Notes" })).toBeInTheDocument();
+    const editor = screen.getByLabelText("Description");
+    expect(editor).toHaveAttribute("contenteditable", "true");
+  });
+
   it("leaves the Pwc field list unchanged (no hull/drive type, keel, or mast fields)", async () => {
     renderDialog(pwcAsset);
     const user = userEvent.setup();

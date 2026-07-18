@@ -15,6 +15,7 @@ import {
 import type { RegistrationKind, RegistrationResponse } from "@/api/types";
 import { DocumentAttachment } from "@/components/documents/DocumentAttachment";
 import { ExpiryBadge } from "@/components/documents/ExpiryBadge";
+import { MarkdownEditor } from "@/components/markdown/MarkdownEditor";
 import { IssuingAuthorityCombobox } from "@/components/registrations/IssuingAuthorityCombobox";
 import { RegistrationKindBadge } from "@/components/registrations/RegistrationKindBadge";
 import { Button } from "@/components/ui/button";
@@ -348,7 +349,7 @@ export function RegistrationsSection() {
                       <FormItem>
                         <FormLabel>Notes</FormLabel>
                         <FormControl>
-                          <Input {...field} />
+                          <MarkdownEditor value={field.value} onChange={field.onChange} onBlur={field.onBlur} />
                         </FormControl>
                         <FormMessage />
                       </FormItem>

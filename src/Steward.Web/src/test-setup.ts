@@ -25,6 +25,31 @@ if (typeof URL.createObjectURL === "undefined") {
 if (typeof URL.revokeObjectURL === "undefined") {
   URL.revokeObjectURL = () => {};
 }
+if (!document.elementFromPoint) {
+  document.elementFromPoint = () => null;
+}
+const emptyDomRect: DOMRect = {
+  x: 0,
+  y: 0,
+  width: 0,
+  height: 0,
+  top: 0,
+  left: 0,
+  right: 0,
+  bottom: 0,
+  toJSON: () => ({}),
+};
+if (!Range.prototype.getBoundingClientRect) {
+  Range.prototype.getBoundingClientRect = () => emptyDomRect;
+}
+if (!Range.prototype.getClientRects) {
+  Range.prototype.getClientRects = () =>
+    ({
+      length: 0,
+      item: () => null,
+      [Symbol.iterator]: function* () {},
+    }) as unknown as DOMRectList;
+}
 if (typeof window.matchMedia === "undefined") {
   window.matchMedia = (query: string) =>
     ({

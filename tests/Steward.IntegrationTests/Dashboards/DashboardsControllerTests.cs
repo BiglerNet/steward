@@ -413,6 +413,63 @@ public class DashboardsControllerTests(DatabaseFixture fixture) : IntegrationTes
     }
 
     [Fact]
+    public async Task Snapshot_DueSoon_Includes_Overdue_Recurring_Maintenance()
+    {
+        var (householdId, userId) = await CreateHouseholdWithMemberAsync(HouseholdMemberRole.Owner);
+        var client = CreateAuthenticatedClient(userId);
+        var assetId = await CreateAssetAsync(householdId);
+        var (_, stepId) = await CreateTemplateStepAsync(intervalMonths: 1);
+
+        var today = DateOnly.FromDateTime(DateTime.UtcNow);
+        await SeedResolvedChecklistItemAsync(assetId, stepId, today.AddMonths(-1).AddDays(-5));
+
+        var dashboards = await (await client.GetAsync($"/api/households/{householdId}/dashboards", TestContext.Current.CancellationToken))
+            .Content.ReadFromJsonAsync<List<DashboardSummaryResponse>>(TestJson.Options, cancellationToken: TestContext.Current.CancellationToken);
+        var dashboardId = dashboards![0].Id;
+
+        await client.PutAsJsonAsync(
+            $"/api/households/{householdId}/dashboards/{dashboardId}/widgets",
+            new ReplaceWidgetLayoutRequest([new WidgetDefinition(WidgetType.DueSoon, WidgetSize.Full, "{\"daysAhead\":30}")]),
+            TestJson.Options, cancellationToken: TestContext.Current.CancellationToken);
+
+        var response = await client.GetAsync($"/api/households/{householdId}/dashboards/{dashboardId}/snapshot", TestContext.Current.CancellationToken);
+        var snapshot = await response.Content.ReadFromJsonAsync<Dictionary<string, JsonElement>>(TestJson.Options, cancellationToken: TestContext.Current.CancellationToken);
+        var items = snapshot!["DueSoon"].GetProperty("items").EnumerateArray().ToList();
+
+        Assert.Contains(items, i =>
+            i.GetProperty("recordType").GetString() == "MaintenanceRecurrence"
+            && i.GetProperty("urgency").GetString() == "Overdue"
+            && i.GetProperty("stepText").GetString() == "Change oil");
+    }
+
+    [Fact]
+    public async Task Snapshot_DueSoon_Excludes_Recurrence_Entries_Not_Due()
+    {
+        var (householdId, userId) = await CreateHouseholdWithMemberAsync(HouseholdMemberRole.Owner);
+        var client = CreateAuthenticatedClient(userId);
+        var assetId = await CreateAssetAsync(householdId);
+        var (_, stepId) = await CreateTemplateStepAsync(intervalMonths: 1);
+
+        var today = DateOnly.FromDateTime(DateTime.UtcNow);
+        await SeedResolvedChecklistItemAsync(assetId, stepId, today);
+
+        var dashboards = await (await client.GetAsync($"/api/households/{householdId}/dashboards", TestContext.Current.CancellationToken))
+            .Content.ReadFromJsonAsync<List<DashboardSummaryResponse>>(TestJson.Options, cancellationToken: TestContext.Current.CancellationToken);
+        var dashboardId = dashboards![0].Id;
+
+        await client.PutAsJsonAsync(
+            $"/api/households/{householdId}/dashboards/{dashboardId}/widgets",
+            new ReplaceWidgetLayoutRequest([new WidgetDefinition(WidgetType.DueSoon, WidgetSize.Full, "{\"daysAhead\":30}")]),
+            TestJson.Options, cancellationToken: TestContext.Current.CancellationToken);
+
+        var response = await client.GetAsync($"/api/households/{householdId}/dashboards/{dashboardId}/snapshot", TestContext.Current.CancellationToken);
+        var snapshot = await response.Content.ReadFromJsonAsync<Dictionary<string, JsonElement>>(TestJson.Options, cancellationToken: TestContext.Current.CancellationToken);
+        var items = snapshot!["DueSoon"].GetProperty("items").EnumerateArray().ToList();
+
+        Assert.DoesNotContain(items, i => i.GetProperty("recordType").GetString() == "MaintenanceRecurrence");
+    }
+
+    [Fact]
     public async Task Snapshot_RecentActivity_Respects_Limit()
     {
         var (householdId, userId) = await CreateHouseholdWithMemberAsync(HouseholdMemberRole.Owner);
@@ -420,7 +477,7 @@ public class DashboardsControllerTests(DatabaseFixture fixture) : IntegrationTes
         var assetId = await CreateAssetAsync(householdId);
 
         for (var i = 0; i < 5; i++)
-            await CreateServiceRecordAsync(assetId, DateOnly.FromDateTime(DateTime.UtcNow).AddDays(-i));
+            await CreateMaintenanceItemAsync(assetId, DateOnly.FromDateTime(DateTime.UtcNow).AddDays(-i));
 
         var dashboards = await (await client.GetAsync($"/api/households/{householdId}/dashboards", TestContext.Current.CancellationToken))
             .Content.ReadFromJsonAsync<List<DashboardSummaryResponse>>(TestJson.Options, cancellationToken: TestContext.Current.CancellationToken);
@@ -433,6 +490,30 @@ public class DashboardsControllerTests(DatabaseFixture fixture) : IntegrationTes
         var snapshot = await response.Content.ReadFromJsonAsync<Dictionary<string, JsonElement>>(TestJson.Options, cancellationToken: TestContext.Current.CancellationToken);
         var items = snapshot!["RecentActivity"].GetProperty("items").EnumerateArray().ToList();
         Assert.Equal(3, items.Count);
+    }
+
+    [Fact]
+    public async Task Snapshot_RecentActivity_Excludes_Non_Done_Maintenance_Items()
+    {
+        var (householdId, userId) = await CreateHouseholdWithMemberAsync(HouseholdMemberRole.Owner);
+        var client = CreateAuthenticatedClient(userId);
+        var assetId = await CreateAssetAsync(householdId);
+
+        await CreateMaintenanceItemAsync(assetId, DateOnly.FromDateTime(DateTime.UtcNow), MaintenanceItemStatus.Done);
+        await CreateMaintenanceItemAsync(assetId, DateOnly.FromDateTime(DateTime.UtcNow), MaintenanceItemStatus.Planned);
+        await CreateMaintenanceItemAsync(assetId, DateOnly.FromDateTime(DateTime.UtcNow), MaintenanceItemStatus.InProgress);
+
+        var dashboards = await (await client.GetAsync($"/api/households/{householdId}/dashboards", TestContext.Current.CancellationToken))
+            .Content.ReadFromJsonAsync<List<DashboardSummaryResponse>>(TestJson.Options, cancellationToken: TestContext.Current.CancellationToken);
+        var dashboardId = dashboards![0].Id;
+
+        await client.PutAsJsonAsync($"/api/households/{householdId}/dashboards/{dashboardId}/widgets", new ReplaceWidgetLayoutRequest([new WidgetDefinition(WidgetType.RecentActivity, WidgetSize.Full, null)]), TestJson.Options, cancellationToken: TestContext.Current.CancellationToken);
+
+        var response = await client.GetAsync($"/api/households/{householdId}/dashboards/{dashboardId}/snapshot", TestContext.Current.CancellationToken);
+
+        var snapshot = await response.Content.ReadFromJsonAsync<Dictionary<string, JsonElement>>(TestJson.Options, cancellationToken: TestContext.Current.CancellationToken);
+        var items = snapshot!["RecentActivity"].GetProperty("items").EnumerateArray().ToList();
+        Assert.Single(items);
     }
 
     [Fact]
@@ -532,16 +613,40 @@ public class DashboardsControllerTests(DatabaseFixture fixture) : IntegrationTes
         await db.SaveChangesAsync();
     }
 
-    private async Task CreateServiceRecordAsync(Guid assetId, DateOnly date)
+    private async Task SeedResolvedChecklistItemAsync(Guid assetId, Guid templateStepId, DateOnly resolvedOn)
     {
         using var scope = Factory.Services.CreateScope();
         var db = scope.ServiceProvider.GetRequiredService<StewardDbContext>();
-        db.ServiceRecords.Add(new ServiceRecord
+        var maintenanceItem = new MaintenanceItem
+        {
+            Id = Guid.NewGuid(), AssetId = assetId, Title = "Service", CreatedAt = DateTimeOffset.UtcNow,
+        };
+        db.MaintenanceItems.Add(maintenanceItem);
+        db.ChecklistItems.Add(new ChecklistItem
+        {
+            Id = Guid.NewGuid(),
+            MaintenanceItemId = maintenanceItem.Id,
+            Text = "Change oil",
+            Status = ChecklistItemStatus.Done,
+            ResolvedAt = new DateTimeOffset(resolvedOn.ToDateTime(TimeOnly.MinValue), TimeSpan.Zero),
+            TemplateStepId = templateStepId,
+        });
+        await db.SaveChangesAsync();
+    }
+
+    private async Task CreateMaintenanceItemAsync(
+        Guid assetId, DateOnly date, MaintenanceItemStatus status = MaintenanceItemStatus.Done)
+    {
+        using var scope = Factory.Services.CreateScope();
+        var db = scope.ServiceProvider.GetRequiredService<StewardDbContext>();
+        db.MaintenanceItems.Add(new MaintenanceItem
         {
             Id = Guid.NewGuid(),
             AssetId = assetId,
-            Description = "Test service",
+            Title = "Test maintenance",
+            Status = status,
             Date = date,
+            CreatedAt = DateTimeOffset.UtcNow,
         });
         await db.SaveChangesAsync();
     }

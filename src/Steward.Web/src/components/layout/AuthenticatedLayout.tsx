@@ -1,17 +1,20 @@
-import { Wrench, Package, Settings, LayoutDashboard } from "lucide-react";
+import { Wrench, Package, Settings, LayoutDashboard, ShieldCheck, KanbanSquare } from "lucide-react";
 import { Link, NavLink, Outlet, useParams } from "react-router";
 import { PendingInvitesBanner } from "@/components/auth/PendingInvitesBanner";
 import { UserMenu } from "@/components/auth/UserMenu";
 import { HouseholdSwitcher } from "@/components/households/HouseholdSwitcher";
+import { useIsPlatformAdmin } from "@/hooks/useIsPlatformAdmin";
 import { cn } from "@/lib/utils";
 
 export function AuthenticatedLayout() {
   const { householdId } = useParams();
+  const isPlatformAdmin = useIsPlatformAdmin();
 
   const navLinks = householdId
     ? [
         { to: `/households/${householdId}`, label: "Dashboard", icon: LayoutDashboard },
         { to: `/households/${householdId}/assets`, label: "My Equipment", icon: Package },
+        { to: `/households/${householdId}/maintenance`, label: "Maintenance", icon: KanbanSquare },
         { to: `/households/${householdId}/settings`, label: "Household Settings", icon: Settings },
       ]
     : [];
@@ -47,6 +50,20 @@ export function AuthenticatedLayout() {
                 </NavLink>
               ))}
             </nav>
+          )}
+          {isPlatformAdmin && (
+            <NavLink
+              to="/admin"
+              className={({ isActive }) =>
+                cn(
+                  "flex h-14 items-center gap-2 border-b-[1.5px] border-transparent px-3 text-body text-muted-foreground transition-colors hover:text-foreground",
+                  isActive && "border-primary text-primary"
+                )
+              }
+            >
+              <ShieldCheck className="h-4 w-4 md:hidden" />
+              <span className="hidden md:inline">Admin</span>
+            </NavLink>
           )}
         </div>
         <UserMenu />

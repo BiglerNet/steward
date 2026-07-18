@@ -12,8 +12,10 @@ import { AssetDetailLayout } from "@/pages/assets/AssetDetailLayout";
 import { AssetListPage } from "@/pages/assets/AssetListPage";
 import { EngineHoursLogsPage } from "@/pages/assets/EngineHoursLogsPage";
 import { FuelLogsPage } from "@/pages/assets/FuelLogsPage";
+import { MaintenanceItemsPage } from "@/pages/assets/MaintenanceItemsPage";
+import { MaintenanceItemEditorPage } from "@/pages/maintenance/MaintenanceItemEditorPage";
+import { MaintenanceKanbanPage } from "@/pages/maintenance/MaintenanceKanbanPage";
 import { MileageLogsPage } from "@/pages/assets/MileageLogsPage";
-import { ServiceRecordsPage } from "@/pages/assets/ServiceRecordsPage";
 import { RegistrationsSection } from "@/components/registrations/RegistrationsSection";
 import { WarrantiesSection } from "@/components/warranties/WarrantiesSection";
 import { DashboardPage } from "@/pages/DashboardPage";
@@ -22,6 +24,9 @@ import { HouseholdsIndexPage } from "@/pages/HouseholdsIndexPage";
 import { LoginPage } from "@/pages/LoginPage";
 import { PendingInvitesPage } from "@/pages/PendingInvitesPage";
 import { RegisterPage } from "@/pages/RegisterPage";
+import { AdminShellPage } from "@/pages/admin/AdminShellPage";
+import { AdminTemplatesPage } from "@/pages/admin/AdminTemplatesPage";
+import { PlatformAdminRoute } from "@/routes/PlatformAdminRoute";
 import { ProtectedRoute } from "@/routes/ProtectedRoute";
 import { PublicOnlyRoute } from "@/routes/PublicOnlyRoute";
 
@@ -57,14 +62,28 @@ function App() {
                   >
                     <Route index element={<Navigate to="engines" replace />} />
                     <Route path="engines" element={<EnginesSection />} />
-                    <Route path="service-records" element={<ServiceRecordsPage />} />
+                    <Route path="maintenance" element={<MaintenanceItemsPage />} />
                     <Route path="mileage-logs" element={<MileageLogsPage />} />
                     <Route path="engine-hours-logs" element={<EngineHoursLogsPage />} />
                     <Route path="fuel-logs" element={<FuelLogsPage />} />
                     <Route path="registrations" element={<RegistrationsSection />} />
                     <Route path="warranties" element={<WarrantiesSection />} />
                   </Route>
+                  <Route
+                    path="/households/:householdId/assets/:assetId/maintenance/:itemId"
+                    element={<MaintenanceItemEditorPage />}
+                  />
+                  <Route
+                    path="/households/:householdId/maintenance"
+                    element={<MaintenanceKanbanPage />}
+                  />
                   <Route path="/invites" element={<PendingInvitesPage />} />
+                  <Route element={<PlatformAdminRoute />}>
+                    <Route path="/admin" element={<AdminShellPage />}>
+                      <Route index element={<Navigate to="templates" replace />} />
+                      <Route path="templates" element={<AdminTemplatesPage />} />
+                    </Route>
+                  </Route>
                 </Route>
               </Route>
               <Route path="*" element={<Navigate to="/" replace />} />

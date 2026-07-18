@@ -113,4 +113,29 @@ describe("WarrantiesSection", () => {
     expect(screen.queryByRole("button", { name: "Edit" })).not.toBeInTheDocument();
     expect(screen.queryByRole("button", { name: "Delete" })).not.toBeInTheDocument();
   });
+
+  it("edits the description through the WYSIWYG markdown editor", async () => {
+    mockRole("Contributor");
+    renderSection();
+    const user = userEvent.setup();
+
+    await screen.findByText("Acme Corp");
+    await user.click(screen.getByRole("button", { name: "Edit" }));
+
+    const editor = await screen.findByLabelText("Description");
+    expect(editor).toHaveAttribute("contenteditable", "true");
+    expect(editor).toHaveTextContent("Engine coverage");
+  });
+
+  it("renders a markdown-formatted description as formatted markup in the list", async () => {
+    vi.mocked(warrantiesApi.listWarranties).mockResolvedValue([
+      { ...warranty, description: "**Full** coverage" },
+    ]);
+    mockRole("Viewer");
+    renderSection();
+
+    await screen.findByText("Acme Corp");
+    expect(screen.getByText("Full").tagName.toLowerCase()).toBe("strong");
+    expect(screen.queryByText("**Full** coverage")).not.toBeInTheDocument();
+  });
 });

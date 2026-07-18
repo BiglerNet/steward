@@ -8,6 +8,7 @@ import {
   updateEngineHoursLog,
 } from "@/api/tracking";
 import type { EngineHoursLogResponse } from "@/api/types";
+import { MarkdownEditor } from "@/components/markdown/MarkdownEditor";
 import { TrackingLogSection } from "@/components/tracking/TrackingLogSection";
 import { FormControl, FormField, FormItem, FormLabel, FormMessage } from "@/components/ui/form";
 import { Input } from "@/components/ui/input";
@@ -153,7 +154,7 @@ export function EngineHoursLogsPage() {
                   <FormItem>
                     <FormLabel>Notes</FormLabel>
                     <FormControl>
-                      <Input {...field} />
+                      <MarkdownEditor value={field.value} onChange={field.onChange} onBlur={field.onBlur} />
                     </FormControl>
                     <FormMessage />
                   </FormItem>
