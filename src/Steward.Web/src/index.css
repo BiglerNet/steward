@@ -195,8 +195,81 @@ body {
 }
 
 .markdown-editor .ProseMirror {
-  min-height: 4.5rem;
+  min-height: 11rem;
   outline: none;
+}
+
+/*
+  Crepe's "frame" theme is the closest of its bundled themes to headless
+  (see design.md's theming spike); its CSS variables are remapped here to
+  the app's own design tokens instead of overriding individual selectors,
+  keeping the diff small. Content itself (headings/lists/code/etc.) is
+  still styled by the .ProseMirror rules below, same as before Crepe.
+
+  Note: Crepe's own docs show these variables scoped under a `.crepe`
+  wrapper class, but that class is a convention from their demo markup,
+  not something the library adds itself - the actual root class Crepe
+  renders is `.milkdown`, so overrides are scoped to that instead.
+*/
+.markdown-editor .milkdown {
+  --crepe-color-background: var(--background);
+  --crepe-color-surface: var(--background);
+  --crepe-color-surface-low: var(--muted);
+  --crepe-color-on-background: var(--foreground);
+  --crepe-color-on-surface: var(--foreground);
+  --crepe-color-on-surface-variant: var(--muted-foreground);
+  --crepe-color-primary: var(--primary);
+  --crepe-color-secondary: var(--secondary);
+  --crepe-color-on-secondary: var(--secondary-foreground);
+  --crepe-color-outline: var(--border);
+  --crepe-color-inverse: var(--foreground);
+  --crepe-color-on-inverse: var(--background);
+  --crepe-color-inline-code: var(--foreground);
+  --crepe-color-error: var(--destructive);
+  --crepe-color-hover: var(--accent);
+  --crepe-color-selected: var(--accent);
+  --crepe-color-inline-area: var(--muted);
+  --crepe-font-title: var(--font-display);
+  --crepe-font-default: var(--font-body);
+  --crepe-font-code: var(--font-mono);
+  --crepe-shadow-1: none;
+  --crepe-shadow-2: none;
+}
+
+.markdown-editor .milkdown-top-bar {
+  border-bottom: 1px solid var(--border);
+  background: var(--background);
+}
+
+/*
+  Crepe's reset.css sets `.milkdown .ProseMirror { padding: 60px 120px }`,
+  sized for a standalone full-page document editor. Override back down to
+  this component's inline form-field padding (the outer .markdown-editor
+  wrapper in MarkdownEditor.tsx already supplies px-3 py-2).
+*/
+.markdown-editor .milkdown .ProseMirror {
+  padding: 0;
+}
+
+/*
+  Crepe's reset.css also puts `padding: 4px 0` on every <p> (including the
+  ones list items wrap their text in per CommonMark's schema), which stacks
+  on top of the margins below and reads as doubled line spacing, especially
+  inside lists. Zero it so those margins are the only source of spacing.
+*/
+.markdown-editor .milkdown .ProseMirror p {
+  padding: 0;
+}
+
+/*
+  Crepe's reset.css also sets `.milkdown .ProseMirror ul/ol { padding: 0 }`,
+  which ties in specificity with the ul/ol padding-left rules further down
+  this file (same class+type count) and wins the tie by load order, pushing
+  the list marker outside the visible content area. Break the tie explicitly.
+*/
+.markdown-editor .milkdown .ProseMirror ul,
+.markdown-editor .milkdown .ProseMirror ol {
+  padding-left: 1.5rem;
 }
 
 .markdown-content .ProseMirror,

@@ -1,0 +1,40 @@
+diff --git a/node_modules/@milkdown/preset-commonmark/lib/index.js b/node_modules/@milkdown/preset-commonmark/lib/index.js
+index 7a73a39..496c712 100644
+--- a/node_modules/@milkdown/preset-commonmark/lib/index.js
++++ b/node_modules/@milkdown/preset-commonmark/lib/index.js
+@@ -1198,7 +1198,7 @@ var bulletListSchema = $nodeSchema("bullet_list", (ctx) => {
+ 			runner: (state, node) => {
+ 				state.openNode("list", void 0, {
+ 					ordered: false,
+-					spread: node.attrs.spread
++					spread: node.attrs.spread === true || node.attrs.spread === "true"
+ 				}).next(node.content).closeNode();
+ 			}
+ 		}
+@@ -1292,7 +1292,7 @@ var orderedListSchema = $nodeSchema("ordered_list", (ctx) => ({
+ 			state.openNode("list", void 0, {
+ 				ordered: true,
+ 				start: node.attrs.order ?? 1,
+-				spread: node.attrs.spread === "true"
++				spread: node.attrs.spread === true || node.attrs.spread === "true"
+ 			});
+ 			state.next(node.content);
+ 			state.closeNode();
+@@ -1352,7 +1352,7 @@ var listItemSchema = $nodeSchema("list_item", (ctx) => ({
+ 			validate: "string"
+ 		},
+ 		spread: {
+-			default: true,
++			default: false,
+ 			validate: "boolean"
+ 		}
+ 	},
+@@ -1396,7 +1396,7 @@ var listItemSchema = $nodeSchema("list_item", (ctx) => ({
+ 	toMarkdown: {
+ 		match: (node) => node.type.name === "list_item",
+ 		runner: (state, node) => {
+-			state.openNode("listItem", void 0, { spread: node.attrs.spread });
++			state.openNode("listItem", void 0, { spread: node.attrs.spread === true || node.attrs.spread === "true" });
+ 			state.next(node.content);
+ 			state.closeNode();
+ 		}

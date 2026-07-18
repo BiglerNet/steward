@@ -140,7 +140,7 @@ export function WarrantiesSection() {
                 Add entry
               </Button>
             </DialogTrigger>
-            <DialogContent>
+            <DialogContent className="max-w-3xl">
               <DialogHeader>
                 <DialogTitle>{editing ? "Edit warranty" : "Add warranty"}</DialogTitle>
               </DialogHeader>

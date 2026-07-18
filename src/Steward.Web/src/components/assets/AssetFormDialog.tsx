@@ -40,7 +40,7 @@ export function AssetFormDialog({ householdId, asset, trigger }: AssetFormDialog
   return (
     <Dialog open={open} onOpenChange={setOpen}>
       <DialogTrigger asChild>{trigger}</DialogTrigger>
-      <DialogContent>
+      <DialogContent className="max-w-3xl">
         <DialogHeader>
           <DialogTitle>Edit asset</DialogTitle>
         </DialogHeader>

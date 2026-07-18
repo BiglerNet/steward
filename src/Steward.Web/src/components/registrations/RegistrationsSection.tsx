@@ -226,7 +226,7 @@ export function RegistrationsSection() {
                 Add entry
               </Button>
             </DialogTrigger>
-            <DialogContent>
+            <DialogContent className="max-w-3xl">
               <DialogHeader>
                 <DialogTitle>{editing ? "Edit registration" : "Add registration entry"}</DialogTitle>
               </DialogHeader>
