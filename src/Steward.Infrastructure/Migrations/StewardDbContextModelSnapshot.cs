@@ -241,6 +241,44 @@ namespace Steward.Infrastructure.Migrations
                     b.UseTphMappingStrategy();
                 });
 
+            modelBuilder.Entity("Steward.Domain.Entities.ChecklistItem", b =>
+                {
+                    b.Property<Guid>("Id")
+                        .ValueGeneratedOnAdd()
+                        .HasColumnType("uuid");
+
+                    b.Property<Guid?>("EngineId")
+                        .HasColumnType("uuid");
+
+                    b.Property<Guid>("MaintenanceItemId")
+                        .HasColumnType("uuid");
+
+                    b.Property<DateTimeOffset?>("ResolvedAt")
+                        .HasColumnType("timestamp with time zone");
+
+                    b.Property<int>("SortOrder")
+                        .HasColumnType("integer");
+
+                    b.Property<string>("Status")
+                        .IsRequired()
+                        .HasColumnType("text");
+
+                    b.Property<Guid?>("TemplateStepId")
+                        .HasColumnType("uuid");
+
+                    b.Property<string>("Text")
+                        .IsRequired()
+                        .HasColumnType("text");
+
+                    b.HasKey("Id");
+
+                    b.HasIndex("EngineId");
+
+                    b.HasIndex("MaintenanceItemId");
+
+                    b.ToTable("ChecklistItems", "steward");
+                });
+
             modelBuilder.Entity("Steward.Domain.Entities.DashboardWidget", b =>
                 {
                     b.Property<Guid>("Id")
@@ -606,6 +644,62 @@ namespace Steward.Infrastructure.Migrations
                     b.ToTable("HouseholdMemberships", "steward");
                 });
 
+            modelBuilder.Entity("Steward.Domain.Entities.MaintenanceItem", b =>
+                {
+                    b.Property<Guid>("Id")
+                        .ValueGeneratedOnAdd()
+                        .HasColumnType("uuid");
+
+                    b.Property<Guid>("AssetId")
+                        .HasColumnType("uuid");
+
+                    b.Property<DateTimeOffset?>("CompletedAt")
+                        .HasColumnType("timestamp with time zone");
+
+                    b.Property<decimal?>("Cost")
+                        .HasColumnType("numeric");
+
+                    b.Property<DateTimeOffset>("CreatedAt")
+                        .HasColumnType("timestamp with time zone");
+
+                    b.Property<DateOnly?>("Date")
+                        .HasColumnType("date");
+
+                    b.Property<string>("Description")
+                        .HasColumnType("text");
+
+                    b.Property<decimal?>("EngineHours")
+                        .HasColumnType("numeric");
+
+                    b.Property<Guid?>("EngineId")
+                        .HasColumnType("uuid");
+
+                    b.Property<decimal?>("OdometerMiles")
+                        .HasColumnType("numeric");
+
+                    b.Property<string>("ProviderName")
+                        .HasColumnType("text");
+
+                    b.Property<string>("Status")
+                        .IsRequired()
+                        .HasColumnType("text");
+
+                    b.Property<Guid?>("TemplateId")
+                        .HasColumnType("uuid");
+
+                    b.Property<string>("Title")
+                        .IsRequired()
+                        .HasColumnType("text");
+
+                    b.HasKey("Id");
+
+                    b.HasIndex("AssetId");
+
+                    b.HasIndex("EngineId");
+
+                    b.ToTable("MaintenanceItems", "steward");
+                });
+
             modelBuilder.Entity("Steward.Domain.Entities.MileageLog", b =>
                 {
                     b.Property<Guid>("Id")
@@ -632,6 +726,84 @@ namespace Steward.Infrastructure.Migrations
                     b.HasIndex("AssetId");
 
                     b.ToTable("MileageLogs", "steward");
+                });
+
+            modelBuilder.Entity("Steward.Domain.Entities.Part", b =>
+                {
+                    b.Property<Guid>("Id")
+                        .ValueGeneratedOnAdd()
+                        .HasColumnType("uuid");
+
+                    b.Property<string>("DefaultVendor")
+                        .HasColumnType("text");
+
+                    b.Property<Guid>("HouseholdId")
+                        .HasColumnType("uuid");
+
+                    b.Property<string>("Name")
+                        .IsRequired()
+                        .HasColumnType("text");
+
+                    b.Property<string>("PartNumber")
+                        .HasColumnType("text");
+
+                    b.HasKey("Id");
+
+                    b.HasIndex("HouseholdId");
+
+                    b.ToTable("Parts", "steward");
+                });
+
+            modelBuilder.Entity("Steward.Domain.Entities.PartLine", b =>
+                {
+                    b.Property<Guid>("Id")
+                        .ValueGeneratedOnAdd()
+                        .HasColumnType("uuid");
+
+                    b.Property<Guid?>("ChecklistItemId")
+                        .HasColumnType("uuid");
+
+                    b.Property<decimal?>("Cost")
+                        .HasColumnType("numeric");
+
+                    b.Property<Guid>("MaintenanceItemId")
+                        .HasColumnType("uuid");
+
+                    b.Property<string>("Name")
+                        .IsRequired()
+                        .HasColumnType("text");
+
+                    b.Property<string>("OrderUrl")
+                        .HasColumnType("text");
+
+                    b.Property<Guid?>("PartId")
+                        .HasColumnType("uuid");
+
+                    b.Property<string>("PartNumber")
+                        .HasColumnType("text");
+
+                    b.Property<decimal>("Quantity")
+                        .HasColumnType("numeric");
+
+                    b.Property<string>("Status")
+                        .IsRequired()
+                        .HasColumnType("text");
+
+                    b.Property<string>("TrackingNumber")
+                        .HasColumnType("text");
+
+                    b.Property<string>("Vendor")
+                        .HasColumnType("text");
+
+                    b.HasKey("Id");
+
+                    b.HasIndex("ChecklistItemId");
+
+                    b.HasIndex("MaintenanceItemId");
+
+                    b.HasIndex("PartId");
+
+                    b.ToTable("PartLines", "steward");
                 });
 
             modelBuilder.Entity("Steward.Domain.Entities.RefreshToken", b =>
@@ -717,47 +889,92 @@ namespace Steward.Infrastructure.Migrations
                     b.ToTable("Registrations", "steward");
                 });
 
-            modelBuilder.Entity("Steward.Domain.Entities.ServiceRecord", b =>
+            modelBuilder.Entity("Steward.Domain.Entities.Template", b =>
                 {
                     b.Property<Guid>("Id")
                         .ValueGeneratedOnAdd()
                         .HasColumnType("uuid");
 
-                    b.Property<Guid>("AssetId")
-                        .HasColumnType("uuid");
-
-                    b.Property<decimal?>("Cost")
-                        .HasColumnType("numeric");
-
-                    b.Property<DateOnly>("Date")
-                        .HasColumnType("date");
+                    b.PrimitiveCollection<string[]>("ApplicableCategories")
+                        .IsRequired()
+                        .HasColumnType("text[]");
 
                     b.Property<string>("Description")
-                        .IsRequired()
                         .HasColumnType("text");
 
-                    b.Property<decimal?>("EngineHours")
-                        .HasColumnType("numeric");
-
-                    b.Property<Guid?>("EngineId")
+                    b.Property<Guid?>("HouseholdId")
                         .HasColumnType("uuid");
 
-                    b.Property<string>("Notes")
-                        .HasColumnType("text");
-
-                    b.Property<decimal?>("OdometerMiles")
-                        .HasColumnType("numeric");
-
-                    b.Property<string>("ProviderName")
+                    b.Property<string>("Title")
+                        .IsRequired()
                         .HasColumnType("text");
 
                     b.HasKey("Id");
 
-                    b.HasIndex("AssetId");
+                    b.HasIndex("HouseholdId");
 
-                    b.HasIndex("EngineId");
+                    b.ToTable("Templates", "steward");
+                });
 
-                    b.ToTable("ServiceRecords", "steward");
+            modelBuilder.Entity("Steward.Domain.Entities.TemplateStep", b =>
+                {
+                    b.Property<Guid>("Id")
+                        .ValueGeneratedOnAdd()
+                        .HasColumnType("uuid");
+
+                    b.Property<bool>("EngineScoped")
+                        .HasColumnType("boolean");
+
+                    b.Property<decimal?>("RecurrenceIntervalHours")
+                        .HasColumnType("numeric");
+
+                    b.Property<decimal?>("RecurrenceIntervalMiles")
+                        .HasColumnType("numeric");
+
+                    b.Property<int?>("RecurrenceIntervalMonths")
+                        .HasColumnType("integer");
+
+                    b.Property<int>("SortOrder")
+                        .HasColumnType("integer");
+
+                    b.Property<Guid>("TemplateId")
+                        .HasColumnType("uuid");
+
+                    b.Property<string>("Text")
+                        .IsRequired()
+                        .HasColumnType("text");
+
+                    b.HasKey("Id");
+
+                    b.HasIndex("TemplateId");
+
+                    b.ToTable("TemplateSteps", "steward");
+                });
+
+            modelBuilder.Entity("Steward.Domain.Entities.TemplateStepSuggestedPart", b =>
+                {
+                    b.Property<Guid>("Id")
+                        .ValueGeneratedOnAdd()
+                        .HasColumnType("uuid");
+
+                    b.Property<string>("Name")
+                        .IsRequired()
+                        .HasColumnType("text");
+
+                    b.Property<decimal>("Quantity")
+                        .HasColumnType("numeric");
+
+                    b.Property<int>("SortOrder")
+                        .HasColumnType("integer");
+
+                    b.Property<Guid>("TemplateStepId")
+                        .HasColumnType("uuid");
+
+                    b.HasKey("Id");
+
+                    b.HasIndex("TemplateStepId");
+
+                    b.ToTable("TemplateStepSuggestedPart", "steward");
                 });
 
             modelBuilder.Entity("Steward.Domain.Entities.Warranty", b =>
@@ -1061,6 +1278,20 @@ namespace Steward.Infrastructure.Migrations
                         .OnDelete(DeleteBehavior.SetNull);
                 });
 
+            modelBuilder.Entity("Steward.Domain.Entities.ChecklistItem", b =>
+                {
+                    b.HasOne("Steward.Domain.Entities.Engine", null)
+                        .WithMany()
+                        .HasForeignKey("EngineId")
+                        .OnDelete(DeleteBehavior.Restrict);
+
+                    b.HasOne("Steward.Domain.Entities.MaintenanceItem", null)
+                        .WithMany("ChecklistItems")
+                        .HasForeignKey("MaintenanceItemId")
+                        .OnDelete(DeleteBehavior.Cascade)
+                        .IsRequired();
+                });
+
             modelBuilder.Entity("Steward.Domain.Entities.DashboardWidget", b =>
                 {
                     b.HasOne("Steward.Domain.Entities.HouseholdDashboard", "Dashboard")
@@ -1162,6 +1393,20 @@ namespace Steward.Infrastructure.Migrations
                         .IsRequired();
                 });
 
+            modelBuilder.Entity("Steward.Domain.Entities.MaintenanceItem", b =>
+                {
+                    b.HasOne("Steward.Domain.Entities.Assets.Asset", null)
+                        .WithMany()
+                        .HasForeignKey("AssetId")
+                        .OnDelete(DeleteBehavior.Restrict)
+                        .IsRequired();
+
+                    b.HasOne("Steward.Domain.Entities.Engine", null)
+                        .WithMany()
+                        .HasForeignKey("EngineId")
+                        .OnDelete(DeleteBehavior.Restrict);
+                });
+
             modelBuilder.Entity("Steward.Domain.Entities.MileageLog", b =>
                 {
                     b.HasOne("Steward.Domain.Entities.Assets.Asset", null)
@@ -1169,6 +1414,34 @@ namespace Steward.Infrastructure.Migrations
                         .HasForeignKey("AssetId")
                         .OnDelete(DeleteBehavior.Restrict)
                         .IsRequired();
+                });
+
+            modelBuilder.Entity("Steward.Domain.Entities.Part", b =>
+                {
+                    b.HasOne("Steward.Domain.Entities.Household", null)
+                        .WithMany()
+                        .HasForeignKey("HouseholdId")
+                        .OnDelete(DeleteBehavior.Restrict)
+                        .IsRequired();
+                });
+
+            modelBuilder.Entity("Steward.Domain.Entities.PartLine", b =>
+                {
+                    b.HasOne("Steward.Domain.Entities.ChecklistItem", null)
+                        .WithMany()
+                        .HasForeignKey("ChecklistItemId")
+                        .OnDelete(DeleteBehavior.SetNull);
+
+                    b.HasOne("Steward.Domain.Entities.MaintenanceItem", null)
+                        .WithMany("PartLines")
+                        .HasForeignKey("MaintenanceItemId")
+                        .OnDelete(DeleteBehavior.Cascade)
+                        .IsRequired();
+
+                    b.HasOne("Steward.Domain.Entities.Part", null)
+                        .WithMany()
+                        .HasForeignKey("PartId")
+                        .OnDelete(DeleteBehavior.SetNull);
                 });
 
             modelBuilder.Entity("Steward.Domain.Entities.RefreshToken", b =>
@@ -1189,18 +1462,30 @@ namespace Steward.Infrastructure.Migrations
                         .IsRequired();
                 });
 
-            modelBuilder.Entity("Steward.Domain.Entities.ServiceRecord", b =>
+            modelBuilder.Entity("Steward.Domain.Entities.Template", b =>
                 {
-                    b.HasOne("Steward.Domain.Entities.Assets.Asset", null)
+                    b.HasOne("Steward.Domain.Entities.Household", null)
                         .WithMany()
-                        .HasForeignKey("AssetId")
-                        .OnDelete(DeleteBehavior.Restrict)
-                        .IsRequired();
+                        .HasForeignKey("HouseholdId")
+                        .OnDelete(DeleteBehavior.Cascade);
+                });
 
-                    b.HasOne("Steward.Domain.Entities.Engine", null)
-                        .WithMany()
-                        .HasForeignKey("EngineId")
-                        .OnDelete(DeleteBehavior.Restrict);
+            modelBuilder.Entity("Steward.Domain.Entities.TemplateStep", b =>
+                {
+                    b.HasOne("Steward.Domain.Entities.Template", null)
+                        .WithMany("Steps")
+                        .HasForeignKey("TemplateId")
+                        .OnDelete(DeleteBehavior.Cascade)
+                        .IsRequired();
+                });
+
+            modelBuilder.Entity("Steward.Domain.Entities.TemplateStepSuggestedPart", b =>
+                {
+                    b.HasOne("Steward.Domain.Entities.TemplateStep", null)
+                        .WithMany("SuggestedParts")
+                        .HasForeignKey("TemplateStepId")
+                        .OnDelete(DeleteBehavior.Cascade)
+                        .IsRequired();
                 });
 
             modelBuilder.Entity("Steward.Domain.Entities.Warranty", b =>
@@ -1215,6 +1500,23 @@ namespace Steward.Infrastructure.Migrations
             modelBuilder.Entity("Steward.Domain.Entities.HouseholdDashboard", b =>
                 {
                     b.Navigation("Widgets");
+                });
+
+            modelBuilder.Entity("Steward.Domain.Entities.MaintenanceItem", b =>
+                {
+                    b.Navigation("ChecklistItems");
+
+                    b.Navigation("PartLines");
+                });
+
+            modelBuilder.Entity("Steward.Domain.Entities.Template", b =>
+                {
+                    b.Navigation("Steps");
+                });
+
+            modelBuilder.Entity("Steward.Domain.Entities.TemplateStep", b =>
+                {
+                    b.Navigation("SuggestedParts");
                 });
 #pragma warning restore 612, 618
         }

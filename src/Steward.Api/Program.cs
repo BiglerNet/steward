@@ -7,6 +7,7 @@ using Steward.Application;
 using Steward.Infrastructure.Assets;
 using Steward.Infrastructure.Dashboards;
 using Steward.Infrastructure.Identity;
+using Steward.Infrastructure.Maintenance;
 using Steward.Infrastructure.Persistence;
 using Steward.Infrastructure.Setup;
 using Steward.Infrastructure.Storage;
@@ -39,6 +40,7 @@ if (isSetupMode)
 }
 builder.Services.AddStewardAssets();
 builder.Services.AddStewardTracking();
+builder.Services.AddStewardMaintenance(registerHostedServices: !isSetupMode);
 builder.Services.AddStewardDashboards();
 builder.Services.AddStewardStorage(builder.Configuration);
 builder.Services.AddStewardVinDecode();

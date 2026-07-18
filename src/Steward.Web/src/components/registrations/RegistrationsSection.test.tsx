@@ -252,4 +252,20 @@ describe("RegistrationsSection", () => {
     const options = await screen.findAllByRole("button", { name: /Wisconsin|Minnesota|California|Ontario|British Columbia/ });
     expect(options[0]).toHaveTextContent("Wisconsin");
   });
+
+  it("edits notes through the WYSIWYG markdown editor", async () => {
+    mockRole("Contributor");
+    renderSection();
+    const user = userEvent.setup();
+
+    await screen.findByText("ABC-123");
+    const row = screen.getByText("ABC-123").closest("tr");
+    if (!row) {
+      throw new Error("Row not found");
+    }
+    await user.click(within(row).getByRole("button", { name: "Edit" }));
+
+    const editor = await screen.findByLabelText("Notes");
+    expect(editor).toHaveAttribute("contenteditable", "true");
+  });
 });

@@ -26,9 +26,16 @@ export function DueSoonWidget({ items }: DueSoonWidgetProps) {
                   className={`h-2.5 w-2.5 shrink-0 rounded-full ${URGENCY_COLOR[item.urgency] ?? "bg-muted"}`}
                   aria-label={item.urgency}
                 />
-                <span className="flex-1 font-medium">{item.assetName}</span>
+                <span className="flex-1 font-medium">
+                  {item.assetName}
+                  {item.recordType === "MaintenanceRecurrence" && item.stepText
+                    ? ` · ${item.stepText}${item.engineLabel ? ` (${item.engineLabel})` : ""}`
+                    : ""}
+                </span>
                 <span className="text-muted-foreground">{item.recordType}</span>
-                <span className="tabular-nums text-muted-foreground">{item.expiresOn}</span>
+                {item.expiresOn && (
+                  <span className="tabular-nums text-muted-foreground">{item.expiresOn}</span>
+                )}
               </li>
             ))}
           </ul>

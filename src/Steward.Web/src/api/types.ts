@@ -534,9 +534,11 @@ export interface TotalTorqueData { totalNm: number; engineCount: number }
 export interface DueItem {
   assetId: string;
   assetName: string;
-  recordType: "Registration" | "Warranty";
-  expiresOn: string;
+  recordType: "Registration" | "Warranty" | "MaintenanceRecurrence";
+  expiresOn: string | null;
   urgency: "Overdue" | "DueSoon" | "Upcoming";
+  stepText?: string | null;
+  engineLabel?: string | null;
 }
 export interface DueSoonData { items: DueItem[] }
 
@@ -574,6 +576,217 @@ export type DashboardSnapshot = Partial<{
   FuelCostYtd: FuelCostYtdData;
   MileageMtd: MileageMtdData;
 }>;
+
+export type MaintenanceItemStatus = "Planned" | "InProgress" | "Done" | "Cancelled";
+export type ChecklistItemStatus = "Open" | "Done" | "Skipped";
+export type PartLineStatus = "Needed" | "Ordered" | "Received";
+
+export interface ChecklistItemResponse {
+  id: string;
+  maintenanceItemId: string;
+  text: string;
+  status: ChecklistItemStatus;
+  resolvedAt: string | null;
+  sortOrder: number;
+  engineId: string | null;
+  templateStepId: string | null;
+}
+
+export interface CreateChecklistItemRequest {
+  text: string;
+  engineId?: string | null;
+}
+
+export interface PatchChecklistItemRequest {
+  text?: string;
+  status?: ChecklistItemStatus;
+  engineId?: string | null;
+}
+
+export interface PartLineResponse {
+  id: string;
+  maintenanceItemId: string;
+  name: string;
+  partNumber: string | null;
+  vendor: string | null;
+  trackingNumber: string | null;
+  orderUrl: string | null;
+  quantity: number;
+  status: PartLineStatus;
+  cost: number | null;
+  checklistItemId: string | null;
+  partId: string | null;
+}
+
+export interface CreatePartLineRequest {
+  name: string;
+  partNumber?: string | null;
+  vendor?: string | null;
+  trackingNumber?: string | null;
+  orderUrl?: string | null;
+  quantity?: number;
+  cost?: number | null;
+  checklistItemId?: string | null;
+}
+
+export interface PatchPartLineRequest {
+  name?: string;
+  partNumber?: string | null;
+  vendor?: string | null;
+  trackingNumber?: string | null;
+  orderUrl?: string | null;
+  quantity?: number;
+  status?: PartLineStatus;
+  cost?: number | null;
+  checklistItemId?: string | null;
+}
+
+export interface MaintenanceItemResponse {
+  id: string;
+  assetId: string;
+  engineId: string | null;
+  templateId: string | null;
+  title: string;
+  description: string | null;
+  providerName: string | null;
+  status: MaintenanceItemStatus;
+  date: string | null;
+  cost: number | null;
+  odometerMiles: number | null;
+  engineHours: number | null;
+  isBlocked: boolean;
+  completedAt: string | null;
+  checklistItems: ChecklistItemResponse[];
+  partLines: PartLineResponse[];
+}
+
+export interface CreateMaintenanceItemRequest {
+  title: string;
+  description?: string | null;
+  providerName?: string | null;
+  status?: MaintenanceItemStatus;
+  date?: string | null;
+  cost?: number | null;
+  odometerMiles?: number | null;
+  engineHours?: number | null;
+  engineId?: string | null;
+  templateId?: string | null;
+}
+
+export interface PatchMaintenanceItemRequest {
+  title?: string;
+  description?: string | null;
+  providerName?: string | null;
+  status?: MaintenanceItemStatus;
+  date?: string | null;
+  cost?: number | null;
+  odometerMiles?: number | null;
+  engineHours?: number | null;
+  engineId?: string | null;
+}
+
+export interface HouseholdMaintenanceItemResponse {
+  id: string;
+  assetId: string;
+  assetName: string;
+  engineId: string | null;
+  templateId: string | null;
+  title: string;
+  description: string | null;
+  providerName: string | null;
+  status: MaintenanceItemStatus;
+  date: string | null;
+  cost: number | null;
+  odometerMiles: number | null;
+  engineHours: number | null;
+  isBlocked: boolean;
+  completedAt: string | null;
+  checklistItems: ChecklistItemResponse[];
+  partLines: PartLineResponse[];
+}
+
+export type MaintenanceDueStatus = "Overdue" | "DueSoon" | "Upcoming" | "OK" | "Unknown";
+export type ReadingUnit = "Miles" | "Hours";
+
+export interface MaintenanceReadingResponse {
+  value: number;
+  unit: ReadingUnit;
+}
+
+export interface MaintenanceScheduleEntryResponse {
+  templateId: string;
+  templateTitle: string;
+  templateStepId: string;
+  stepText: string;
+  engineId: string | null;
+  engineLabel: string | null;
+  lastDoneAt: string | null;
+  lastDoneReading: MaintenanceReadingResponse | null;
+  intervalMonths: number | null;
+  intervalMiles: number | null;
+  intervalHours: number | null;
+  dueStatus: MaintenanceDueStatus;
+}
+
+export interface SuggestedPartDto {
+  name: string;
+  quantity: number;
+}
+
+export interface TemplateStepResponse {
+  id: string;
+  templateId: string;
+  text: string;
+  sortOrder: number;
+  engineScoped: boolean;
+  recurrenceIntervalMonths: number | null;
+  recurrenceIntervalMiles: number | null;
+  recurrenceIntervalHours: number | null;
+  suggestedParts: SuggestedPartDto[];
+}
+
+export interface TemplateResponse {
+  id: string;
+  householdId: string | null;
+  title: string;
+  description: string | null;
+  applicableCategories: AssetCategory[];
+  steps: TemplateStepResponse[];
+}
+
+export interface CreateTemplateRequest {
+  title: string;
+  description?: string | null;
+  applicableCategories?: AssetCategory[];
+}
+
+export interface PatchTemplateRequest {
+  title?: string;
+  description?: string | null;
+  applicableCategories?: AssetCategory[];
+}
+
+export interface CreateTemplateStepRequest {
+  text: string;
+  engineScoped?: boolean;
+  recurrenceIntervalMonths?: number | null;
+  recurrenceIntervalMiles?: number | null;
+  recurrenceIntervalHours?: number | null;
+  suggestedParts?: SuggestedPartDto[];
+}
+
+export interface PatchTemplateStepRequest {
+  text?: string;
+  engineScoped?: boolean;
+  recurrenceIntervalMonths?: number | null;
+  recurrenceIntervalMiles?: number | null;
+  recurrenceIntervalHours?: number | null;
+  suggestedParts?: SuggestedPartDto[];
+}
+
+export interface DuplicateTemplateRequest {
+  platformTemplateId: string;
+}
 
 export interface ProblemDetailsResponse {
   type?: string;

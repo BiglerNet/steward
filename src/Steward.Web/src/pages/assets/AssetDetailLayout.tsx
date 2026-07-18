@@ -6,6 +6,7 @@ import { AssetCoverThumbnail } from "@/components/assets/AssetCoverThumbnail";
 import { AssetFormDialog } from "@/components/assets/AssetFormDialog";
 import { PhotosSection } from "@/components/assets/PhotosSection";
 import { PowertrainBadge } from "@/components/assets/PowertrainBadge";
+import { MarkdownContent } from "@/components/markdown/MarkdownContent";
 import { Button } from "@/components/ui/button";
 import { useAssetTypeRegistry } from "@/hooks/useAssetTypeRegistry";
 import { fieldsFor, findDefinition } from "@/lib/assetTypes";
@@ -14,7 +15,7 @@ import { useHouseholdRole } from "@/lib/permissions";
 
 const TABS = [
   { to: "engines", label: "Engines" },
-  { to: "service-records", label: "Service Records" },
+  { to: "maintenance", label: "Maintenance" },
   { to: "mileage-logs", label: "Mileage Logs" },
   { to: "engine-hours-logs", label: "Engine Hours Logs" },
   { to: "fuel-logs", label: "Fuel Logs" },
@@ -108,7 +109,7 @@ export function AssetDetailLayout() {
             Asset Details
           </div>
           <div className="px-5 py-4">
-            {asset.description && <p className="text-body">{asset.description}</p>}
+            {asset.description && <MarkdownContent>{asset.description}</MarkdownContent>}
             {typeFields.length > 0 && (
               <dl className={cn("grid grid-cols-2 gap-x-4 sm:grid-cols-3", asset.description && "mt-3")}>
                 {typeFields.map((typeField) => (

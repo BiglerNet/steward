@@ -207,4 +207,16 @@ describe("FuelLogsPage", () => {
     await user.click(screen.getByRole("combobox", { name: "Unit" }));
     expect(await screen.findByRole("option", { name: "Kwh" })).toBeInTheDocument();
   });
+
+  it("presents the notes field as the WYSIWYG markdown editor", async () => {
+    vi.mocked(enginesApi.listEngines).mockResolvedValue([baseEngine()]);
+    const user = userEvent.setup();
+
+    renderPage();
+
+    await user.click(await screen.findByRole("button", { name: "Add entry" }));
+
+    const editor = await screen.findByLabelText("Notes");
+    expect(editor).toHaveAttribute("contenteditable", "true");
+  });
 });

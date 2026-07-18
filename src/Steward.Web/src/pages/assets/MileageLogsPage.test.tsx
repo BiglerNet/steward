@@ -57,4 +57,14 @@ describe("MileageLogsPage", () => {
     expect(screen.queryByLabelText("Engine (optional)")).not.toBeInTheDocument();
     expect(screen.queryByText(/engine/i)).not.toBeInTheDocument();
   });
+
+  it("presents the notes field as the WYSIWYG markdown editor", async () => {
+    renderPage();
+    const user = userEvent.setup();
+
+    await user.click(await screen.findByRole("button", { name: "Add entry" }));
+
+    const editor = await screen.findByLabelText("Notes");
+    expect(editor).toHaveAttribute("contenteditable", "true");
+  });
 });

@@ -18,8 +18,10 @@ public record DueItem(
     Guid AssetId,
     string AssetName,
     string RecordType,
-    DateOnly ExpiresOn,
-    string Urgency);
+    DateOnly? ExpiresOn,
+    string Urgency,
+    string? StepText = null,
+    string? EngineLabel = null);
 
 public record RecentActivityData(IReadOnlyList<ActivityItem> Items);
 

@@ -16,7 +16,12 @@ public class StewardDbContext(DbContextOptions<StewardDbContext> options)
     public DbSet<Asset> Assets => Set<Asset>();
     public DbSet<AssetPhoto> AssetPhotos => Set<AssetPhoto>();
     public DbSet<Engine> Engines => Set<Engine>();
-    public DbSet<ServiceRecord> ServiceRecords => Set<ServiceRecord>();
+    public DbSet<MaintenanceItem> MaintenanceItems => Set<MaintenanceItem>();
+    public DbSet<ChecklistItem> ChecklistItems => Set<ChecklistItem>();
+    public DbSet<PartLine> PartLines => Set<PartLine>();
+    public DbSet<Part> Parts => Set<Part>();
+    public DbSet<Template> Templates => Set<Template>();
+    public DbSet<TemplateStep> TemplateSteps => Set<TemplateStep>();
     public DbSet<MileageLog> MileageLogs => Set<MileageLog>();
     public DbSet<EngineHoursLog> EngineHoursLogs => Set<EngineHoursLog>();
     public DbSet<FuelLog> FuelLogs => Set<FuelLog>();

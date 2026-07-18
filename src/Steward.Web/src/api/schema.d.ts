@@ -4,6 +4,263 @@
  */
 
 export interface paths {
+    "/api/admin/templates": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        get?: never;
+        put?: never;
+        post: {
+            parameters: {
+                query?: {
+                    "api-version"?: string;
+                };
+                header?: never;
+                path?: never;
+                cookie?: never;
+            };
+            requestBody: {
+                content: {
+                    "application/json": components["schemas"]["CreateTemplateRequest"];
+                    "text/json": components["schemas"]["CreateTemplateRequest"];
+                    "application/*+json": components["schemas"]["CreateTemplateRequest"];
+                };
+            };
+            responses: {
+                /** @description OK */
+                200: {
+                    headers: {
+                        [name: string]: unknown;
+                    };
+                    content?: never;
+                };
+            };
+        };
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
+    "/api/admin/templates/{templateId}": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        get?: never;
+        put?: never;
+        post?: never;
+        delete: {
+            parameters: {
+                query?: {
+                    "api-version"?: string;
+                };
+                header?: never;
+                path: {
+                    templateId: string;
+                };
+                cookie?: never;
+            };
+            requestBody?: never;
+            responses: {
+                /** @description OK */
+                200: {
+                    headers: {
+                        [name: string]: unknown;
+                    };
+                    content?: never;
+                };
+            };
+        };
+        options?: never;
+        head?: never;
+        patch: {
+            parameters: {
+                query?: {
+                    "api-version"?: string;
+                };
+                header?: never;
+                path: {
+                    templateId: string;
+                };
+                cookie?: never;
+            };
+            requestBody: {
+                content: {
+                    "application/json": components["schemas"]["PatchTemplateRequest"];
+                    "text/json": components["schemas"]["PatchTemplateRequest"];
+                    "application/*+json": components["schemas"]["PatchTemplateRequest"];
+                };
+            };
+            responses: {
+                /** @description OK */
+                200: {
+                    headers: {
+                        [name: string]: unknown;
+                    };
+                    content?: never;
+                };
+            };
+        };
+        trace?: never;
+    };
+    "/api/admin/templates/{templateId}/steps": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        get?: never;
+        put?: never;
+        post: {
+            parameters: {
+                query?: {
+                    "api-version"?: string;
+                };
+                header?: never;
+                path: {
+                    templateId: string;
+                };
+                cookie?: never;
+            };
+            requestBody: {
+                content: {
+                    "application/json": components["schemas"]["CreateTemplateStepRequest"];
+                    "text/json": components["schemas"]["CreateTemplateStepRequest"];
+                    "application/*+json": components["schemas"]["CreateTemplateStepRequest"];
+                };
+            };
+            responses: {
+                /** @description OK */
+                200: {
+                    headers: {
+                        [name: string]: unknown;
+                    };
+                    content?: never;
+                };
+            };
+        };
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
+    "/api/admin/templates/{templateId}/steps/{stepId}": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        get?: never;
+        put?: never;
+        post?: never;
+        delete: {
+            parameters: {
+                query?: {
+                    "api-version"?: string;
+                };
+                header?: never;
+                path: {
+                    templateId: string;
+                    stepId: string;
+                };
+                cookie?: never;
+            };
+            requestBody?: never;
+            responses: {
+                /** @description OK */
+                200: {
+                    headers: {
+                        [name: string]: unknown;
+                    };
+                    content?: never;
+                };
+            };
+        };
+        options?: never;
+        head?: never;
+        patch: {
+            parameters: {
+                query?: {
+                    "api-version"?: string;
+                };
+                header?: never;
+                path: {
+                    templateId: string;
+                    stepId: string;
+                };
+                cookie?: never;
+            };
+            requestBody: {
+                content: {
+                    "application/json": components["schemas"]["PatchTemplateStepRequest"];
+                    "text/json": components["schemas"]["PatchTemplateStepRequest"];
+                    "application/*+json": components["schemas"]["PatchTemplateStepRequest"];
+                };
+            };
+            responses: {
+                /** @description OK */
+                200: {
+                    headers: {
+                        [name: string]: unknown;
+                    };
+                    content?: never;
+                };
+            };
+        };
+        trace?: never;
+    };
+    "/api/admin/templates/{templateId}/steps/reorder": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        get?: never;
+        put: {
+            parameters: {
+                query?: {
+                    "api-version"?: string;
+                };
+                header?: never;
+                path: {
+                    templateId: string;
+                };
+                cookie?: never;
+            };
+            requestBody: {
+                content: {
+                    "application/json": components["schemas"]["ReorderTemplateStepsRequest"];
+                    "text/json": components["schemas"]["ReorderTemplateStepsRequest"];
+                    "application/*+json": components["schemas"]["ReorderTemplateStepsRequest"];
+                };
+            };
+            responses: {
+                /** @description OK */
+                200: {
+                    headers: {
+                        [name: string]: unknown;
+                    };
+                    content?: never;
+                };
+            };
+        };
+        post?: never;
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
     "/api/households/{householdId}/assets/{assetId}/photos": {
         parameters: {
             query?: never;
@@ -1574,6 +1831,45 @@ export interface paths {
         patch?: never;
         trace?: never;
     };
+    "/api/households/{householdId}/maintenance-items": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        get: {
+            parameters: {
+                query?: {
+                    status?: components["schemas"]["MaintenanceItemStatus"][];
+                    assetId?: string;
+                    "api-version"?: string;
+                };
+                header?: never;
+                path: {
+                    householdId: string;
+                };
+                cookie?: never;
+            };
+            requestBody?: never;
+            responses: {
+                /** @description OK */
+                200: {
+                    headers: {
+                        [name: string]: unknown;
+                    };
+                    content?: never;
+                };
+            };
+        };
+        put?: never;
+        post?: never;
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
     "/api/households/{householdId}/members": {
         parameters: {
             query?: never;
@@ -1870,6 +2166,477 @@ export interface paths {
                 };
             };
         };
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
+    "/api/households/{householdId}/assets/{assetId}/maintenance-items": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        get: {
+            parameters: {
+                query?: {
+                    status?: components["schemas"]["MaintenanceItemStatus"][];
+                    "api-version"?: string;
+                };
+                header?: never;
+                path: {
+                    householdId: string;
+                    assetId: string;
+                };
+                cookie?: never;
+            };
+            requestBody?: never;
+            responses: {
+                /** @description OK */
+                200: {
+                    headers: {
+                        [name: string]: unknown;
+                    };
+                    content?: never;
+                };
+            };
+        };
+        put?: never;
+        post: {
+            parameters: {
+                query?: {
+                    "api-version"?: string;
+                };
+                header?: never;
+                path: {
+                    householdId: string;
+                    assetId: string;
+                };
+                cookie?: never;
+            };
+            requestBody: {
+                content: {
+                    "application/json": components["schemas"]["CreateMaintenanceItemRequest"];
+                    "text/json": components["schemas"]["CreateMaintenanceItemRequest"];
+                    "application/*+json": components["schemas"]["CreateMaintenanceItemRequest"];
+                };
+            };
+            responses: {
+                /** @description OK */
+                200: {
+                    headers: {
+                        [name: string]: unknown;
+                    };
+                    content?: never;
+                };
+            };
+        };
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
+    "/api/households/{householdId}/assets/{assetId}/maintenance-items/{maintenanceItemId}": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        get: {
+            parameters: {
+                query?: {
+                    "api-version"?: string;
+                };
+                header?: never;
+                path: {
+                    householdId: string;
+                    assetId: string;
+                    maintenanceItemId: string;
+                };
+                cookie?: never;
+            };
+            requestBody?: never;
+            responses: {
+                /** @description OK */
+                200: {
+                    headers: {
+                        [name: string]: unknown;
+                    };
+                    content?: never;
+                };
+            };
+        };
+        put?: never;
+        post?: never;
+        delete: {
+            parameters: {
+                query?: {
+                    "api-version"?: string;
+                };
+                header?: never;
+                path: {
+                    householdId: string;
+                    assetId: string;
+                    maintenanceItemId: string;
+                };
+                cookie?: never;
+            };
+            requestBody?: never;
+            responses: {
+                /** @description OK */
+                200: {
+                    headers: {
+                        [name: string]: unknown;
+                    };
+                    content?: never;
+                };
+            };
+        };
+        options?: never;
+        head?: never;
+        patch: {
+            parameters: {
+                query?: {
+                    "api-version"?: string;
+                };
+                header?: never;
+                path: {
+                    householdId: string;
+                    assetId: string;
+                    maintenanceItemId: string;
+                };
+                cookie?: never;
+            };
+            requestBody: {
+                content: {
+                    "application/json": components["schemas"]["PatchMaintenanceItemRequest"];
+                    "text/json": components["schemas"]["PatchMaintenanceItemRequest"];
+                    "application/*+json": components["schemas"]["PatchMaintenanceItemRequest"];
+                };
+            };
+            responses: {
+                /** @description OK */
+                200: {
+                    headers: {
+                        [name: string]: unknown;
+                    };
+                    content?: never;
+                };
+            };
+        };
+        trace?: never;
+    };
+    "/api/households/{householdId}/assets/{assetId}/maintenance-items/{maintenanceItemId}/checklist-items": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        get?: never;
+        put?: never;
+        post: {
+            parameters: {
+                query?: {
+                    "api-version"?: string;
+                };
+                header?: never;
+                path: {
+                    householdId: string;
+                    assetId: string;
+                    maintenanceItemId: string;
+                };
+                cookie?: never;
+            };
+            requestBody: {
+                content: {
+                    "application/json": components["schemas"]["CreateChecklistItemRequest"];
+                    "text/json": components["schemas"]["CreateChecklistItemRequest"];
+                    "application/*+json": components["schemas"]["CreateChecklistItemRequest"];
+                };
+            };
+            responses: {
+                /** @description OK */
+                200: {
+                    headers: {
+                        [name: string]: unknown;
+                    };
+                    content?: never;
+                };
+            };
+        };
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
+    "/api/households/{householdId}/assets/{assetId}/maintenance-items/{maintenanceItemId}/checklist-items/{checklistItemId}": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        get?: never;
+        put?: never;
+        post?: never;
+        delete: {
+            parameters: {
+                query?: {
+                    "api-version"?: string;
+                };
+                header?: never;
+                path: {
+                    householdId: string;
+                    assetId: string;
+                    maintenanceItemId: string;
+                    checklistItemId: string;
+                };
+                cookie?: never;
+            };
+            requestBody?: never;
+            responses: {
+                /** @description OK */
+                200: {
+                    headers: {
+                        [name: string]: unknown;
+                    };
+                    content?: never;
+                };
+            };
+        };
+        options?: never;
+        head?: never;
+        patch: {
+            parameters: {
+                query?: {
+                    "api-version"?: string;
+                };
+                header?: never;
+                path: {
+                    householdId: string;
+                    assetId: string;
+                    maintenanceItemId: string;
+                    checklistItemId: string;
+                };
+                cookie?: never;
+            };
+            requestBody: {
+                content: {
+                    "application/json": components["schemas"]["PatchChecklistItemRequest"];
+                    "text/json": components["schemas"]["PatchChecklistItemRequest"];
+                    "application/*+json": components["schemas"]["PatchChecklistItemRequest"];
+                };
+            };
+            responses: {
+                /** @description OK */
+                200: {
+                    headers: {
+                        [name: string]: unknown;
+                    };
+                    content?: never;
+                };
+            };
+        };
+        trace?: never;
+    };
+    "/api/households/{householdId}/assets/{assetId}/maintenance-items/{maintenanceItemId}/checklist-items/reorder": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        get?: never;
+        put: {
+            parameters: {
+                query?: {
+                    "api-version"?: string;
+                };
+                header?: never;
+                path: {
+                    householdId: string;
+                    assetId: string;
+                    maintenanceItemId: string;
+                };
+                cookie?: never;
+            };
+            requestBody: {
+                content: {
+                    "application/json": components["schemas"]["ReorderChecklistItemsRequest"];
+                    "text/json": components["schemas"]["ReorderChecklistItemsRequest"];
+                    "application/*+json": components["schemas"]["ReorderChecklistItemsRequest"];
+                };
+            };
+            responses: {
+                /** @description OK */
+                200: {
+                    headers: {
+                        [name: string]: unknown;
+                    };
+                    content?: never;
+                };
+            };
+        };
+        post?: never;
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
+    "/api/households/{householdId}/assets/{assetId}/maintenance-items/{maintenanceItemId}/part-lines": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        get?: never;
+        put?: never;
+        post: {
+            parameters: {
+                query?: {
+                    "api-version"?: string;
+                };
+                header?: never;
+                path: {
+                    householdId: string;
+                    assetId: string;
+                    maintenanceItemId: string;
+                };
+                cookie?: never;
+            };
+            requestBody: {
+                content: {
+                    "application/json": components["schemas"]["CreatePartLineRequest"];
+                    "text/json": components["schemas"]["CreatePartLineRequest"];
+                    "application/*+json": components["schemas"]["CreatePartLineRequest"];
+                };
+            };
+            responses: {
+                /** @description OK */
+                200: {
+                    headers: {
+                        [name: string]: unknown;
+                    };
+                    content?: never;
+                };
+            };
+        };
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
+    "/api/households/{householdId}/assets/{assetId}/maintenance-items/{maintenanceItemId}/part-lines/{partLineId}": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        get?: never;
+        put?: never;
+        post?: never;
+        delete: {
+            parameters: {
+                query?: {
+                    "api-version"?: string;
+                };
+                header?: never;
+                path: {
+                    householdId: string;
+                    assetId: string;
+                    maintenanceItemId: string;
+                    partLineId: string;
+                };
+                cookie?: never;
+            };
+            requestBody?: never;
+            responses: {
+                /** @description OK */
+                200: {
+                    headers: {
+                        [name: string]: unknown;
+                    };
+                    content?: never;
+                };
+            };
+        };
+        options?: never;
+        head?: never;
+        patch: {
+            parameters: {
+                query?: {
+                    "api-version"?: string;
+                };
+                header?: never;
+                path: {
+                    householdId: string;
+                    assetId: string;
+                    maintenanceItemId: string;
+                    partLineId: string;
+                };
+                cookie?: never;
+            };
+            requestBody: {
+                content: {
+                    "application/json": components["schemas"]["PatchPartLineRequest"];
+                    "text/json": components["schemas"]["PatchPartLineRequest"];
+                    "application/*+json": components["schemas"]["PatchPartLineRequest"];
+                };
+            };
+            responses: {
+                /** @description OK */
+                200: {
+                    headers: {
+                        [name: string]: unknown;
+                    };
+                    content?: never;
+                };
+            };
+        };
+        trace?: never;
+    };
+    "/api/households/{householdId}/assets/{assetId}/maintenance-schedule": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        get: {
+            parameters: {
+                query?: {
+                    "api-version"?: string;
+                };
+                header?: never;
+                path: {
+                    householdId: string;
+                    assetId: string;
+                };
+                cookie?: never;
+            };
+            requestBody?: never;
+            responses: {
+                /** @description OK */
+                200: {
+                    headers: {
+                        [name: string]: unknown;
+                    };
+                    content?: never;
+                };
+            };
+        };
+        put?: never;
+        post?: never;
+        delete?: never;
         options?: never;
         head?: never;
         patch?: never;
@@ -2173,6 +2940,42 @@ export interface paths {
         patch?: never;
         trace?: never;
     };
+    "/api/templates/platform": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        get: {
+            parameters: {
+                query?: {
+                    assetCategory?: components["schemas"]["AssetCategory"];
+                    "api-version"?: string;
+                };
+                header?: never;
+                path?: never;
+                cookie?: never;
+            };
+            requestBody?: never;
+            responses: {
+                /** @description OK */
+                200: {
+                    headers: {
+                        [name: string]: unknown;
+                    };
+                    content?: never;
+                };
+            };
+        };
+        put?: never;
+        post?: never;
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
     "/api/regions": {
         parameters: {
             query?: never;
@@ -2437,7 +3240,7 @@ export interface paths {
         patch?: never;
         trace?: never;
     };
-    "/api/households/{householdId}/assets/{assetId}/service-records": {
+    "/api/households/{householdId}/templates": {
         parameters: {
             query?: never;
             header?: never;
@@ -2447,14 +3250,12 @@ export interface paths {
         get: {
             parameters: {
                 query?: {
-                    from?: string;
-                    to?: string;
+                    assetCategory?: components["schemas"]["AssetCategory"];
                     "api-version"?: string;
                 };
                 header?: never;
                 path: {
                     householdId: string;
-                    assetId: string;
                 };
                 cookie?: never;
             };
@@ -2478,15 +3279,14 @@ export interface paths {
                 header?: never;
                 path: {
                     householdId: string;
-                    assetId: string;
                 };
                 cookie?: never;
             };
             requestBody: {
                 content: {
-                    "application/json": components["schemas"]["CreateServiceRecordRequest"];
-                    "text/json": components["schemas"]["CreateServiceRecordRequest"];
-                    "application/*+json": components["schemas"]["CreateServiceRecordRequest"];
+                    "application/json": components["schemas"]["CreateTemplateRequest"];
+                    "text/json": components["schemas"]["CreateTemplateRequest"];
+                    "application/*+json": components["schemas"]["CreateTemplateRequest"];
                 };
             };
             responses: {
@@ -2505,7 +3305,228 @@ export interface paths {
         patch?: never;
         trace?: never;
     };
-    "/api/households/{householdId}/assets/{assetId}/service-records/{serviceRecordId}": {
+    "/api/households/{householdId}/templates/{templateId}": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        get?: never;
+        put?: never;
+        post?: never;
+        delete: {
+            parameters: {
+                query?: {
+                    "api-version"?: string;
+                };
+                header?: never;
+                path: {
+                    householdId: string;
+                    templateId: string;
+                };
+                cookie?: never;
+            };
+            requestBody?: never;
+            responses: {
+                /** @description OK */
+                200: {
+                    headers: {
+                        [name: string]: unknown;
+                    };
+                    content?: never;
+                };
+            };
+        };
+        options?: never;
+        head?: never;
+        patch: {
+            parameters: {
+                query?: {
+                    "api-version"?: string;
+                };
+                header?: never;
+                path: {
+                    householdId: string;
+                    templateId: string;
+                };
+                cookie?: never;
+            };
+            requestBody: {
+                content: {
+                    "application/json": components["schemas"]["PatchTemplateRequest"];
+                    "text/json": components["schemas"]["PatchTemplateRequest"];
+                    "application/*+json": components["schemas"]["PatchTemplateRequest"];
+                };
+            };
+            responses: {
+                /** @description OK */
+                200: {
+                    headers: {
+                        [name: string]: unknown;
+                    };
+                    content?: never;
+                };
+            };
+        };
+        trace?: never;
+    };
+    "/api/households/{householdId}/templates/duplicate": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        get?: never;
+        put?: never;
+        post: {
+            parameters: {
+                query?: {
+                    "api-version"?: string;
+                };
+                header?: never;
+                path: {
+                    householdId: string;
+                };
+                cookie?: never;
+            };
+            requestBody: {
+                content: {
+                    "application/json": components["schemas"]["DuplicateTemplateRequest"];
+                    "text/json": components["schemas"]["DuplicateTemplateRequest"];
+                    "application/*+json": components["schemas"]["DuplicateTemplateRequest"];
+                };
+            };
+            responses: {
+                /** @description OK */
+                200: {
+                    headers: {
+                        [name: string]: unknown;
+                    };
+                    content?: never;
+                };
+            };
+        };
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
+    "/api/households/{householdId}/templates/{templateId}/steps": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        get?: never;
+        put?: never;
+        post: {
+            parameters: {
+                query?: {
+                    "api-version"?: string;
+                };
+                header?: never;
+                path: {
+                    householdId: string;
+                    templateId: string;
+                };
+                cookie?: never;
+            };
+            requestBody: {
+                content: {
+                    "application/json": components["schemas"]["CreateTemplateStepRequest"];
+                    "text/json": components["schemas"]["CreateTemplateStepRequest"];
+                    "application/*+json": components["schemas"]["CreateTemplateStepRequest"];
+                };
+            };
+            responses: {
+                /** @description OK */
+                200: {
+                    headers: {
+                        [name: string]: unknown;
+                    };
+                    content?: never;
+                };
+            };
+        };
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
+    "/api/households/{householdId}/templates/{templateId}/steps/{stepId}": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        get?: never;
+        put?: never;
+        post?: never;
+        delete: {
+            parameters: {
+                query?: {
+                    "api-version"?: string;
+                };
+                header?: never;
+                path: {
+                    householdId: string;
+                    templateId: string;
+                    stepId: string;
+                };
+                cookie?: never;
+            };
+            requestBody?: never;
+            responses: {
+                /** @description OK */
+                200: {
+                    headers: {
+                        [name: string]: unknown;
+                    };
+                    content?: never;
+                };
+            };
+        };
+        options?: never;
+        head?: never;
+        patch: {
+            parameters: {
+                query?: {
+                    "api-version"?: string;
+                };
+                header?: never;
+                path: {
+                    householdId: string;
+                    templateId: string;
+                    stepId: string;
+                };
+                cookie?: never;
+            };
+            requestBody: {
+                content: {
+                    "application/json": components["schemas"]["PatchTemplateStepRequest"];
+                    "text/json": components["schemas"]["PatchTemplateStepRequest"];
+                    "application/*+json": components["schemas"]["PatchTemplateStepRequest"];
+                };
+            };
+            responses: {
+                /** @description OK */
+                200: {
+                    headers: {
+                        [name: string]: unknown;
+                    };
+                    content?: never;
+                };
+            };
+        };
+        trace?: never;
+    };
+    "/api/households/{householdId}/templates/{templateId}/steps/reorder": {
         parameters: {
             query?: never;
             header?: never;
@@ -2521,16 +3542,15 @@ export interface paths {
                 header?: never;
                 path: {
                     householdId: string;
-                    assetId: string;
-                    serviceRecordId: string;
+                    templateId: string;
                 };
                 cookie?: never;
             };
             requestBody: {
                 content: {
-                    "application/json": components["schemas"]["UpdateServiceRecordRequest"];
-                    "text/json": components["schemas"]["UpdateServiceRecordRequest"];
-                    "application/*+json": components["schemas"]["UpdateServiceRecordRequest"];
+                    "application/json": components["schemas"]["ReorderTemplateStepsRequest"];
+                    "text/json": components["schemas"]["ReorderTemplateStepsRequest"];
+                    "application/*+json": components["schemas"]["ReorderTemplateStepsRequest"];
                 };
             };
             responses: {
@@ -2544,30 +3564,7 @@ export interface paths {
             };
         };
         post?: never;
-        delete: {
-            parameters: {
-                query?: {
-                    "api-version"?: string;
-                };
-                header?: never;
-                path: {
-                    householdId: string;
-                    assetId: string;
-                    serviceRecordId: string;
-                };
-                cookie?: never;
-            };
-            requestBody?: never;
-            responses: {
-                /** @description OK */
-                200: {
-                    headers: {
-                        [name: string]: unknown;
-                    };
-                    content?: never;
-                };
-            };
-        };
+        delete?: never;
         options?: never;
         head?: never;
         patch?: never;
@@ -2912,6 +3909,11 @@ export interface components {
             equipmentDescription: null | string;
             licensePlate: null | string;
         };
+        CreateChecklistItemRequest: {
+            text: string;
+            /** Format: uuid */
+            engineId: null | string;
+        };
         CreateDashboardRequest: {
             name: string;
             isDefault: null | boolean;
@@ -2987,6 +3989,24 @@ export interface components {
             country: null | string;
             region: null | string;
         };
+        CreateMaintenanceItemRequest: {
+            title: string;
+            description: null | string;
+            providerName: null | string;
+            status: null | components["schemas"]["MaintenanceItemStatus"];
+            /** Format: date */
+            date: null | string;
+            /** Format: double */
+            cost: null | number | string;
+            /** Format: double */
+            odometerMiles: null | number | string;
+            /** Format: double */
+            engineHours: null | number | string;
+            /** Format: uuid */
+            engineId: null | string;
+            /** Format: uuid */
+            templateId: null | string;
+        };
         CreateMileageLogRequest: {
             /** Format: date */
             date: string;
@@ -2995,6 +4015,19 @@ export interface components {
             /** Format: double */
             tripMiles: null | number | string;
             notes: null | string;
+        };
+        CreatePartLineRequest: {
+            name: string;
+            partNumber: null | string;
+            vendor: null | string;
+            trackingNumber: null | string;
+            orderUrl: null | string;
+            /** Format: double */
+            quantity: null | number | string;
+            /** Format: double */
+            cost: null | number | string;
+            /** Format: uuid */
+            checklistItemId: null | string;
         };
         CreateRegistrationRequest: {
             kind: null | components["schemas"]["RegistrationKind"];
@@ -3010,20 +4043,21 @@ export interface components {
             expiresOn: null | string;
             notes: null | string;
         };
-        CreateServiceRecordRequest: {
-            /** Format: date */
-            date: string;
-            description: string;
-            providerName: null | string;
+        CreateTemplateRequest: {
+            title: string;
+            description: null | string;
+            applicableCategories: null | components["schemas"]["AssetCategory"][];
+        };
+        CreateTemplateStepRequest: {
+            text: string;
+            engineScoped: null | boolean;
+            /** Format: int32 */
+            recurrenceIntervalMonths: null | number | string;
             /** Format: double */
-            cost: null | number | string;
+            recurrenceIntervalMiles: null | number | string;
             /** Format: double */
-            odometerMiles: null | number | string;
-            /** Format: double */
-            engineHours: null | number | string;
-            /** Format: uuid */
-            engineId: null | string;
-            notes: null | string;
+            recurrenceIntervalHours: null | number | string;
+            suggestedParts: null | components["schemas"]["SuggestedPartDto"][];
         };
         CreateWarrantyRequest: {
             provider: string;
@@ -3036,6 +4070,10 @@ export interface components {
         };
         /** @enum {unknown} */
         DriveType: "Inboard" | "Outboard" | "SternDrive" | "JetDrive" | null;
+        DuplicateTemplateRequest: {
+            /** Format: uuid */
+            platformTemplateId: string;
+        };
         /** @enum {unknown} */
         EngineType: "Ice" | "Electric";
         /** @enum {unknown} */
@@ -3062,9 +4100,62 @@ export interface components {
             refreshToken: string;
         };
         /** @enum {unknown} */
+        MaintenanceItemStatus: "Planned" | "InProgress" | "Done" | "Cancelled";
+        /** @enum {unknown} */
         Mechanism: "TwoStroke" | "FourStroke" | "Diesel" | "Rotary" | null;
         OAuthExchangeRequest: {
             code: string;
+        };
+        OptionalOfboolean: unknown;
+        OptionalOfChecklistItemStatus: unknown;
+        OptionalOfDateOnly: unknown;
+        OptionalOfdecimal: unknown;
+        OptionalOfGuid: unknown;
+        OptionalOfint: unknown;
+        OptionalOfListOfAssetCategory: unknown;
+        OptionalOfListOfSuggestedPartDto: unknown;
+        OptionalOfMaintenanceItemStatus: unknown;
+        OptionalOfPartLineStatus: unknown;
+        OptionalOfstring: unknown;
+        PatchChecklistItemRequest: {
+            text: components["schemas"]["OptionalOfstring"];
+            status: components["schemas"]["OptionalOfChecklistItemStatus"];
+            engineId: components["schemas"]["OptionalOfGuid"];
+        };
+        PatchMaintenanceItemRequest: {
+            title: components["schemas"]["OptionalOfstring"];
+            description: components["schemas"]["OptionalOfstring"];
+            providerName: components["schemas"]["OptionalOfstring"];
+            status: components["schemas"]["OptionalOfMaintenanceItemStatus"];
+            date: components["schemas"]["OptionalOfDateOnly"];
+            cost: components["schemas"]["OptionalOfdecimal"];
+            odometerMiles: components["schemas"]["OptionalOfdecimal"];
+            engineHours: components["schemas"]["OptionalOfdecimal"];
+            engineId: components["schemas"]["OptionalOfGuid"];
+        };
+        PatchPartLineRequest: {
+            name: components["schemas"]["OptionalOfstring"];
+            partNumber: components["schemas"]["OptionalOfstring"];
+            vendor: components["schemas"]["OptionalOfstring"];
+            trackingNumber: components["schemas"]["OptionalOfstring"];
+            orderUrl: components["schemas"]["OptionalOfstring"];
+            quantity: components["schemas"]["OptionalOfdecimal"];
+            status: components["schemas"]["OptionalOfPartLineStatus"];
+            cost: components["schemas"]["OptionalOfdecimal"];
+            checklistItemId: components["schemas"]["OptionalOfGuid"];
+        };
+        PatchTemplateRequest: {
+            title: components["schemas"]["OptionalOfstring"];
+            description: components["schemas"]["OptionalOfstring"];
+            applicableCategories: components["schemas"]["OptionalOfListOfAssetCategory"];
+        };
+        PatchTemplateStepRequest: {
+            text: components["schemas"]["OptionalOfstring"];
+            engineScoped: components["schemas"]["OptionalOfboolean"];
+            recurrenceIntervalMonths: components["schemas"]["OptionalOfint"];
+            recurrenceIntervalMiles: components["schemas"]["OptionalOfdecimal"];
+            recurrenceIntervalHours: components["schemas"]["OptionalOfdecimal"];
+            suggestedParts: components["schemas"]["OptionalOfListOfSuggestedPartDto"];
         };
         RefreshRequest: {
             refreshToken: string;
@@ -3080,6 +4171,12 @@ export interface components {
         };
         /** @enum {unknown} */
         RegistrationKind: "Registration" | "TrailPass" | "Permit" | null;
+        ReorderChecklistItemsRequest: {
+            checklistItemIds: string[];
+        };
+        ReorderTemplateStepsRequest: {
+            stepIds: string[];
+        };
         ReplaceWidgetLayoutRequest: {
             widgets: components["schemas"]["WidgetDefinition"][];
         };
@@ -3090,6 +4187,11 @@ export interface components {
         SetStorageQuotaRequest: {
             /** Format: int64 */
             quotaBytes: null | number | string;
+        };
+        SuggestedPartDto: {
+            name: string;
+            /** Format: double */
+            quantity: number | string;
         };
         /** @enum {unknown} */
         ThemePreference: "Light" | "Dark" | "System";
@@ -3236,21 +4338,6 @@ export interface components {
             cost: null | number | string;
             /** Format: date */
             expiresOn: null | string;
-            notes: null | string;
-        };
-        UpdateServiceRecordRequest: {
-            /** Format: date */
-            date: string;
-            description: string;
-            providerName: null | string;
-            /** Format: double */
-            cost: null | number | string;
-            /** Format: double */
-            odometerMiles: null | number | string;
-            /** Format: double */
-            engineHours: null | number | string;
-            /** Format: uuid */
-            engineId: null | string;
             notes: null | string;
         };
         UpdateThemePreferenceRequest: {
