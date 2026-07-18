@@ -34,4 +34,4 @@
 
 - [ ] 5.1 Manually exercise `MarkdownEditor` in the running app across at least two of its seven consuming forms (e.g. maintenance item description, warranty description): use the toolbar to produce a heading/bold/list, switch to source mode and confirm the literal markdown matches, switch back, save, reload, and confirm the WYSIWYG view and the read-only `MarkdownContent` view both render the formatted result.
 - [ ] 5.2 Confirm no visual regressions in light and dark theme for both the toolbar and the source-mode `<textarea>`.
-- [ ] 5.3 Run `npm run lint` and `npm test` in `src/Steward.Web`.
+- [x] 5.3 Run `npm run lint` and `npm test` in `src/Steward.Web`.
